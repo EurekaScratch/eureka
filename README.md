@@ -1,6 +1,6 @@
 <div align="center">
 
-<img alt="logo" src="./assets/chibi.png">
+<img alt="logo" src="./assets/chibi.png" width="200px">
 
 # Chibi
 #### Load scratch extension everywhere.
@@ -16,6 +16,16 @@ Chibi is a userscript which can load 3rd-party extensions in any Scratch-based e
 - [x] TurboWarp Extension API (very small part)
 - [ ] Fallback solution for visitors without script installation
 - [ ] Load from editor
+
+# 🌈 Supported platforms
+- [x] Scratch
+- [x] Codingclip
+- [x] Cocrea
+- [x] Aerfaying (阿儿法营)
+- [x] Co-Create World (共创世界)
+- [x] Xiaomawang (小码王)
+- [x] CodeLab
+- [x] 40code
 
 # 🔥 Usage
 *I haven’t written a method to load extensions in the editor yet, 你先别急*
