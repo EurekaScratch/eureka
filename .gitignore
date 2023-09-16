@@ -1,0 +1,12 @@
+# Mac OS
+.DS_Store
+
+# NPM
+/node_modules
+npm-*
+
+# Yarn
+yarn-error.log
+
+# generated build files
+/dist
