@@ -68,6 +68,7 @@ const config = {
                     'https://create.codelab.club/*',
                     'https://www.scratch-cn.cn/*',
                     'https://www.40code.com/*',
+                    'https://turbowarp.org/*',
                     'https://codingclip.com/*'
                 ]
             },

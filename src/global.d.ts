@@ -6,6 +6,9 @@ declare interface Window {
         version: string;
         vm?: VM;
         loader?: ChibiLoader;
-        registeredExtension: Record<string, string>;
+        registeredExtension: Record<string, {
+            url: string,
+            env: string
+        }>;
     }
 }

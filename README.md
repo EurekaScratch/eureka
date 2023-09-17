@@ -26,6 +26,7 @@ Chibi is a userscript which can load 3rd-party extensions in any Scratch-based e
 - [x] Xiaomawang (小码王)
 - [x] CodeLab
 - [x] 40code
+- [x] TurboWarp
 
 # 🔥 Usage
 *I haven’t written a method to load extensions in the editor yet, 你先别急*

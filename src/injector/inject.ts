@@ -3,6 +3,15 @@ import {log, error} from '../util/log';
 import { ChibiLoader } from '../loader/loader';
 import type VM from 'scratch-vm';
 
+interface ChibiCompatibleVM extends VM {
+    ccExtensionManager?: {
+        info: Record<string, {
+            api: number;
+        }>;
+        getExtensionLoadOrder (extensions: string[]): unknown;
+    }
+}
+
 const MAX_LISTENING_MS = 30 * 1000;
 
 export function trap () {
@@ -41,7 +50,7 @@ export function trap () {
     });
 }
 
-function stringify (obj) {
+function stringify (obj: Record<string, unknown>) {
     return JSON.stringify(obj, (_key, value) => {
         if (typeof value === 'number' &&
             (value === Infinity || value === -Infinity || isNaN(value))){
@@ -51,7 +60,7 @@ function stringify (obj) {
     });
 }
 
-export function inject (vm: VM) {
+export function inject (vm: ChibiCompatibleVM) {
     const loader = window.chibi.loader = new ChibiLoader(vm);
     const originalLoadFunc = vm.extensionManager.loadExtensionURL;
     vm.extensionManager.loadExtensionURL = async function (extensionURL: string, ...args: unknown[]) {
@@ -59,7 +68,7 @@ export function inject (vm: VM) {
             const { url, env } = window.chibi.registeredExtension[extensionURL];
             try {
                 if (confirm(`🤨 Project is trying to sideloading ${extensionURL} from ${url} in ${env} mode. Do you want to load?`)) {
-                    await loader.load(url, env);
+                    await loader.load(url, env as 'unsandboxed' | 'sandboxed');
                 } else {
                     // @ts-expect-error internal hack
                     return originalLoadFunc.apply(vm.extensionManager, [extensionURL, ...args]);
@@ -85,7 +94,7 @@ export function inject (vm: VM) {
     };
     
     const originalDrserializeFunc = vm.deserializeProject;
-    vm.deserializeProject = function (projectJSON: Record<string, unknown>, ...args: unknown[]) {
+    vm.deserializeProject = function (projectJSON: Record<string, any>, ...args: unknown[]) {
         if (typeof projectJSON.extensionURLs === 'object') {
             for (const id in projectJSON.extensionURLs) {
                 window.chibi.registeredExtension[id] = {
@@ -98,4 +107,23 @@ export function inject (vm: VM) {
         // @ts-expect-error internal hack
         return originalDrserializeFunc.apply(vm, [projectJSON, ...args]);
     };
+
+    // Hack for ClipCC 3.2- versions
+    if (typeof vm.ccExtensionManager === 'object') {
+        const originalGetOrderFunc = vm.ccExtensionManager.getExtensionLoadOrder;
+        vm.ccExtensionManager.getExtensionLoadOrder = function (extensions: string[], ...args: unknown[]) {
+            for (const extensionId of extensions) {
+                if (
+                    !vm.ccExtensionManager!.info.hasOwnProperty(extensionId) &&
+                    extensionId in window.chibi.registeredExtension
+                ) {
+                    vm.ccExtensionManager!.info[extensionId] = {
+                        api: 0
+                    };
+                }
+            }
+            // @ts-expect-error internal hack
+            return originalGetOrderFunc.apply(vm.ccExtensionManager, [extensions, ...args]);
+        }
+    }
 }
