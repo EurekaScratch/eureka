@@ -62,7 +62,7 @@ export function inject (vm: ChibiCompatibleVM) {
                     await loader.load(url, env as 'unsandboxed' | 'sandboxed');
                     const extensionId = loader.getIdByUrl(url);
                     // @ts-expect-error internal hack
-                    vm.extensionManager._loadedExtensions.set(extensionId, null);
+                    vm.extensionManager._loadedExtensions.set(extensionId, 'Chibi');
                 } else {
                     // @ts-expect-error internal hack
                     return originalLoadFunc.apply(vm.extensionManager, [extensionURL, ...args]);
@@ -75,6 +75,14 @@ export function inject (vm: ChibiCompatibleVM) {
             return originalLoadFunc.apply(vm.extensionManager, [extensionURL, ...args]);
         }
     };
+
+    const originalRefreshBlocksFunc = vm.extensionManager.refreshBlocks;
+    vm.extensionManager.refreshBlocks = async function (...args: unknown[]) {
+        // @ts-expect-error internal hack
+        const result = await originalRefreshBlocksFunc.apply(vm.extensionManager, [...args]);
+        await window.chibi.loader.refreshBlocks();
+        return result;
+    }
 
     const originalToJSONFunc = vm.toJSON;
     vm.toJSON = function (optTargetId: string, ...args: unknown[]) {
