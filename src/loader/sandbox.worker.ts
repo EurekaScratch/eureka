@@ -49,7 +49,7 @@ class ExtensionWorker {
     }
 }
 
-globalThis.Scratch = makeCtx(true);
+globalThis.Scratch = makeCtx();
 
 /**
  * Expose only specific parts of the worker to extensions.

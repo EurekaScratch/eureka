@@ -44,6 +44,12 @@ class ChibiLoader {
      * @type {int}
      */
     private nextExtensionWorker = 0;
+    
+    /**
+     * Whether Scratch object should be passed inline.
+     * @type {boolean}
+     */
+    private inlinedCtx = false;
 
     /**
      * FIFO queue of extensions which have been requested but not yet loaded in a worker,
@@ -67,6 +73,12 @@ class ChibiLoader {
 
     constructor (vm: VM) {
         this.vm = vm;
+        this.inlinedCtx = typeof window.Scratch === 'object';
+        if (!this.inlinedCtx) {
+            window.Scratch = makeCtx(this.vm);
+        } else {
+            warn('A Scratch instance already exists in the current environment, so it will be passed inline for unsandboxed extension.');
+        }
         dispatch.setService('loader', this).catch((e: Error) => {
             error(`ChibiLoader was unable to register extension service: ${JSON.stringify(e)}`);
         });
@@ -95,8 +107,7 @@ class ChibiLoader {
                 const response = await fetch(ext);
                 const originalScript = await response.text();
                 const closureFunc = new Function('Scratch', originalScript);
-                const ctx = makeCtx();
-                ctx.vm = this.vm;
+                const ctx = makeCtx(this.vm);
                 ctx.extensions.register = (extensionObj: ExtensionClass) => {
                     const extensionInfo = extensionObj.getInfo();
                     this._registerExtensionInfo(extensionObj, extensionInfo, ext);
@@ -152,6 +163,14 @@ class ChibiLoader {
             extensionEnv[extId] = ext.env;
         }
         return [extensionURLs, extensionEnv];
+    }
+
+    getIdByUrl (url: string) {
+        for (const [extId, ext] of this.loadedScratchExtension.entries()) {
+            if (ext.url === url) {
+                return extId;
+            }
+        }
     }
 
     /**

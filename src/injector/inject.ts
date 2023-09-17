@@ -9,7 +9,8 @@ interface ChibiCompatibleVM extends VM {
             api: number;
         }>;
         getExtensionLoadOrder (extensions: string[]): unknown;
-    }
+    };
+    setLocale?: (locale: string, ...args: unknown[]) => unknown;
 }
 
 const MAX_LISTENING_MS = 30 * 1000;
@@ -50,16 +51,6 @@ export function trap () {
     });
 }
 
-function stringify (obj: Record<string, unknown>) {
-    return JSON.stringify(obj, (_key, value) => {
-        if (typeof value === 'number' &&
-            (value === Infinity || value === -Infinity || isNaN(value))){
-            return 0;
-        }
-        return value;
-    });
-}
-
 export function inject (vm: ChibiCompatibleVM) {
     const loader = window.chibi.loader = new ChibiLoader(vm);
     const originalLoadFunc = vm.extensionManager.loadExtensionURL;
@@ -69,6 +60,9 @@ export function inject (vm: ChibiCompatibleVM) {
             try {
                 if (confirm(`🤨 Project is trying to sideloading ${extensionURL} from ${url} in ${env} mode. Do you want to load?`)) {
                     await loader.load(url, env as 'unsandboxed' | 'sandboxed');
+                    const extensionId = loader.getIdByUrl(url);
+                    // @ts-expect-error internal hack
+                    vm.extensionManager._loadedExtensions.set(extensionId, null);
                 } else {
                     // @ts-expect-error internal hack
                     return originalLoadFunc.apply(vm.extensionManager, [extensionURL, ...args]);
@@ -90,7 +84,7 @@ export function inject (vm: ChibiCompatibleVM) {
         const [urls, envs] = window.chibi.loader.getLoadedInfo();
         obj.extensionURLs = Object.assign({}, urls);
         obj.extensionEnvs = Object.assign({}, envs);
-        return stringify(obj);
+        return JSON.stringify(obj);
     };
     
     const originalDrserializeFunc = vm.deserializeProject;
@@ -107,6 +101,15 @@ export function inject (vm: ChibiCompatibleVM) {
         // @ts-expect-error internal hack
         return originalDrserializeFunc.apply(vm, [projectJSON, ...args]);
     };
+
+    const originSetLocaleFunc = vm.setLocale;
+    vm.setLocale = function (locale: string, ...args: unknown[]) {
+        // @ts-expect-error internal hack
+        const result = originSetLocaleFunc.apply(vm, [locale, ...args]);
+        // @ts-expect-error lazy to extend VM interface
+        vm.emit('LOCALE_CHANGED', locale);
+        return result;
+    }
 
     // Hack for ClipCC 3.2- versions
     if (typeof vm.ccExtensionManager === 'object') {
