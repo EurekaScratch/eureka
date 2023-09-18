@@ -7,7 +7,8 @@
   "author": "SimonShiki",
   "private": true,
   "scripts": {
-    "build": "webpack --color --bail",
+    "frontend": "webpack serve",
+    "build": "NODE_ENV=production webpack --color --bail",
     "lint": "eslint ./src/ --ext .js,.ts",
     "typecheck": "tsc --watch --noEmit"
   },
@@ -22,13 +23,17 @@
     "babel-preset-solid": "^1.7.7",
     "codingclip-worker-loader": "^3.0.9",
     "eslint": "^8.49.0",
+    "html-webpack-plugin": "^5.5.3",
     "mini-svg-data-uri": "^1.4.4",
     "webpack": "^5.88.2",
     "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.1",
     "webpack-userscript": "^3.2.2"
   },
   "dependencies": {
+    "@floating-ui/dom": "^1.5.3",
     "format-message": "^6.2.4",
+    "solid-floating-ui": "^0.2.1",
     "solid-js": "^1.7.11",
     "typescript": "^5.2.2"
   }
