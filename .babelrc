@@ -2,6 +2,9 @@
     "presets": [
         "@babel/preset-env",
         "@babel/preset-typescript",
-        "babel-preset-solid"
+        ["@babel/preset-react", {"runtime": "automatic"}]
+    ],
+    "plugins": [
+        "styled-jsx/babel"
     ]
 }

@@ -1,4 +1,5 @@
 import { trap, inject } from './injector/inject';
+import { applyFrontend } from './ui';
 import { log } from './util/log';
 
 // @ts-expect-error defined in webpack define plugin
@@ -9,3 +10,7 @@ if (typeof window.chibi.vm !== 'undefined') {
 } else {
     log(`Cannot find vm in this page, stop injecting.`);
 }
+
+window.onload = () => {
+    applyFrontend();
+};

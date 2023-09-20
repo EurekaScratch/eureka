@@ -1,9 +1,4 @@
-import { render } from 'solid-js/web';
+import { createRoot } from 'react-dom/client';
+import { EntryComponent } from './index';
 
-function Entry () {
-    return (
-        <h1>Chibi</h1>
-    );
-};
-
-render(Entry, document.body);
+createRoot(document.body).render(<EntryComponent />);
