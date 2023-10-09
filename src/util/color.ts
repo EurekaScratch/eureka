@@ -114,10 +114,10 @@ class Color {
     }
 
     /**
-    * Convert a hex color (e.g., F00, #03F, #0033FF) to a decimal color number.
-    * @param {!string} hex Hex representation of the color.
-    * @return {!number} Number representing the color.
-    */
+     * Convert a hex color (e.g., F00, #03F, #0033FF) to a decimal color number.
+     * @param {!string} hex Hex representation of the color.
+     * @return {!number} Number representing the color.
+     */
     static hexToDecimal (hex: string) {
         return Color.rgbToDecimal(Color.hexToRgb(hex));
     }

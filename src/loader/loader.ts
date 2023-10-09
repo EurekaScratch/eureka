@@ -120,8 +120,10 @@ class ChibiLoader {
             }
         }
 
-        // Load as builtin extension.
-        // @ts-expect-error
+        /*
+         * Load as builtin extension.
+         * @ts-expect-error
+         */
         const extensionObject = new ext(this.vm.runtime);
         const extensionInfo = extensionObject.getInfo() as ExtensionMetadata;
         this._registerExtensionInfo(extensionObject, extensionInfo, extensionInfo.id);
@@ -131,7 +133,7 @@ class ChibiLoader {
     /**
      * Reload a scratch-standard extension.
      * @param {string} extensionId - Extension's ID
-    */
+     */
     async reload (extensionId: string) {
         const targetExt = this.loadedScratchExtension.get(extensionId);
         if (!targetExt) {
@@ -178,7 +180,7 @@ class ChibiLoader {
      * This method is only a replacement of refreshBlocks in
      *  original extension manager to reload locales. It should
      * be replaced when there's a better solution.
-    */
+     */
     reloadAll () {
         const allPromises: Promise<ExtensionMetadata | void>[] = [];
         for (const [extId] of this.loadedScratchExtension.entries()) {
@@ -296,8 +298,10 @@ class ChibiLoader {
              */
             if (typeof menuInfo.items === 'string') {
                 const menuItemFunctionName = menuInfo.items;
-                // Bind the function here so we can pass a simple item generation function to Scratch Blocks later
-                // @ts-expect-error
+                /*
+                 * Bind the function here so we can pass a simple item generation function to Scratch Blocks later
+                 * @ts-expect-error
+                 */
                 menuInfo.items = this._getExtensionMenuItems.bind(this, extensionObject, menuItemFunctionName, serviceName);
             }
         }

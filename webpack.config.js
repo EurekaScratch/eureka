@@ -6,7 +6,7 @@ const { UserscriptPlugin } = require('webpack-userscript');
 const packageJSON = require('./package.json');
 
 const prodConfig = {
-    mode: 'production',
+    mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
     entry: './src/index.ts',
     output: {
         path: path.resolve(__dirname, 'dist'),
@@ -83,51 +83,4 @@ const prodConfig = {
     ]
 };
 
-const devConfig = {
-    mode: "development",
-    entry: {
-        main: path.resolve(__dirname, 'src', 'ui', 'playground.tsx')
-    },
-    output: {
-        filename: "app.js",
-        path: path.resolve(__dirname, 'dist')
-    },
-    devServer: {
-        port: 11726
-    },
-    resolve: {
-        extensions: ['.js', '.jsx', '.ts', '.tsx']
-    },
-    module: {
-        rules: [
-            {
-                test: /\.tsx?/,
-                use: [
-                    'babel-loader'
-                ],
-                exclude: /node_moudles/
-            },
-            {
-                test: /\.(png|jpg|gif)$/,
-                type: 'asset/inline'
-            },
-            {
-                test: /\.svg$/,
-                type: 'asset/inline',
-                generator: {
-                    dataUrl: content =>
-                        svgToMiniDataURI(content.toString())
-                }
-            }
-        ]
-    },
-    plugins: [
-        new HtmlWebpackPlugin()
-    ]
-};
-
-if (process.env.NODE_ENV === 'production') {
-    module.exports = prodConfig;
-} else {
-    module.exports = devConfig;
-}
+module.exports = prodConfig;

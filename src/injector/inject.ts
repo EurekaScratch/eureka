@@ -82,7 +82,7 @@ export function inject (vm: ChibiCompatibleVM) {
         const result = await originalRefreshBlocksFunc.apply(vm.extensionManager, [...args]);
         await window.chibi.loader.refreshBlocks();
         return result;
-    }
+    };
 
     const originalToJSONFunc = vm.toJSON;
     vm.toJSON = function (optTargetId: string, ...args: unknown[]) {
@@ -117,7 +117,7 @@ export function inject (vm: ChibiCompatibleVM) {
         // @ts-expect-error lazy to extend VM interface
         vm.emit('LOCALE_CHANGED', locale);
         return result;
-    }
+    };
 
     // Hack for ClipCC 3.2- versions
     if (typeof vm.ccExtensionManager === 'object') {
@@ -135,6 +135,6 @@ export function inject (vm: ChibiCompatibleVM) {
             }
             // @ts-expect-error internal hack
             return originalGetOrderFunc.apply(vm.ccExtensionManager, [extensions, ...args]);
-        }
+        };
     }
 }

@@ -31,7 +31,7 @@ function createTranslate (vm?: VM) {
 
     const translate = (message: Message, args?: object) => {
         if (message && typeof message === 'object') {
-            // already in the expected format
+            // Already in the expected format
         } else if (typeof message === 'string') {
             message = {
                 default: message
@@ -74,7 +74,7 @@ function createTranslate (vm?: VM) {
     }
 
     return translate;
-};
+}
 
 export function makeCtx (vm?: VM) {
     const ctx: Ctx = {

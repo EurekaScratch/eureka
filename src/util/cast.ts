@@ -22,11 +22,13 @@ const isNotActuallyZero = (val: unknown) => {
     if (typeof val !== 'string') return false;
     for (let i = 0; i < val.length; i++) {
         const code = val.charCodeAt(i);
-        // '0'.charCodeAt(0) === 48
-        // '\t'.charCodeAt(0) === 9
-        // We include tab for compatibility with scratch-www's broken trim() polyfill.
-        // https://github.com/TurboWarp/scratch-vm/issues/115
-        // https://scratch.mit.edu/projects/788261699/
+        /*
+         * '0'.charCodeAt(0) === 48
+         * '\t'.charCodeAt(0) === 9
+         * We include tab for compatibility with scratch-www's broken trim() polyfill.
+         * https://github.com/TurboWarp/scratch-vm/issues/115
+         * https://scratch.mit.edu/projects/788261699/
+         */
         if (code === 48 || code === 9) {
             return false;
         }
@@ -43,11 +45,15 @@ class Cast {
      * @return {number} The Scratch-casted number value.
      */
     static toNumber (value: unknown) : number {
-        // If value is already a number we don't need to coerce it with
-        // Number().
+        /*
+         * If value is already a number we don't need to coerce it with
+         * Number().
+         */
         if (typeof value === 'number') {
-            // Scratch treats NaN as 0, when needed as a number.
-            // E.g., 0 + NaN -> 0.
+            /*
+             * Scratch treats NaN as 0, when needed as a number.
+             * E.g., 0 + NaN -> 0.
+             */
             if (Number.isNaN(value)) {
                 return 0;
             }
@@ -55,8 +61,10 @@ class Cast {
         }
         const n = Number(value);
         if (Number.isNaN(n)) {
-            // Scratch treats NaN as 0, when needed as a number.
-            // E.g., 0 + NaN -> 0.
+            /*
+             * Scratch treats NaN as 0, when needed as a number.
+             * E.g., 0 + NaN -> 0.
+             */
             return 0;
         }
         return n;
@@ -150,8 +158,10 @@ class Cast {
             n2 = NaN;
         }
         if (isNaN(n1) || isNaN(n2)) {
-            // At least one argument can't be converted to a number.
-            // Scratch compares strings as case insensitive.
+            /*
+             * At least one argument can't be converted to a number.
+             * Scratch compares strings as case insensitive.
+             */
             const s1 = String(v1).toLowerCase();
             const s2 = String(v2).toLowerCase();
             if (s1 < s2) {
