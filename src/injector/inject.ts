@@ -87,7 +87,7 @@ export function inject (vm: ChibiCompatibleVM) {
     const originalToJSONFunc = vm.toJSON;
     vm.toJSON = function (optTargetId: string, ...args: unknown[]) {
         // @ts-expect-error internal hack
-        const json = originalToJSONFunc.apply(vm, optTargetId, ...args);
+        const json = originalToJSONFunc.apply(vm, [optTargetId, ...args]);
         const obj = JSON.parse(json);
         const [urls, envs] = window.chibi.loader.getLoadedInfo();
         obj.extensionURLs = Object.assign({}, urls);
