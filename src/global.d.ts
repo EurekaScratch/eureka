@@ -5,6 +5,7 @@ declare interface Window {
     chibi: {
         version: string;
         vm?: VM;
+        blockly?: ScratchBlocks | null;
         loader?: ChibiLoader;
         registeredExtension: Record<string, {
             url: string,

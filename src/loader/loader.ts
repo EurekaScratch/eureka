@@ -120,10 +120,7 @@ class ChibiLoader {
             }
         }
 
-        /*
-         * Load as builtin extension.
-         * @ts-expect-error
-         */
+        // @ts-expect-error Load as builtin extension.
         const extensionObject = new ext(this.vm.runtime);
         const extensionInfo = extensionObject.getInfo() as ExtensionMetadata;
         this._registerExtensionInfo(extensionObject, extensionInfo, extensionInfo.id);
@@ -298,10 +295,7 @@ class ChibiLoader {
              */
             if (typeof menuInfo.items === 'string') {
                 const menuItemFunctionName = menuInfo.items;
-                /*
-                 * Bind the function here so we can pass a simple item generation function to Scratch Blocks later
-                 * @ts-expect-error
-                 */
+                // @ts-expect-error Bind the function here so we can pass a simple item generation function to Scratch Blocks later
                 menuInfo.items = this._getExtensionMenuItems.bind(this, extensionObject, menuItemFunctionName, serviceName);
             }
         }
