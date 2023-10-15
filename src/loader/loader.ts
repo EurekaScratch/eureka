@@ -69,7 +69,7 @@ class ChibiLoader {
      * Loaded scratch extensions, ID with extension info.
      * @type {Map<string, ExtensionClass>}
      */
-    private loadedScratchExtension = new Map<string, ScratchExtension>();
+    loadedScratchExtension = new Map<string, ScratchExtension>();
 
     constructor (vm: VM) {
         this.vm = vm;

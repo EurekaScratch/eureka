@@ -1,6 +1,7 @@
 /// <reference path="../global.d.ts" />
 import {log, error} from '../util/log';
 import { ChibiLoader } from '../loader/loader';
+import openFrontend from '../frontend';
 import type VM from 'scratch-vm';
 
 interface ChibiCompatibleVM extends VM {
@@ -19,7 +20,8 @@ export function trap () {
     window.chibi = {
         // @ts-expect-error defined in webpack define plugin
         version: __CHIBI_VERSION__,
-        registeredExtension: {}
+        registeredExtension: {},
+        openFrontend: openFrontend
     };
 
     log('Listening bind function...');

@@ -10,5 +10,6 @@ declare interface Window {
             url: string,
             env: string
         }>;
+        openFrontend (): void;
     }
 }
