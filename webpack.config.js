@@ -10,6 +10,7 @@ const prodConfig = {
     entry: './src/index.ts',
     output: {
         path: path.resolve(__dirname, 'dist'),
+        publicPath: './',
         filename: 'chibi.js'
     },
     resolve: {
