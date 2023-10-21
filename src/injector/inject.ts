@@ -81,8 +81,8 @@ export function inject (vm: ChibiCompatibleVM) {
         if (extensionURL in window.chibi.registeredExtension) {
             const { url, env } = window.chibi.registeredExtension[extensionURL];
             try {
-                if (confirm(`🤨 Project is trying to sideloading ${extensionURL} from ${url} in ${env} mode. Do you want to load?`)) {
-                    await loader.load(url, env as 'unsandboxed' | 'sandboxed');
+                if (confirm(`🤨 Project is trying to sideloading ${extensionURL} from ${url}${env ? ` in ${env} mode` : ''}. Do you want to load?`)) {
+                    await loader.load(url, (env ? env : (confirm('🤨 Do you want to load it in the sandbox?') ? 'sandboxed' : 'unsandboxed')) as 'unsandboxed' | 'sandboxed');
                     const extensionId = loader.getIdByUrl(url);
                     // @ts-expect-error internal hack
                     vm.extensionManager._loadedExtensions.set(extensionId, 'Chibi');
@@ -113,8 +113,8 @@ export function inject (vm: ChibiCompatibleVM) {
         const json = originalToJSONFunc.call(this, optTargetId, ...args);
         const obj = JSON.parse(json);
         const [urls, envs] = window.chibi.loader.getLoadedInfo();
-        obj.extensionURLs = Object.assign({}, urls);
-        obj.extensionEnvs = Object.assign({}, envs);
+        obj.extensionURLs = Object.assign({}, obj.extensionURLs, urls);
+        obj.extensionEnvs = Object.assign({}, obj.extensionEnvs, envs);
         return JSON.stringify(obj);
     };
     
