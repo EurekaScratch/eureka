@@ -141,6 +141,17 @@ export function inject (vm: ChibiCompatibleVM) {
         vm.emit('LOCALE_CHANGED', locale);
         return result;
     };
+    
+    const originalArgReporterBooleanFunc = vm.runtime._primitives['argument_reporter_boolean'];
+    vm.runtime._primitives['argument_reporter_boolean'] = function (args: Record<string, unknown>, ...otherArgs: unknown[]) {
+        const chibiFlag = args.VALUE;
+        switch (chibiFlag) {
+        case '🧐 Chibi Installed?':
+            return true;
+        default:
+            return originalArgReporterBooleanFunc.call(this, args, ...otherArgs);
+        }
+    }
 
     // Hack for ClipCC 3.2- versions
     if (typeof vm.ccExtensionManager === 'object') {
@@ -172,7 +183,7 @@ export function inject (vm: ChibiCompatibleVM) {
             xmlList: unknown[],
             ...args: unknown[]
         ) {
-            originalAddCreateButton_.call(this, workspace, xmlList, ...args);
+            // Add dashboard button
             const dashboardButton = document.createElement('button');
             dashboardButton.setAttribute('text', '😎 Chibi Management');
             dashboardButton.setAttribute('callbackKey', 'CHIBI_FRONTEND');
@@ -180,6 +191,20 @@ export function inject (vm: ChibiCompatibleVM) {
                 window.chibi.openFrontend();
             });
             xmlList.push(dashboardButton);
+
+            // Add chibi detection
+            const mutation = document.createElement('mutation');
+            mutation.setAttribute('chibi', 'installed');
+            const field = document.createElement('field');
+            field.setAttribute('name', 'VALUE');
+            field.innerHTML = '🧐 Chibi Installed?';
+            const block = document.createElement('block');
+            block.setAttribute('type', 'argument_reporter_boolean');
+            block.setAttribute('gap', '16');
+            block.appendChild(field);
+            block.appendChild(mutation);
+            xmlList.push(block);
+            originalAddCreateButton_.call(this, workspace, xmlList, ...args);
         };
         const workspace = blockly.getMainWorkspace();
         workspace.getToolbox().refreshSelection();
