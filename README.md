@@ -1,9 +1,11 @@
+[简体中文](./README-zh_CN.md)
+
 <div align="center">
 
 <img alt="logo" src="./assets/chibi.png" width="200px">
 
 # Chibi
-#### Load scratch extension everywhere.
+#### Load Scratch extensions everywhere.
 
 </div>
 
@@ -15,7 +17,7 @@ Chibi is a userscript which can load 3rd-party extensions in any Scratch-based e
 - [x] Unsandboxed extensions
 - [x] TurboWarp Extension API (very small part)
 - [ ] Fallback solution for visitors without script installation
-- [ ] Load from editor
+- [x] Load from editor
 
 # 🌈 Supported platforms
 - [x] Scratch
@@ -38,6 +40,9 @@ Chibi is a userscript which can load 3rd-party extensions in any Scratch-based e
 1. Press 'F12' on your keyboard to open Developer Tools.
 2. Input ``chibi.openFrontend()`` or ``chibi.loader.load([extensionURL], [load mode, like 'unsandboxed'])'`` In your console, then enter to execute.
 3. Your extension got loaded!
+
+# 🥰 Contribute extensions
+Chibi's front-end provides an extension gallary where you can pick any extension you like. You are also welcome to contribute your own extensions to the gallary. For more information please visit [moth](https://github.com/SimonShiki/moth)
 
 # ⚓ License
 AGPL-3.0, see [LICENSE](./LICENSE).
