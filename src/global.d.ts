@@ -2,6 +2,7 @@
 // <reference path="./loader/loader" />
 
 declare interface Window {
+    Blockly?: Partial<ScratchBlocks>;
     chibi: {
         version: string;
         vm?: VM;

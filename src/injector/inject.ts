@@ -1,5 +1,5 @@
 /// <reference path="../global.d.ts" />
-import {log, error} from '../util/log';
+import {log, warn, error} from '../util/log';
 import { ChibiLoader } from '../loader/loader';
 import openFrontend from '../frontend';
 import type VM from 'scratch-vm';
@@ -33,8 +33,12 @@ function getBlocklyInstance () {
     // @ts-expect-error
     const internal = elem[internalKey];
     let childable = internal;
-    while (((childable = childable.child), !childable || !childable.stateNode || !childable.stateNode.ScratchBlocks)) {}
-    return childable.stateNode.ScratchBlocks;
+    try {
+        while (((childable = childable.child), !childable || !childable.stateNode || !childable.stateNode.ScratchBlocks)) {}
+    } catch (e: unknown) {
+        return;
+    }
+    return childable?.stateNode.ScratchBlocks;
 }
 
 export function trap () {
@@ -175,7 +179,46 @@ export function inject (vm: ChibiCompatibleVM) {
     // Blockly stuffs
     setTimeout(() => {
         const blockly = window.chibi.blockly = getBlocklyInstance();
-        if (!blockly) return;
+        if (!blockly) {
+            warn('Cannot find real blockly instance, try alternative method...');
+            const originalProcedureCallback = window.Blockly?.getMainWorkspace().toolboxCategoryCallbacks_.PROCEDURE;
+            if (!originalProcedureCallback) {
+                error('alternative method failed, stop injecting');
+                return;
+            }
+            window.Blockly.getMainWorkspace().toolboxCategoryCallbacks_.PROCEDURE = function (
+                workspace: ChibiCompatibleWorkspace,
+                ...args: unknown[]
+            ) {
+                const xmlList = originalProcedureCallback.call(this, workspace, ...args);
+                // Add dashboard button
+                const dashboardButton = document.createElement('button');
+                dashboardButton.setAttribute('text', '😎 Chibi Management');
+                dashboardButton.setAttribute('callbackKey', 'CHIBI_FRONTEND');
+                workspace.registerButtonCallback('CHIBI_FRONTEND', () => {
+                    window.chibi.openFrontend();
+                });
+                xmlList.push(dashboardButton);
+
+                // Add chibi detection
+                const mutation = document.createElement('mutation');
+                mutation.setAttribute('chibi', 'installed');
+                const field = document.createElement('field');
+                field.setAttribute('name', 'VALUE');
+                field.innerHTML = '🧐 Chibi Installed?';
+                const block = document.createElement('block');
+                block.setAttribute('type', 'argument_reporter_boolean');
+                block.setAttribute('gap', '16');
+                block.appendChild(field);
+                block.appendChild(mutation);
+                xmlList.push(block);
+                return xmlList;
+            };
+            const workspace = window.Blockly.getMainWorkspace();
+            workspace.getToolbox().refreshSelection();
+            workspace.toolboxRefreshEnabled_ = true;
+            return;
+        };
 
         const originalAddCreateButton_ = blockly.Procedures.addCreateButton_;
         blockly.Procedures.addCreateButton_ = function (

@@ -61,7 +61,7 @@ async function messageHandler (event: MessageEvent) {
 window.addEventListener('message', messageHandler);
 
 function openFrontend () {
-    dashboardWindow = window.open('https://chibi.codingclip.cc/');
+    dashboardWindow = window.open('https://chibi.codingclip.cc/#manage');
 }
 
 export default openFrontend;
