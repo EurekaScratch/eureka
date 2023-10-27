@@ -191,14 +191,34 @@ export function inject (vm: ChibiCompatibleVM) {
                 ...args: unknown[]
             ) {
                 const xmlList = originalProcedureCallback.call(this, workspace, ...args);
+                // Add separator and label
+                const sep = document.createElement('sep');
+                sep.setAttribute('gap', '36');
+                xmlList.push(sep);
+                const label = document.createElement('label');
+                label.setAttribute('text', '😎 Chibi');
+                xmlList.push(label);
+
                 // Add dashboard button
                 const dashboardButton = document.createElement('button');
-                dashboardButton.setAttribute('text', '😎 Chibi Management');
+                dashboardButton.setAttribute('text', 'Open Frontend');
                 dashboardButton.setAttribute('callbackKey', 'CHIBI_FRONTEND');
                 workspace.registerButtonCallback('CHIBI_FRONTEND', () => {
                     window.chibi.openFrontend();
                 });
                 xmlList.push(dashboardButton);
+
+                // Add load from url button
+                const sideloadButton = document.createElement('button');
+                sideloadButton.setAttribute('text', 'Sideload from URL');
+                sideloadButton.setAttribute('callbackKey', 'CHIBI_SIDELOAD_FROM_URL');
+                workspace.registerButtonCallback('CHIBI_SIDELOAD_FROM_URL', () => {
+                    const url = prompt('Enter URL');
+                    if (!url) return;
+                    const mode = confirm('Running in sandbox?') ? 'sandboxed' : 'unsandboxed';
+                    window.chibi.loader.load(url, mode);
+                });
+                xmlList.push(sideloadButton);
 
                 // Add chibi detection
                 const mutation = document.createElement('mutation');
@@ -226,14 +246,35 @@ export function inject (vm: ChibiCompatibleVM) {
             xmlList: unknown[],
             ...args: unknown[]
         ) {
+            originalAddCreateButton_.call(this, workspace, xmlList, ...args);
+            // Add separator and label
+            const sep = document.createElement('sep');
+            sep.setAttribute('gap', '36');
+            xmlList.push(sep);
+            const label = document.createElement('label');
+            label.setAttribute('text', '😎 Chibi');
+            xmlList.push(label);
+
             // Add dashboard button
             const dashboardButton = document.createElement('button');
-            dashboardButton.setAttribute('text', '😎 Chibi Management');
+            dashboardButton.setAttribute('text', 'Open Frontend');
             dashboardButton.setAttribute('callbackKey', 'CHIBI_FRONTEND');
             workspace.registerButtonCallback('CHIBI_FRONTEND', () => {
                 window.chibi.openFrontend();
             });
             xmlList.push(dashboardButton);
+
+            // Add load from url button
+            const sideloadButton = document.createElement('button');
+            sideloadButton.setAttribute('text', 'Sideload from URL');
+            sideloadButton.setAttribute('callbackKey', 'CHIBI_SIDELOAD_FROM_URL');
+            workspace.registerButtonCallback('CHIBI_SIDELOAD_FROM_URL', () => {
+                const url = prompt('Enter URL');
+                if (!url) return;
+                const mode = confirm('Running in sandbox?') ? 'sandboxed' : 'unsandboxed';
+                window.chibi.loader.load(url, mode);
+            });
+            xmlList.push(sideloadButton);
 
             // Add chibi detection
             const mutation = document.createElement('mutation');
@@ -247,7 +288,6 @@ export function inject (vm: ChibiCompatibleVM) {
             block.appendChild(field);
             block.appendChild(mutation);
             xmlList.push(block);
-            originalAddCreateButton_.call(this, workspace, xmlList, ...args);
         };
         const workspace = blockly.getMainWorkspace();
         workspace.getToolbox().refreshSelection();
