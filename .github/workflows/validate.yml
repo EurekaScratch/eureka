@@ -1,0 +1,20 @@
+name: Validate
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  validate:
+    name: Validating Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+          cache: 'yarn'
+      - name: Install and Check types
+        run: yarn install --frozen-lockfile && yarn run typecheck
