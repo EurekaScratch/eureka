@@ -17,4 +17,4 @@ jobs:
           node-version: 16.x
           cache: 'yarn'
       - name: Install and Check types
-        run: yarn install --frozen-lockfile && yarn run typecheck
+        run: yarn install --frozen-lockfile && yarn tsc --noEmit
