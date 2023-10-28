@@ -71,7 +71,9 @@ const prodConfig = {
                     'https://www.scratch-cn.cn/*',
                     'https://www.40code.com/*',
                     'https://turbowarp.org/*',
-                    'https://codingclip.com/*'
+                    'https://codingclip.com/*',
+                    'https://editor.turbowarp.cn/*',
+                    'https://0832.ink/rc/*',
                 ]
             },
             pretty: true,
