@@ -73,7 +73,7 @@ const prodConfig = {
                     'https://turbowarp.org/*',
                     'https://codingclip.com/*',
                     'https://editor.turbowarp.cn/*',
-                    'https://0832.ink/rc/*',
+                    'https://0832.ink/rc/*'
                 ]
             },
             pretty: true,
