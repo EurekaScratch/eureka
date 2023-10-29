@@ -26,7 +26,7 @@ class _WorkerDispatch extends SharedDispatch {
     _onConnect!: (value?: unknown) => void;
     // @ts-expect-error
     _onMessage!: (worker: window & globalThis, event: MessageEvent) => void;
-    constructor() {
+    constructor () {
         super();
 
         this._connectionPromise = new Promise((resolve) => {
@@ -48,7 +48,7 @@ class _WorkerDispatch extends SharedDispatch {
      *          dispatch.call('myService', 'hello');
      *      })
      */
-    get waitForConnection() {
+    get waitForConnection () {
         return this._connectionPromise;
     }
 
@@ -59,7 +59,7 @@ class _WorkerDispatch extends SharedDispatch {
      * @param {object} provider - a local object which provides this service.
      * @returns {Promise} - a promise which will resolve once the service is registered.
      */
-    setService(service: string, provider: unknown) {
+    setService (service: string, provider: unknown) {
         if (this.services.hasOwnProperty(service)) {
             console.warn(`Worker dispatch replacing existing service provider for ${service}`);
         }
@@ -76,7 +76,7 @@ class _WorkerDispatch extends SharedDispatch {
      * @returns {{provider:(object|Worker), isRemote:boolean}} - the means to contact the service, if found
      * @protected
      */
-    _getServiceProvider(service: string) {
+    _getServiceProvider (service: string) {
         // If we don't have a local service by this name, contact central dispatch by calling `postMessage` on self
         const provider = this.services[service];
         return {
@@ -93,7 +93,7 @@ class _WorkerDispatch extends SharedDispatch {
      * @returns {Promise|undefined} - a promise for the results of this operation, if appropriate
      * @protected
      */
-    _onDispatchMessage(worker: Worker, message: DispatchCallMessage) {
+    _onDispatchMessage (worker: Worker, message: DispatchCallMessage) {
         let promise;
         switch (message.method) {
             case 'handshake':

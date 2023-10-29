@@ -73,7 +73,7 @@ class SharedDispatch {
      * @param {*} [args] - the arguments to be copied to the method, if any.
      * @returns {Promise} - a promise for the return value of the service method.
      */
-    call(service: string, method: string, ...args: unknown[]) {
+    call (service: string, method: string, ...args: unknown[]) {
         return this.transferCall(service, method, null, ...args);
     }
     /**
@@ -91,7 +91,7 @@ class SharedDispatch {
      * @param {*} [args] - the arguments to be copied to the method, if any.
      * @returns {Promise} - a promise for the return value of the service method.
      */
-    transferCall(service: string, method: string, transfer: unknown, ...args: unknown[]) {
+    transferCall (service: string, method: string, transfer: unknown, ...args: unknown[]) {
         try {
             // @ts-expect-error TS(2339): It's not implemented.
             const { provider, isRemote } = this._getServiceProvider(service);
@@ -113,7 +113,7 @@ class SharedDispatch {
      * @returns {boolean} - true if the service is remote (calls must cross a Worker boundary), false otherwise.
      * @private
      */
-    _isRemoteService(service: string): boolean {
+    _isRemoteService (service: string): boolean {
         // @ts-expect-error TS(2339): It's not implemented.
         return this._getServiceProvider(service).isRemote;
     }
@@ -125,7 +125,7 @@ class SharedDispatch {
      * @param {*} [args] - the arguments to be copied to the method, if any.
      * @returns {Promise} - a promise for the return value of the service method.
      */
-    _remoteCall(
+    _remoteCall (
         provider: any,
         service: string,
         method: string,
@@ -142,7 +142,7 @@ class SharedDispatch {
      * @param {*} [args] - the arguments to be copied to the method, if any.
      * @returns {Promise} - a promise for the return value of the service method.
      */
-    _remoteTransferCall(
+    _remoteTransferCall (
         provider: Worker,
         service: string,
         method: string,
@@ -168,7 +168,7 @@ class SharedDispatch {
      * @returns {*} - a unique response ID for this set of callbacks. See {@link _deliverResponse}.
      * @protected
      */
-    _storeCallbacks(resolve: (value: unknown) => void, reject: (value: unknown) => void) {
+    _storeCallbacks (resolve: (value: unknown) => void, reject: (value: unknown) => void) {
         const responseId = this.nextResponseId++;
         this.callbacks[responseId] = [resolve, reject];
         return responseId;
@@ -179,7 +179,7 @@ class SharedDispatch {
      * @param {DispatchResponseMessage} message - the message containing the response value(s).
      * @protected
      */
-    _deliverResponse(responseId: number, message: DispatchResponseMessage) {
+    _deliverResponse (responseId: number, message: DispatchResponseMessage) {
         try {
             const [resolve, reject] = this.callbacks[responseId];
             delete this.callbacks[responseId];
@@ -198,7 +198,7 @@ class SharedDispatch {
      * @param {MessageEvent} event - the message event to be handled.
      * @protected
      */
-    _onMessage(worker: Worker, event: MessageEvent) {
+    _onMessage (worker: Worker, event: MessageEvent) {
         /** @type {DispatchMessage} */
         const message = event.data;
         message.args = message.args || [];
@@ -244,7 +244,7 @@ class SharedDispatch {
      * @returns {{provider:(object|Worker), isRemote:boolean}} - the means to contact the service, if found
      * @protected
      */
-    _getServiceProvider(service: string) {
+    _getServiceProvider (service: string) {
         throw new Error(
             `Could not get provider for ${service}: _getServiceProvider not implemented`
         );
@@ -257,7 +257,7 @@ class SharedDispatch {
      * @returns {Promise|undefined} - a promise for the results of this operation, if appropriate
      * @private
      */
-    _onDispatchMessage(worker: Worker, message: DispatchCallMessage) {
+    _onDispatchMessage (worker: Worker, message: DispatchCallMessage) {
         throw new Error(
             `Unimplemented dispatch message handler cannot handle ${message.method} method`
         );
@@ -268,7 +268,7 @@ class SharedDispatch {
      * @param {obj} object - The Object that need to be purified.
      * @returns {object} - purified object.
      */
-    _purifyObject(obj: unknown, visited = new Set(), depth = 1): unknown {
+    _purifyObject (obj: unknown, visited = new Set(), depth = 1): unknown {
         if (typeof obj === 'function' || typeof obj === 'symbol') {
             return undefined;
         }

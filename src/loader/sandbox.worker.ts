@@ -15,7 +15,7 @@ class ExtensionWorker {
     extensions: unknown[] = [];
     workerId?: number;
     extensionURL = '';
-    constructor() {
+    constructor () {
         dispatch.waitForConnection.then(() => {
             dispatch.call('loader', 'allocateWorker').then((x) => {
                 const [id, url] = x;
@@ -40,7 +40,7 @@ class ExtensionWorker {
         this.extensions = [];
     }
 
-    register(extensionObject: unknown) {
+    register (extensionObject: unknown) {
         const extensionId = this.nextExtensionId++;
         this.extensions.push(extensionObject);
         const serviceName = `extension.${this.workerId}.${extensionId}`;

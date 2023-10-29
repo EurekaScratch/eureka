@@ -28,11 +28,27 @@
         "no-var": "error",
         "comma-spacing": "error",
         "func-call-spacing": "error",
+        "space-before-function-paren": "error",
         "dot-location": ["error", "property"],
         "no-whitespace-before-property": "error",
         "space-unary-ops": ["error", {
             "words": true,
             "nonwords": false
+        }],
+        "quotes": [2, "single", {
+            "allowTemplateLiterals": true,
+            "avoidEscape": true
+        }],
+        "no-unneeded-ternary": [2],
+        "eol-last": [2, "always"],
+        "key-spacing": [2, {
+            "beforeColon": false,
+            "afterColon": true,
+            "mode": "strict"
+        }],
+        "keyword-spacing": [2, {
+            "before": true,
+            "after": true
         }]
     }
 }

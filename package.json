@@ -9,7 +9,6 @@
   "scripts": {
     "build": "NODE_ENV=production webpack --color --bail",
     "lint": "eslint ./src/ --ext .js,.ts,tsx,jsx",
-    "format": "prettier -w --config .prettierrc.json ./src",
     "typecheck": "tsc --watch --noEmit"
   },
   "devDependencies": {
@@ -24,7 +23,6 @@
     "eslint": "^8.49.0",
     "html-webpack-plugin": "^5.5.3",
     "mini-svg-data-uri": "^1.4.4",
-    "prettier": "^3.0.3",
     "webpack": "^5.88.2",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^4.15.1",

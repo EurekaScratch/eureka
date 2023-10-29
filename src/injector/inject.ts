@@ -32,9 +32,9 @@ const MAX_LISTENING_MS = 30 * 1000;
  * @param vm Virtual machine instance. For some reasons we cannot use VM here.
  * @returns Blockly instance.
  */
-function getBlocklyInstance(vm: any): any | undefined {
-    // hijack Function.prototype.apply to get React element instance.
-    function hijack(fn: (...args: unknown[]) => void): any {
+function getBlocklyInstance (vm: any): any | undefined {
+    // Hijack Function.prototype.apply to get React element instance.
+    function hijack (fn: (...args: unknown[]) => void): any {
         const _orig = Function.prototype.apply;
         Function.prototype.apply = function (thisArg: any) {
             return thisArg;
@@ -46,11 +46,11 @@ function getBlocklyInstance(vm: any): any | undefined {
     const events = vm._events?.EXTENSION_ADDED;
     if (events) {
         if (events instanceof Function) {
-            // it is a function, just hijack it.
+            // It is a function, just hijack it.
             const result = hijack(events);
             if (result && result.ScratchBlocks) return result.ScratchBlocks;
         } else {
-            // it is an array, hijack every listeners.
+            // It is an array, hijack every listeners.
             for (const value of events) {
                 const result = hijack(value);
                 if (result && result.ScratchBlocks) return result.ScratchBlocks;
@@ -65,7 +65,7 @@ function getBlocklyInstance(vm: any): any | undefined {
  * @param open window.open function (compatible with ccw).
  * @return Callback promise. After that you could use window.chibi.vm to get the virtual machine.
  */
-export function trap(open: typeof window.open): Promise<void> {
+export function trap (open: typeof window.open): Promise<void> {
     window.chibi = {
         // @ts-expect-error defined in webpack define plugin
         version: __CHIBI_VERSION__,
@@ -106,11 +106,11 @@ export function trap(open: typeof window.open): Promise<void> {
  * Inject into the original virtual machine.
  * @param vm {ChibiCompatibleVM} Original virtual machine instance.
  */
-export function inject(vm: ChibiCompatibleVM) {
+export function inject (vm: ChibiCompatibleVM) {
     const loader = (window.chibi.loader = new ChibiLoader(vm));
     const originalLoadFunc = vm.extensionManager.loadExtensionURL;
     const getLocale = vm.getLocale;
-    let format = formatMessage.namespace();
+    const format = formatMessage.namespace();
     format.setup({
         locale: getLocale ? getLocale.call(vm) : 'en',
         missingTranslation: 'ignore',
@@ -126,26 +126,26 @@ export function inject(vm: ChibiCompatibleVM) {
             try {
                 const res = env
                     ? confirm(
-                          format('chibi.tryLoadInEnv', {
-                              extensionURL,
-                              url,
-                              env
-                          })
-                      )
+                        format('chibi.tryLoadInEnv', {
+                            extensionURL,
+                            url,
+                            env
+                        })
+                    )
                     : confirm(
-                          format('chibi.tryLoadInEnv', {
-                              extensionURL,
-                              url
-                          })
-                      );
+                        format('chibi.tryLoadInEnv', {
+                            extensionURL,
+                            url
+                        })
+                    );
                 if (res) {
                     await loader.load(
                         url,
                         (env
                             ? env
                             : confirm(format('chibi.loadInSandbox'))
-                            ? 'sandboxed'
-                            : 'unsandboxed') as 'unsandboxed' | 'sandboxed'
+                                ? 'sandboxed'
+                                : 'unsandboxed') as 'unsandboxed' | 'sandboxed'
                     );
                     const extensionId = loader.getIdByUrl(url);
                     // @ts-expect-error internal hack
@@ -214,8 +214,8 @@ export function inject(vm: ChibiCompatibleVM) {
         return result;
     };
     // TODO: compiler support
-    const originalArgReporterBooleanFunc = vm.runtime._primitives['argument_reporter_boolean'];
-    vm.runtime._primitives['argument_reporter_boolean'] = function (
+    const originalArgReporterBooleanFunc = vm.runtime._primitives.argument_reporter_boolean;
+    vm.runtime._primitives.argument_reporter_boolean = function (
         args: Record<string, unknown>,
         ...otherArgs: unknown[]
     ) {
@@ -256,7 +256,7 @@ export function inject(vm: ChibiCompatibleVM) {
     // Blockly stuffs
     setTimeout(() => {
         const blockly = (window.chibi.blockly = getBlocklyInstance(vm));
-        // deprecated: this method will be removed in the future.
+        // Deprecated: this method will be removed in the future.
         if (!blockly) {
             warn('Cannot find real blockly instance, try alternative method...');
             const originalProcedureCallback =

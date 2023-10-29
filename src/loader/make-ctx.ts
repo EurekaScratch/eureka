@@ -30,7 +30,7 @@ export interface Context {
  * @param vm Virtual machine instance. Optional.
  * @returns Something like Scratch.translate.
  */
-function createTranslate(vm?: VM) {
+function createTranslate (vm?: VM) {
     const namespace = formatMessage.namespace();
 
     const translate = (message: Message, args?: object) => {
@@ -84,7 +84,7 @@ function createTranslate(vm?: VM) {
  * @param vm Virtual machine instance.
  * @returns The context.
  */
-export function makeCtx(vm?: VM) {
+export function makeCtx (vm?: VM) {
     const ctx: Context = {
         ArgumentType: ArgumentType,
         BlockType: BlockType,

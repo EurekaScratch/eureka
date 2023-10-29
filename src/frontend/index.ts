@@ -23,7 +23,7 @@ type MothDispatched = MothDispatchedAllocate | MothDispatchedLoad;
  * Get all extensions.
  * @returns Extensions.
  */
-function getExtensionInfo() {
+function getExtensionInfo () {
     const processedExtInfo: MothExtensionInfo[] = [];
     for (const [extId, ext] of window.chibi.loader.loadedScratchExtension.entries()) {
         processedExtInfo.push({
@@ -37,7 +37,7 @@ function getExtensionInfo() {
  * Handle messages from the frontend (popup window).
  * @param event Event from the frontend.
  */
-async function messageHandler(event: MessageEvent) {
+async function messageHandler (event: MessageEvent) {
     if (event.origin !== 'https://chibi.codingclip.cc') return;
     if (!('type' in event.data)) return;
     switch ((event.data as MothDispatched).type) {
@@ -86,7 +86,7 @@ window.addEventListener('message', messageHandler);
  * Open the popup (?) window.
  * @param open window.open function (compatible with ccw).
  */
-function openFrontend(open: typeof window.open) {
+function openFrontend (open: typeof window.open) {
     dashboardWindow = open(
         'https://chibi.codingclip.cc/#manage',
         'Chibi',
