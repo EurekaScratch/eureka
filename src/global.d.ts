@@ -8,10 +8,13 @@ declare interface Window {
         vm?: VM;
         blockly?: ScratchBlocks | null;
         loader?: ChibiLoader;
-        registeredExtension: Record<string, {
-            url: string,
-            env: string
-        }>;
-        openFrontend (): void;
-    }
+        registeredExtension: Record<
+            string,
+            {
+                url: string;
+                env: string;
+            }
+        >;
+        openFrontend(): void;
+    };
 }

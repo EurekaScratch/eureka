@@ -44,6 +44,4 @@ enum BlockType {
     Lambda = 'Lambda'
 }
 
-export {
-    BlockType
-};
+export { BlockType };

@@ -37,6 +37,4 @@ enum ArgumentType {
     IMAGE = 'image'
 }
 
-export {
-    ArgumentType
-};
+export { ArgumentType };

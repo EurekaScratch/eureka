@@ -14,7 +14,7 @@
     },
     "rules": {
         "semi": "error",
-        "indent": ["error", 4],
+        "indent": ["error", 4, {"SwitchCase": 1}],
         "dot-notation": "error",
         "block-scoped-var": "error",
         "capitalized-comments": "warn",
@@ -30,7 +30,6 @@
         "func-call-spacing": "error",
         "dot-location": ["error", "property"],
         "no-whitespace-before-property": "error",
-        "space-before-function-paren": "error",
         "space-unary-ops": ["error", {
             "words": true,
             "nonwords": false

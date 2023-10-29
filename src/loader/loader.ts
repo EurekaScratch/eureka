@@ -1,5 +1,5 @@
 /// <reference path="../global.d.ts" />
-import {log, warn, error} from '../util/log';
+import { log, warn, error } from '../util/log';
 import {
     StandardScratchExtensionClass as ExtensionClass,
     ExtensionMetadata,
@@ -9,16 +9,14 @@ import {
     MenuItems,
     BlockArgs
 } from '../typings';
-import {
-    maybeFormatMessage
-} from '../util/maybe-format-message';
+import { maybeFormatMessage } from '../util/maybe-format-message';
 import { CentralDispatch as dispatch } from './dispatch/central-dispatch';
 import { makeCtx } from './make-ctx';
 import ExtensionSandbox from './sandbox.worker';
 import type VM from 'scratch-vm';
 
 interface PendingExtensionWorker {
-    extensionURL: string,
+    extensionURL: string;
     resolve: (value: unknown) => void;
     reject: (value: unknown) => void;
 }
@@ -44,7 +42,7 @@ class ChibiLoader {
      * @type {int}
      */
     private nextExtensionWorker = 0;
-    
+
     /**
      * Whether Scratch object should be passed inline.
      * @type {boolean}
@@ -71,13 +69,15 @@ class ChibiLoader {
      */
     loadedScratchExtension = new Map<string, ScratchExtension>();
 
-    constructor (vm: VM) {
+    constructor(vm: VM) {
         this.vm = vm;
         this.inlinedCtx = typeof window.Scratch === 'object';
         if (!this.inlinedCtx) {
             window.Scratch = makeCtx(this.vm);
         } else {
-            warn('A Scratch instance already exists in the current environment, so it will be passed inline for unsandboxed extension.');
+            warn(
+                'A Scratch instance already exists in the current environment, so it will be passed inline for unsandboxed extension.'
+            );
         }
         dispatch.setService('loader', this).catch((e: Error) => {
             error(`ChibiLoader was unable to register extension service: ${JSON.stringify(e)}`);
@@ -89,34 +89,34 @@ class ChibiLoader {
      * @param {ExtensionClass | string} ext - Extension's data.
      * @param {'sandboxed' | 'unsandboxed'} env - Extension's running environment.
      */
-    async load (ext: string | ExtensionClass, env: 'sandboxed' | 'unsandboxed' = 'sandboxed') {
+    async load(ext: string | ExtensionClass, env: 'sandboxed' | 'unsandboxed' = 'sandboxed') {
         if (typeof ext === 'string') {
             switch (env) {
-            case 'sandboxed':
-                return new Promise((resolve, reject) => {
-                    // If we `require` this at the global level it breaks non-webpack targets, including tests
-                    const ExtensionWorker = new ExtensionSandbox();
-                    this.pendingExtensions.push({
-                        extensionURL: ext,
-                        resolve,
-                        reject
+                case 'sandboxed':
+                    return new Promise((resolve, reject) => {
+                        // If we `require` this at the global level it breaks non-webpack targets, including tests
+                        const ExtensionWorker = new ExtensionSandbox();
+                        this.pendingExtensions.push({
+                            extensionURL: ext,
+                            resolve,
+                            reject
+                        });
+                        dispatch.addWorker(ExtensionWorker);
                     });
-                    dispatch.addWorker(ExtensionWorker);
-                });
-            case 'unsandboxed': {
-                const response = await fetch(ext);
-                const originalScript = await response.text();
-                const closureFunc = new Function('Scratch', originalScript);
-                const ctx = makeCtx(this.vm);
-                ctx.extensions.register = (extensionObj: ExtensionClass) => {
-                    const extensionInfo = extensionObj.getInfo();
-                    this._registerExtensionInfo(extensionObj, extensionInfo, ext);
-                };
-                closureFunc(ctx);
-                return;
-            }
-            default:
-                throw new Error('unexpected env');
+                case 'unsandboxed': {
+                    const response = await fetch(ext);
+                    const originalScript = await response.text();
+                    const closureFunc = new Function('Scratch', originalScript);
+                    const ctx = makeCtx(this.vm);
+                    ctx.extensions.register = (extensionObj: ExtensionClass) => {
+                        const extensionInfo = extensionObj.getInfo();
+                        this._registerExtensionInfo(extensionObj, extensionInfo, ext);
+                    };
+                    closureFunc(ctx);
+                    return;
+                }
+                default:
+                    throw new Error('unexpected env');
             }
         }
 
@@ -131,7 +131,7 @@ class ChibiLoader {
      * Reload a scratch-standard extension.
      * @param {string} extensionId - Extension's ID
      */
-    async reload (extensionId: string) {
+    async reload(extensionId: string) {
         const targetExt = this.loadedScratchExtension.get(extensionId);
         if (!targetExt) {
             throw new Error(`Cannot locate extension ${extensionId}.`);
@@ -154,7 +154,7 @@ class ChibiLoader {
     /**
      * Get all sideloaded extension infos.
      */
-    getLoadedInfo () {
+    getLoadedInfo() {
         const extensionURLs: Record<string, string> = {};
         const extensionEnv: Record<string, string> = {};
         for (const [extId, ext] of this.loadedScratchExtension.entries()) {
@@ -164,7 +164,7 @@ class ChibiLoader {
         return [extensionURLs, extensionEnv];
     }
 
-    getIdByUrl (url: string) {
+    getIdByUrl(url: string) {
         for (const [extId, ext] of this.loadedScratchExtension.entries()) {
             if (ext.url === url) {
                 return extId;
@@ -178,7 +178,7 @@ class ChibiLoader {
      *  original extension manager to reload locales. It should
      * be replaced when there's a better solution.
      */
-    reloadAll () {
+    reloadAll() {
         const allPromises: Promise<ExtensionMetadata | void>[] = [];
         for (const [extId] of this.loadedScratchExtension.entries()) {
             allPromises.push(this.reload(extId));
@@ -193,7 +193,12 @@ class ChibiLoader {
      * @param {string} serviceName - the name of the service hosting the extension
      * @private
      */
-    private _registerExtensionInfo (extensionObject: ExtensionClass | null, extensionInfo: ExtensionMetadata, extensionURL: string, serviceName?: string) {
+    private _registerExtensionInfo(
+        extensionObject: ExtensionClass | null,
+        extensionInfo: ExtensionMetadata,
+        extensionURL: string,
+        serviceName?: string
+    ) {
         if (!this.loadedScratchExtension.has(extensionInfo.id)) {
             if (!extensionObject && !serviceName) {
                 throw new Error(`Cannnot mark ${extensionInfo.id} as loaded.`);
@@ -220,7 +225,7 @@ class ChibiLoader {
      * @returns {string} - the sanitized text
      * @private
      */
-    private _sanitizeID (text: string) {
+    private _sanitizeID(text: string) {
         return text.toString().replace(/[<"&]/, '_');
     }
 
@@ -233,7 +238,11 @@ class ChibiLoader {
      * @returns {ExtensionInfo} - a new extension info object with cleaned-up values
      * @private
      */
-    private _prepareExtensionInfo (extensionObject: ExtensionClass | null, extensionInfo: ExtensionMetadata, serviceName?: string) {
+    private _prepareExtensionInfo(
+        extensionObject: ExtensionClass | null,
+        extensionInfo: ExtensionMetadata,
+        serviceName?: string
+    ) {
         extensionInfo = Object.assign({}, extensionInfo);
         if (!/^[a-z0-9]+$/i.test(extensionInfo.id)) {
             throw new Error('Invalid extension id');
@@ -241,26 +250,41 @@ class ChibiLoader {
         extensionInfo.name = extensionInfo.name || extensionInfo.id;
         extensionInfo.blocks = extensionInfo.blocks || [];
         extensionInfo.targetTypes = extensionInfo.targetTypes || [];
-        extensionInfo.blocks = extensionInfo.blocks.reduce((results: Array<string | ExtensionBlockMetadata>, blockInfo) => {
-            try {
-                let result;
-                switch (blockInfo) {
-                case '---': // Separator
-                    result = '---';
-                    break;
-                default: // An ExtensionBlockMetadata object
-                    result = this._prepareBlockInfo(extensionObject, blockInfo as ExtensionBlockMetadata, serviceName);
-                    break;
+        extensionInfo.blocks = extensionInfo.blocks.reduce(
+            (results: Array<string | ExtensionBlockMetadata>, blockInfo) => {
+                try {
+                    let result;
+                    switch (blockInfo) {
+                        case '---': // Separator
+                            result = '---';
+                            break;
+                        default: // An ExtensionBlockMetadata object
+                            result = this._prepareBlockInfo(
+                                extensionObject,
+                                blockInfo as ExtensionBlockMetadata,
+                                serviceName
+                            );
+                            break;
+                    }
+                    results.push(result);
+                } catch (e: unknown) {
+                    // TODO: more meaningful error reporting
+                    error(
+                        `Error processing block: ${(e as Error).message}, Block:\n${JSON.stringify(
+                            blockInfo
+                        )}`
+                    );
                 }
-                results.push(result);
-            } catch (e: unknown) {
-                // TODO: more meaningful error reporting
-                error(`Error processing block: ${(e as Error).message}, Block:\n${JSON.stringify(blockInfo)}`);
-            }
-            return results;
-        }, []);
+                return results;
+            },
+            []
+        );
         extensionInfo.menus = extensionInfo.menus || {};
-        extensionInfo.menus = this._prepareMenuInfo(extensionObject, extensionInfo.menus, serviceName);
+        extensionInfo.menus = this._prepareMenuInfo(
+            extensionObject,
+            extensionInfo.menus,
+            serviceName
+        );
         return extensionInfo as ExtensionMetadata;
     }
 
@@ -272,7 +296,11 @@ class ChibiLoader {
      * @returns {Array.<MenuInfo>} - a menuInfo object with all preprocessing done.
      * @private
      */
-    private _prepareMenuInfo (extensionObject: ExtensionClass | null, menus: Record<string, ExtensionMenu>, serviceName?: string) {
+    private _prepareMenuInfo(
+        extensionObject: ExtensionClass | null,
+        menus: Record<string, ExtensionMenu>,
+        serviceName?: string
+    ) {
         const menuNames = Object.getOwnPropertyNames(menus);
         for (let i = 0; i < menuNames.length; i++) {
             const menuName = menuNames[i];
@@ -296,7 +324,12 @@ class ChibiLoader {
             if (typeof menuInfo.items === 'string') {
                 const menuItemFunctionName = menuInfo.items;
                 // @ts-expect-error Bind the function here so we can pass a simple item generation function to Scratch Blocks later
-                menuInfo.items = this._getExtensionMenuItems.bind(this, extensionObject, menuItemFunctionName, serviceName);
+                menuInfo.items = this._getExtensionMenuItems.bind(
+                    this,
+                    extensionObject,
+                    menuItemFunctionName,
+                    serviceName
+                );
             }
         }
         return menus;
@@ -310,34 +343,37 @@ class ChibiLoader {
      * @returns {Array} menu items ready for scratch-blocks.
      * @private
      */
-    private _getExtensionMenuItems (extensionObject: ExtensionClass, menuItemFunctionName: string, serviceName?: string): any[] {
+    private _getExtensionMenuItems(
+        extensionObject: ExtensionClass,
+        menuItemFunctionName: string,
+        serviceName?: string
+    ): any[] {
         /*
          * Fetch the items appropriate for the target currently being edited. This assumes that menus only
          * collect items when opened by the user while editing a particular target.
          */
 
-        const editingTarget = this.vm.runtime.getEditingTarget() || this.vm.runtime.getTargetForStage();
+        const editingTarget =
+            this.vm.runtime.getEditingTarget() || this.vm.runtime.getTargetForStage();
         const editingTargetID = editingTarget ? editingTarget.id : null;
         // @ts-expect-error private method
         const extensionMessageContext = this.vm.runtime.makeMessageContextForTarget(editingTarget);
 
         // TODO: Fix this to use dispatch.call when extensions are running in workers.
-        const menuFunc = extensionObject[menuItemFunctionName] as (editingTargetID: string | null) => MenuItems;
-        const menuItems = menuFunc.call(extensionObject, editingTargetID).map(
-            item => {
-                item = maybeFormatMessage(item, extensionMessageContext);
-                switch (typeof item) {
+        const menuFunc = extensionObject[menuItemFunctionName] as (
+            editingTargetID: string | null
+        ) => MenuItems;
+        const menuItems = menuFunc.call(extensionObject, editingTargetID).map((item) => {
+            item = maybeFormatMessage(item, extensionMessageContext);
+            switch (typeof item) {
                 case 'object':
-                    return [
-                        maybeFormatMessage(item.text, extensionMessageContext),
-                        item.value
-                    ];
+                    return [maybeFormatMessage(item.text, extensionMessageContext), item.value];
                 case 'string':
                     return [item, item];
                 default:
                     return item;
-                }
-            });
+            }
+        });
 
         if (!menuItems || menuItems.length < 1) {
             throw new Error(`Extension menu returned no items: ${menuItemFunctionName}`);
@@ -353,72 +389,92 @@ class ChibiLoader {
      * @returns {ExtensionBlockMetadata} - a new block info object which has values for all relevant optional fields.
      * @private
      */
-    private _prepareBlockInfo (extensionObject: ExtensionClass | null, blockInfo: ExtensionBlockMetadata, serviceName?: string) {
-        blockInfo = Object.assign({}, {
-            blockType: BlockType.COMMAND,
-            terminal: false,
-            blockAllThreads: false,
-            arguments: {}
-        }, blockInfo);
+    private _prepareBlockInfo(
+        extensionObject: ExtensionClass | null,
+        blockInfo: ExtensionBlockMetadata,
+        serviceName?: string
+    ) {
+        blockInfo = Object.assign(
+            {},
+            {
+                blockType: BlockType.COMMAND,
+                terminal: false,
+                blockAllThreads: false,
+                arguments: {}
+            },
+            blockInfo
+        );
         blockInfo.opcode = blockInfo.opcode && this._sanitizeID(blockInfo.opcode);
         blockInfo.text = blockInfo.text || blockInfo.opcode;
 
         switch (blockInfo.blockType) {
-        case BlockType.EVENT:
-            if (blockInfo.func) {
-                warn(`Ignoring function "${blockInfo.func}" for event block ${blockInfo.opcode}`);
-            }
-            break;
-        case BlockType.BUTTON:
-            if (blockInfo.opcode) {
-                warn(`Ignoring opcode "${blockInfo.opcode}" for button with text: ${blockInfo.text}`);
-            }
-            break;
-        default: {
-            if (!blockInfo.opcode) {
-                throw new Error('Missing opcode for block');
-            }
-
-            const funcName = blockInfo.func ? this._sanitizeID(blockInfo.func) : blockInfo.opcode;
-             
-            const getBlockInfo = blockInfo.isDynamic ?
-                (args: BlockArgs) => args && args.mutation && args.mutation.blockInfo :
-                () => blockInfo;
-            const callBlockFunc = (() => {
-                // Maybe there's a worker
-                if (extensionObject === null) {
-                    if (serviceName && dispatch._isRemoteService(serviceName)) {
-                        return (args: BlockArgs, _util: unknown, realBlockInfo: unknown) =>
-                            dispatch.call(serviceName, funcName, args, undefined, realBlockInfo);
-                    } 
-                    warn(`Could not find extension block function called ${funcName}`);
-                    // eslint-disable-next-line @typescript-eslint/no-empty-function
-                    return () => {};
+            case BlockType.EVENT:
+                if (blockInfo.func) {
+                    warn(
+                        `Ignoring function "${blockInfo.func}" for event block ${blockInfo.opcode}`
+                    );
                 }
-             
-                if (!extensionObject[funcName]) {
-                    // The function might show up later as a dynamic property of the service object
-                    warn(`Could not find extension block function called ${funcName}`);
+                break;
+            case BlockType.BUTTON:
+                if (blockInfo.opcode) {
+                    warn(
+                        `Ignoring opcode "${blockInfo.opcode}" for button with text: ${blockInfo.text}`
+                    );
                 }
-                return (args: BlockArgs, util: unknown, realBlockInfo: unknown) =>
-                    // @ts-expect-error
-                    extensionObject[funcName](args, util, realBlockInfo);
-            })();
+                break;
+            default: {
+                if (!blockInfo.opcode) {
+                    throw new Error('Missing opcode for block');
+                }
 
-            // @ts-expect-error
-            blockInfo.func = (args: BlockArgs, util: unknown) => {
-                const realBlockInfo = getBlockInfo(args);
-                // TODO: filter args using the keys of realBlockInfo.arguments? maybe only if sandboxed?
-                return callBlockFunc(args, util, realBlockInfo);
-            };
-            break;
-        }
+                const funcName = blockInfo.func
+                    ? this._sanitizeID(blockInfo.func)
+                    : blockInfo.opcode;
+
+                const getBlockInfo = blockInfo.isDynamic
+                    ? (args: BlockArgs) => args && args.mutation && args.mutation.blockInfo
+                    : () => blockInfo;
+                const callBlockFunc = (() => {
+                    // Maybe there's a worker
+                    if (extensionObject === null) {
+                        if (serviceName && dispatch._isRemoteService(serviceName)) {
+                            return (args: BlockArgs, _util: unknown, realBlockInfo: unknown) =>
+                                dispatch.call(
+                                    serviceName,
+                                    funcName,
+                                    args,
+                                    undefined,
+                                    realBlockInfo
+                                );
+                        }
+                        warn(`Could not find extension block function called ${funcName}`);
+                        // eslint-disable-next-line @typescript-eslint/no-empty-function
+                        return () => {};
+                    }
+
+                    if (!extensionObject[funcName]) {
+                        // The function might show up later as a dynamic property of the service object
+                        warn(`Could not find extension block function called ${funcName}`);
+                    }
+                    return (args: BlockArgs, util: unknown, realBlockInfo: unknown) =>
+                        // @ts-expect-error
+                        extensionObject[funcName](args, util, realBlockInfo);
+                })();
+
+                // @ts-expect-error
+                blockInfo.func = (args: BlockArgs, util: unknown) => {
+                    const realBlockInfo = getBlockInfo(args);
+                    // TODO: filter args using the keys of realBlockInfo.arguments? maybe only if sandboxed?
+                    return callBlockFunc(args, util, realBlockInfo);
+                };
+                break;
+            }
         }
 
         return blockInfo;
     }
 
-    async updateLocales () {
+    async updateLocales() {
         await this.reloadAll();
     }
 
@@ -426,11 +482,11 @@ class ChibiLoader {
      * Regenerate blockinfo for any loaded extensions
      * @returns {Promise} resolved once all the extensions have been reinitialized
      */
-    async refreshBlocks () {
+    async refreshBlocks() {
         await this.reloadAll();
     }
 
-    allocateWorker () {
+    allocateWorker() {
         const workerInfo = this.pendingExtensions.shift();
         if (!workerInfo) {
             warn('pending extension queue is empty');
@@ -445,7 +501,7 @@ class ChibiLoader {
      * Collect extension metadata from the specified service and begin the extension registration process.
      * @param {string} serviceName - the name of the service hosting the extension.
      */
-    async registerExtensionService (extensionURL: string, serviceName: string) {
+    async registerExtensionService(extensionURL: string, serviceName: string) {
         const info = await dispatch.call(serviceName, 'getInfo');
         this._registerExtensionInfo(null, info, extensionURL, serviceName);
     }
@@ -455,7 +511,7 @@ class ChibiLoader {
      * @param {int} id - the worker ID.
      * @param {*?} e - the error encountered during initialization, if any.
      */
-    onWorkerInit (id: number, e?: Error) {
+    onWorkerInit(id: number, e?: Error) {
         const workerInfo = this.pendingWorkers[id];
         delete this.pendingWorkers[id];
         if (e) {
@@ -466,6 +522,4 @@ class ChibiLoader {
     }
 }
 
-export {
-    ChibiLoader
-};
+export { ChibiLoader };

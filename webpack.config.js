@@ -59,7 +59,7 @@ const prodConfig = {
                 version: packageJSON.version,
                 grant: ['none'],
                 'run-at': 'document-start',
-                include: [
+                match: [
                     'http://localhost:8601/*',
                     'https://scratch.mit.edu/projects/*',
                     'https://aerfaying.com/Projects/*',

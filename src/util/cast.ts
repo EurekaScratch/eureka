@@ -1,4 +1,4 @@
-import Color, {RGBObject} from '../util/color';
+import Color, { RGBObject } from '../util/color';
 
 /**
  * @fileoverview
@@ -44,7 +44,7 @@ class Cast {
      * @param {*} value Value to cast to number.
      * @return {number} The Scratch-casted number value.
      */
-    static toNumber (value: unknown) : number {
+    static toNumber(value: unknown): number {
         /*
          * If value is already a number we don't need to coerce it with
          * Number().
@@ -77,16 +77,14 @@ class Cast {
      * @param {*} value Value to cast to boolean.
      * @return {boolean} The Scratch-casted boolean value.
      */
-    static toBoolean (value: unknown) : boolean {
+    static toBoolean(value: unknown): boolean {
         // Already a boolean?
         if (typeof value === 'boolean') {
             return value;
         }
         if (typeof value === 'string') {
             // These specific strings are treated as false in Scratch.
-            if ((value === '') ||
-                (value === '0') ||
-                (value.toLowerCase() === 'false')) {
+            if (value === '' || value === '0' || value.toLowerCase() === 'false') {
                 return false;
             }
             // All other strings treated as true.
@@ -101,7 +99,7 @@ class Cast {
      * @param {*} value Value to cast to string.
      * @return {string} The Scratch-casted string value.
      */
-    static toString (value: unknown) {
+    static toString(value: unknown) {
         return String(value);
     }
 
@@ -110,7 +108,7 @@ class Cast {
      * @param {*} value Value to convert to RGB color array.
      * @return {Array.<number>} [r,g,b], values between 0-255.
      */
-    static toRgbColorList (value: unknown) : [number, number, number] {
+    static toRgbColorList(value: unknown): [number, number, number] {
         const color = Cast.toRgbColorObject(value);
         return [color.r, color.g, color.b];
     }
@@ -120,13 +118,13 @@ class Cast {
      * @param {*} value Value to convert to RGB color object.
      * @return {RGBObject} [r,g,b], values between 0-255.
      */
-    static toRgbColorObject (value: unknown) : RGBObject {
+    static toRgbColorObject(value: unknown): RGBObject {
         let color;
         if (typeof value === 'string' && value.substring(0, 1) === '#') {
             color = Color.hexToRgb(value);
 
             // If the color wasn't *actually* a hex color, cast to black
-            if (!color) color = {r: 0, g: 0, b: 0, a: 255};
+            if (!color) color = { r: 0, g: 0, b: 0, a: 255 };
         } else {
             color = Color.decimalToRgb(Cast.toNumber(value));
         }
@@ -138,7 +136,7 @@ class Cast {
      * @param {*} val value to check.
      * @return {boolean} True if the argument is all white spaces or null / empty.
      */
-    static isWhiteSpace (val: unknown) {
+    static isWhiteSpace(val: unknown) {
         return val === null || (typeof val === 'string' && val.trim().length === 0);
     }
 
@@ -149,7 +147,7 @@ class Cast {
      * @param {*} v2 Second value to compare.
      * @returns {number} Negative number if v1 < v2; 0 if equal; positive otherwise.
      */
-    static compare (v1: unknown, v2: unknown) : number {
+    static compare(v1: unknown, v2: unknown): number {
         let n1 = Number(v1);
         let n2 = Number(v2);
         if (n1 === 0 && isNotActuallyZero(v1)) {
@@ -172,10 +170,7 @@ class Cast {
             return 0;
         }
         // Handle the special case of Infinity
-        if (
-            (n1 === Infinity && n2 === Infinity) ||
-            (n1 === -Infinity && n2 === -Infinity)
-        ) {
+        if ((n1 === Infinity && n2 === Infinity) || (n1 === -Infinity && n2 === -Infinity)) {
             return 0;
         }
         // Compare as numbers.
@@ -187,10 +182,11 @@ class Cast {
      * @param {*} val Value to check.
      * @return {boolean} True if number looks like an integer.
      */
-    static isInt (val: unknown) : boolean {
+    static isInt(val: unknown): boolean {
         // Values that are already numbers.
         if (typeof val === 'number') {
-            if (isNaN(val)) { // NaN is considered an integer.
+            if (isNaN(val)) {
+                // NaN is considered an integer.
                 return true;
             }
             // True if it's "round" (e.g., 2.0 and 2).
@@ -205,11 +201,11 @@ class Cast {
         return false;
     }
 
-    static get LIST_INVALID () {
+    static get LIST_INVALID() {
         return 'INVALID';
     }
 
-    static get LIST_ALL () {
+    static get LIST_ALL() {
         return 'ALL';
     }
 
@@ -223,7 +219,7 @@ class Cast {
      * @param {boolean} acceptAll Whether it should accept "all" or not.
      * @return {(number|string)} 1-based index for list, LIST_ALL, or LIST_INVALID.
      */
-    static toListIndex (index : ListIndex, length: number, acceptAll: boolean) {
+    static toListIndex(index: ListIndex, length: number, acceptAll: boolean) {
         if (typeof index !== 'number') {
             if (index === 'all') {
                 return acceptAll ? Cast.LIST_ALL : Cast.LIST_INVALID;
@@ -248,6 +244,4 @@ class Cast {
     }
 }
 
-export {
-    Cast
-};
+export { Cast };

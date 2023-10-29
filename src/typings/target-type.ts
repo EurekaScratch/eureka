@@ -12,6 +12,4 @@ enum TargetType {
      */
     STAGE = 'stage'
 }
-export {
-    TargetType
-};
+export { TargetType };

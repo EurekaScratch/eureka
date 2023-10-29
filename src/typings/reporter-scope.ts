@@ -15,6 +15,4 @@ enum ReporterScope {
     TARGET = 'target'
 }
 
-export {
-    ReporterScope
-};
+export { ReporterScope };
