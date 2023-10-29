@@ -41,9 +41,7 @@ enum BlockType {
     /**
      * Lambda reporter with callable function.
      */
-    Lambda = 'Lambda'
+    Lambda = 'Lambda',
 }
 
-export {
-    BlockType
-};
+export { BlockType };

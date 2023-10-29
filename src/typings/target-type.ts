@@ -10,8 +10,6 @@ enum TargetType {
     /**
      * Rendered target which cannot move but can change backdrops
      */
-    STAGE = 'stage'
+    STAGE = 'stage',
 }
-export {
-    TargetType
-};
+export { TargetType };

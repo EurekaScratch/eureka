@@ -8,15 +8,19 @@ export type MenuItemFunction = () => {
     value: string;
 };
 
-export type MenuItems = Array<string | MenuItemFunction | {
-    text: string;
-    value: string;
-}>;
+export type MenuItems = Array<
+    | string
+    | MenuItemFunction
+    | {
+          text: string;
+          value: string;
+      }
+>;
 
 export interface BlockArgs {
     mutation?: {
-        blockInfo?: string
-    },
+        blockInfo?: string;
+    };
     [propName: string]: unknown;
 }
 
@@ -39,7 +43,7 @@ export interface StandardScratchExtensionClass {
     getInfo: () => ExtensionMetadata;
     [propName: string]: unknown;
 }
-  
+
 /**
  * All the metadata needed to register an extension.
  */
@@ -190,37 +194,37 @@ export interface ExtensionBlockMetadata {
     /**
      * List of target types for which this block should appear.
      */
-    filter?: TargetType[]
-  }
+    filter?: TargetType[];
+}
 
 export interface ExtensionArgumentMetadata {
     /**
      * The type of the argument (number, string, etc.)
      */
-     type: ArgumentType;
-     /**
-      * The default value of this argument
-      */
-     defaultValue?: unknown;
-     /**
-      * The name of the menu to use for this argument, if any.
-      */
-     menu?: string;
-     /**
-      * Only available when type is INLINE_IMAGE
-      */
-     dataURI?: string;
-     /**
-      * Only available when type is INLINE_IMAGE
-      * Whether the image should be flipped horizontally when the editor has a right to left language selected as its locale. By default, the image is not flipped.
-      */
-     flipRTL?: boolean;
-     /**
-      * Only available when type is INLINE_IMAGE
-      */
-     alt?: string;
- }
- 
+    type: ArgumentType;
+    /**
+     * The default value of this argument
+     */
+    defaultValue?: unknown;
+    /**
+     * The name of the menu to use for this argument, if any.
+     */
+    menu?: string;
+    /**
+     * Only available when type is INLINE_IMAGE
+     */
+    dataURI?: string;
+    /**
+     * Only available when type is INLINE_IMAGE
+     * Whether the image should be flipped horizontally when the editor has a right to left language selected as its locale. By default, the image is not flipped.
+     */
+    flipRTL?: boolean;
+    /**
+     * Only available when type is INLINE_IMAGE
+     */
+    alt?: string;
+}
+
 /**
  * @typedef {ExtensionDynamicMenu|ExtensionMenuItems} ExtensionMenuMetadata
  * All the metadata needed to register an extension drop-down menu.

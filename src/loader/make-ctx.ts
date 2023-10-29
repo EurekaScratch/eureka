@@ -3,14 +3,14 @@ import {
     TargetType,
     ArgumentType,
     ReporterScope,
-    StandardScratchExtensionClass as ExtensionClass
+    StandardScratchExtensionClass as ExtensionClass,
 } from '../typings';
 import { Cast } from '../util/cast';
 import formatMessage, { Message } from 'format-message';
 import type VM from 'scratch-vm';
 import type Renderer from 'scratch-render';
 
-export interface Ctx {
+export interface Context {
     ArgumentType: typeof ArgumentType;
     BlockType: typeof BlockType;
     TargetType: typeof TargetType;
@@ -18,15 +18,19 @@ export interface Ctx {
     Cast: Cast;
     translate: ReturnType<typeof createTranslate>;
     extensions: {
-        register: (extensionObj: ExtensionClass) => void,
-        unsandboxed: boolean,
-        chibi: true
-    }
+        register: (extensionObj: ExtensionClass) => void;
+        unsandboxed: boolean;
+        chibi: true;
+    };
     vm?: VM;
     renderer?: Renderer;
 }
-
-function createTranslate (vm?: VM) {
+/**
+ * i10n support for Chibi extensions.
+ * @param vm Virtual machine instance. Optional.
+ * @returns Something like Scratch.translate.
+ */
+function createTranslate(vm?: VM) {
     const namespace = formatMessage.namespace();
 
     const translate = (message: Message, args?: object) => {
@@ -34,7 +38,7 @@ function createTranslate (vm?: VM) {
             // Already in the expected format
         } else if (typeof message === 'string') {
             message = {
-                default: message
+                default: message,
             };
         } else {
             throw new Error('unsupported data type in translate()');
@@ -47,7 +51,7 @@ function createTranslate (vm?: VM) {
     const getLocale = () => {
         // @ts-expect-error lazy to extend VM interface
         if (vm) return vm.getLocale();
-        if (typeof navigator !== 'undefined') return navigator.language;
+        if (typeof navigator !== 'undefined') return navigator.language; // FIXME: en-US -> en
         return 'en';
     };
 
@@ -60,7 +64,7 @@ function createTranslate (vm?: VM) {
             locale: getLocale(),
             missingTranslation: 'ignore',
             generateId,
-            translations: storedTranslations
+            translations: storedTranslations,
         });
     };
 
@@ -75,9 +79,13 @@ function createTranslate (vm?: VM) {
 
     return translate;
 }
-
-export function makeCtx (vm?: VM) {
-    const ctx: Ctx = {
+/**
+ * Make a fake scratch context.
+ * @param vm Virtual machine instance.
+ * @returns The context.
+ */
+export function makeCtx(vm?: VM) {
+    const ctx: Context = {
         ArgumentType: ArgumentType,
         BlockType: BlockType,
         TargetType: TargetType,
@@ -88,9 +96,9 @@ export function makeCtx (vm?: VM) {
                 throw new Error('not implemented');
             },
             unsandboxed: !!vm,
-            chibi: true
+            chibi: true,
         },
-        translate: createTranslate(vm)
+        translate: createTranslate(vm),
     };
     if (vm) {
         ctx.vm = vm;

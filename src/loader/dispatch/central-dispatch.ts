@@ -12,14 +12,15 @@ class _CentralDispatch extends SharedDispatch {
      * The constructor we will use to recognize workers.
      * @type {Worker | null}
      */
-    workerClass: typeof Worker | null  = (typeof Worker === 'undefined' ? null : Worker);
+    workerClass: typeof Worker | null =
+        typeof Worker === 'undefined' ? null : Worker;
     /**
      * List of workers attached to this dispatcher.
      * @type {Array}
      */
     workers: Worker[] = [];
     _onMessage!: (worker: Worker, event: MessageEvent) => void;
-    constructor () {
+    constructor() {
         super();
         /**
          * Map of channel name to worker or local service provider.
@@ -38,11 +39,13 @@ class _CentralDispatch extends SharedDispatch {
      * @param {*} [args] - the arguments to be copied to the method, if any.
      * @returns {*} - the return value of the service method.
      */
-    callSync (service: string, method: string, ...args: unknown[]) {
-        const {provider, isRemote} = this._getServiceProvider(service);
+    callSync(service: string, method: string, ...args: unknown[]) {
+        const { provider, isRemote } = this._getServiceProvider(service);
         if (provider) {
             if (isRemote) {
-                throw new Error(`Cannot use 'callSync' on remote provider for service ${service}.`);
+                throw new Error(
+                    `Cannot use 'callSync' on remote provider for service ${service}.`
+                );
             }
             return provider[method].apply(provider, args);
         }
@@ -54,9 +57,11 @@ class _CentralDispatch extends SharedDispatch {
      * @param {string} service - a globally unique string identifying this service. Examples: 'vm', 'gui', 'extension9'.
      * @param {object} provider - a local object which provides this service.
      */
-    setServiceSync (service: string, provider: any) {
+    setServiceSync(service: string, provider: any) {
         if (this.services.hasOwnProperty(service)) {
-            console.warn(`Central dispatch replacing existing service provider for ${service}`);
+            console.warn(
+                `Central dispatch replacing existing service provider for ${service}`
+            );
         }
         this.services[service] = provider;
     }
@@ -67,7 +72,7 @@ class _CentralDispatch extends SharedDispatch {
      * @param {object} provider - a local object which provides this service.
      * @returns {Promise} - a promise which will resolve once the service is registered.
      */
-    setService (service: string, provider: any) {
+    setService(service: string, provider: any) {
         /** Return a promise for consistency with {@link WorkerDispatch#setService} */
         try {
             this.setServiceSync(service, provider);
@@ -81,15 +86,17 @@ class _CentralDispatch extends SharedDispatch {
      * The dispatcher will immediately attempt to "handshake" with the worker.
      * @param {Worker} worker - the worker to add into the dispatch system.
      */
-    addWorker (worker: Worker) {
+    addWorker(worker: Worker) {
         if (this.workers.indexOf(worker) === -1) {
             this.workers.push(worker);
             worker.onmessage = this._onMessage.bind(this, worker);
-            this._remoteCall(worker, 'dispatch', 'handshake').catch(e => {
+            this._remoteCall(worker, 'dispatch', 'handshake').catch((e) => {
                 console.error(`Could not handshake with worker: ${e}`);
             });
         } else {
-            console.warn('Central dispatch ignoring attempt to add duplicate worker');
+            console.warn(
+                'Central dispatch ignoring attempt to add duplicate worker'
+            );
         }
     }
     /**
@@ -99,12 +106,18 @@ class _CentralDispatch extends SharedDispatch {
      * @returns {{provider:(object|Worker), isRemote:boolean}} - the means to contact the service, if found
      * @protected
      */
-    _getServiceProvider (service: string) {
+    _getServiceProvider(service: string) {
         const provider = this.services[service];
-        return provider && {
-            provider,
-            isRemote: Boolean((this.workerClass && provider instanceof this.workerClass) || provider.isRemote)
-        };
+        return (
+            provider && {
+                provider,
+                isRemote: Boolean(
+                    (this.workerClass &&
+                        provider instanceof this.workerClass) ||
+                        provider.isRemote
+                ),
+            }
+        );
     }
     /**
      * Handle a call message sent to the dispatch service itself
@@ -114,18 +127,20 @@ class _CentralDispatch extends SharedDispatch {
      * @returns {Promise|undefined} - a promise for the results of this operation, if appropriate
      * @protected
      */
-    _onDispatchMessage (worker: Worker, message: DispatchCallMessage) {
+    _onDispatchMessage(worker: Worker, message: DispatchCallMessage) {
         let promise;
         switch (message.method) {
-        case 'setService':
-            if (!message.args) {
-                console.error('setService received empty argument');
+            case 'setService':
+                if (!message.args) {
+                    console.error('setService received empty argument');
+                    break;
+                }
+                promise = this.setService(String(message.args[0]), worker);
                 break;
-            }
-            promise = this.setService(String(message.args[0]), worker);
-            break;
-        default:
-            console.error(`Central dispatch received message for unknown method: ${message.method}`);
+            default:
+                console.error(
+                    `Central dispatch received message for unknown method: ${message.method}`
+                );
         }
         return promise;
     }

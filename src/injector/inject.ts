@@ -1,57 +1,79 @@
 /// <reference path="../global.d.ts" />
-import {log, warn, error} from '../util/log';
+import { log, warn, error } from '../util/log';
 import { ChibiLoader } from '../loader/loader';
 import openFrontend from '../frontend';
 import type VM from 'scratch-vm';
 import type Blockly from 'scratch-blocks';
+import setup from '../l10n/lang';
 
 interface ChibiCompatibleWorkspace extends Blockly.Workspace {
-    registerButtonCallback (key: string, callback: Function): void;
+    registerButtonCallback(key: string, callback: Function): void;
 }
 
 interface ChibiCompatibleVM extends VM {
     ccExtensionManager?: {
-        info: Record<string, {
-            api: number;
-        }>;
-        getExtensionLoadOrder (extensions: string[]): unknown;
+        info: Record<
+            string,
+            {
+                api: number;
+            }
+        >;
+        getExtensionLoadOrder(extensions: string[]): unknown;
     };
     setLocale?: (locale: string, ...args: unknown[]) => unknown;
+    getLocale?: () => string;
 }
 
 const MAX_LISTENING_MS = 30 * 1000;
 
-
-function getBlocklyInstance () {
-    const elem = document.querySelector('[class^="gui_blocks-wrapper"]');
-    if (!elem) return null;
-    const internalKey = Object.keys(elem).find(
-        (key) => key.startsWith('__reactInternalInstance$') ||
-        key.startsWith('__reactFiber$')
-    );
-    if (!internalKey) return;
-    // @ts-expect-error
-    const internal = elem[internalKey];
-    let childable = internal;
-    try {
-        while (((childable = childable.child), !childable || !childable.stateNode || !childable.stateNode.ScratchBlocks)) {}
-    } catch (e: unknown) {
-        return;
+/**
+ * Get Blockly instance.
+ * @param vm Virtual machine instance. For some reasons we cannot use VM here.
+ * @returns Blockly instance.
+ */
+function getBlocklyInstance(vm: any): any | undefined {
+    // hijack Function.prototype.apply to get React element instance.
+    function hijack(fn: (...args: unknown[]) => void): any {
+        const _orig = Function.prototype.apply;
+        Function.prototype.apply = function (thisArg: any) {
+            return thisArg;
+        };
+        const result = fn();
+        Function.prototype.apply = _orig;
+        return result;
     }
-    return childable?.stateNode.ScratchBlocks;
+    const events = vm._events?.EXTENSION_ADDED;
+    if (events) {
+        if (events instanceof Function) {
+            // it is a function, just hijack it.
+            const result = hijack(events);
+            if (result && result.ScratchBlocks) return result.ScratchBlocks;
+        } else {
+            // it is an array, hijack every listeners.
+            for (const value of events) {
+                const result = hijack(value);
+                if (result && result.ScratchBlocks) return result.ScratchBlocks;
+            }
+        }
+    }
+    return undefined; // Method failed.
 }
-
-export function trap () {
+/**
+ * Trap to get Virtual Machine instance.
+ * @param open window.open function (compatible with ccw).
+ * @return Callback promise. After that you could use window.chibi.vm to get the virtual machine.
+ */
+export function trap(open: typeof window.open): Promise<void> {
     window.chibi = {
         // @ts-expect-error defined in webpack define plugin
         version: __CHIBI_VERSION__,
         registeredExtension: {},
-        openFrontend: openFrontend
+        openFrontend: openFrontend.bind(null, open),
     };
 
     log('Listening bind function...');
     const oldBind = Function.prototype.bind;
-    return new Promise<void>(resolve => {
+    return new Promise<void>((resolve) => {
         const timeoutId = setTimeout(() => {
             log('Cannot find vm instance, stop listening.');
             Function.prototype.bind = oldBind;
@@ -63,8 +85,11 @@ export function trap () {
                 return oldBind.apply(this, args);
             } else if (
                 args[0] &&
-                Object.prototype.hasOwnProperty.call(args[0], "editingTarget") &&
-                Object.prototype.hasOwnProperty.call(args[0], "runtime")
+                Object.prototype.hasOwnProperty.call(
+                    args[0],
+                    'editingTarget'
+                ) &&
+                Object.prototype.hasOwnProperty.call(args[0], 'runtime')
             ) {
                 log('VM detected!');
                 window.chibi.vm = args[0];
@@ -77,25 +102,57 @@ export function trap () {
         };
     });
 }
-
-export function inject (vm: ChibiCompatibleVM) {
-    const loader = window.chibi.loader = new ChibiLoader(vm);
+/**
+ * Inject into the original virtual machine.
+ * @param vm {ChibiCompatibleVM} Original virtual machine instance.
+ */
+export function inject(vm: ChibiCompatibleVM) {
+    const loader = (window.chibi.loader = new ChibiLoader(vm));
     const originalLoadFunc = vm.extensionManager.loadExtensionURL;
-    vm.extensionManager.loadExtensionURL = async function (extensionURL: string, ...args: unknown[]) {
+    const getLocale = vm.getLocale;
+    let lang = setup(getLocale ? getLocale.call(vm) : 'en');
+    vm.extensionManager.loadExtensionURL = async function (
+        extensionURL: string,
+        ...args: unknown[]
+    ) {
         if (extensionURL in window.chibi.registeredExtension) {
             const { url, env } = window.chibi.registeredExtension[extensionURL];
             try {
-                if (confirm(`🤨 Project is trying to sideloading ${extensionURL} from ${url}${env ? ` in ${env} mode` : ''}. Do you want to load?`)) {
-                    await loader.load(url, (env ? env : (confirm('🤨 Do you want to load it in the sandbox?') ? 'sandboxed' : 'unsandboxed')) as 'unsandboxed' | 'sandboxed');
+                const res = env
+                    ? confirm(
+                          lang
+                              .format('chibi.tryLoadInEnv')
+                              .replace('{EXT_URL}', extensionURL)
+                              .replace('{URL}', url)
+                              .replace('{ENV}', env)
+                      )
+                    : confirm(
+                          lang
+                              .format('chibi.tryLoad')
+                              .replace('{EXT_URL}', extensionURL)
+                              .replace('{URL}', url)
+                      );
+                if (res) {
+                    await loader.load(
+                        url,
+                        (env
+                            ? env
+                            : confirm(lang.format('chibi.loadInSandbox'))
+                            ? 'sandboxed'
+                            : 'unsandboxed') as 'unsandboxed' | 'sandboxed'
+                    );
                     const extensionId = loader.getIdByUrl(url);
                     // @ts-expect-error internal hack
-                    vm.extensionManager._loadedExtensions.set(extensionId, 'Chibi');
+                    vm.extensionManager._loadedExtensions.set(
+                        extensionId,
+                        'Chibi'
+                    );
                 } else {
                     // @ts-expect-error internal hack
                     return originalLoadFunc.call(this, extensionURL, ...args);
                 }
             } catch (e: unknown) {
-                error('Error occurred while sideloading extension. To avoid interrupting the loading process, we chose to ignore this error.', e);
+                error(lang.format('chibi.errorIgnored'), e);
             }
         } else {
             // @ts-expect-error internal hack
@@ -121,15 +178,20 @@ export function inject (vm: ChibiCompatibleVM) {
         obj.extensionEnvs = Object.assign({}, obj.extensionEnvs, envs);
         return JSON.stringify(obj);
     };
-    
+
     const originalDrserializeFunc = vm.deserializeProject;
-    vm.deserializeProject = function (projectJSON: Record<string, any>, ...args: unknown[]) {
+    vm.deserializeProject = function (
+        projectJSON: Record<string, any>,
+        ...args: unknown[]
+    ) {
         if (typeof projectJSON.extensionURLs === 'object') {
             for (const id in projectJSON.extensionURLs) {
                 window.chibi.registeredExtension[id] = {
                     url: projectJSON.extensionURLs[id],
-                    env: typeof projectJSON.extensionEnvs === 'object' ?
-                        projectJSON.extensionEnvs[id] : 'sandboxed'
+                    env:
+                        typeof projectJSON.extensionEnvs === 'object'
+                            ? projectJSON.extensionEnvs[id]
+                            : 'sandboxed',
                 };
             }
         }
@@ -139,35 +201,48 @@ export function inject (vm: ChibiCompatibleVM) {
 
     const originSetLocaleFunc = vm.setLocale;
     vm.setLocale = function (locale: string, ...args: unknown[]) {
+        lang = setup(locale);
         // @ts-expect-error internal hack
         const result = originSetLocaleFunc.call(this, locale, ...args);
         // @ts-expect-error lazy to extend VM interface
         vm.emit('LOCALE_CHANGED', locale);
         return result;
     };
-    
-    const originalArgReporterBooleanFunc = vm.runtime._primitives['argument_reporter_boolean'];
-    vm.runtime._primitives['argument_reporter_boolean'] = function (args: Record<string, unknown>, ...otherArgs: unknown[]) {
+    // TODO: compiler support
+    const originalArgReporterBooleanFunc =
+        vm.runtime._primitives['argument_reporter_boolean'];
+    vm.runtime._primitives['argument_reporter_boolean'] = function (
+        args: Record<string, unknown>,
+        ...otherArgs: unknown[]
+    ) {
         const chibiFlag = args.VALUE;
         switch (chibiFlag) {
-        case '🧐 Chibi Installed?':
-            return true;
-        default:
-            return originalArgReporterBooleanFunc.call(this, args, ...otherArgs);
+            case '🧐 Chibi?':
+                return true;
+            default:
+                return originalArgReporterBooleanFunc.call(
+                    this,
+                    args,
+                    ...otherArgs
+                );
         }
-    }
+    };
 
     // Hack for ClipCC 3.2- versions
     if (typeof vm.ccExtensionManager === 'object') {
-        const originalGetOrderFunc = vm.ccExtensionManager.getExtensionLoadOrder;
-        vm.ccExtensionManager.getExtensionLoadOrder = function (extensions: string[], ...args: unknown[]) {
+        const originalGetOrderFunc =
+            vm.ccExtensionManager.getExtensionLoadOrder;
+        vm.ccExtensionManager.getExtensionLoadOrder = function (
+            extensions: string[],
+            ...args: unknown[]
+        ) {
             for (const extensionId of extensions) {
                 if (
                     !vm.ccExtensionManager!.info.hasOwnProperty(extensionId) &&
                     extensionId in window.chibi.registeredExtension
                 ) {
                     vm.ccExtensionManager!.info[extensionId] = {
-                        api: 0
+                        api: 0,
                     };
                 }
             }
@@ -178,67 +253,7 @@ export function inject (vm: ChibiCompatibleVM) {
 
     // Blockly stuffs
     setTimeout(() => {
-        const blockly = window.chibi.blockly = getBlocklyInstance();
-        if (!blockly) {
-            warn('Cannot find real blockly instance, try alternative method...');
-            const originalProcedureCallback = window.Blockly?.getMainWorkspace().toolboxCategoryCallbacks_.PROCEDURE;
-            if (!originalProcedureCallback) {
-                error('alternative method failed, stop injecting');
-                return;
-            }
-            window.Blockly.getMainWorkspace().toolboxCategoryCallbacks_.PROCEDURE = function (
-                workspace: ChibiCompatibleWorkspace,
-                ...args: unknown[]
-            ) {
-                const xmlList = originalProcedureCallback.call(this, workspace, ...args);
-                // Add separator and label
-                const sep = document.createElement('sep');
-                sep.setAttribute('gap', '36');
-                xmlList.push(sep);
-                const label = document.createElement('label');
-                label.setAttribute('text', '😎 Chibi');
-                xmlList.push(label);
-
-                // Add dashboard button
-                const dashboardButton = document.createElement('button');
-                dashboardButton.setAttribute('text', 'Open Frontend');
-                dashboardButton.setAttribute('callbackKey', 'CHIBI_FRONTEND');
-                workspace.registerButtonCallback('CHIBI_FRONTEND', () => {
-                    window.chibi.openFrontend();
-                });
-                xmlList.push(dashboardButton);
-
-                // Add load from url button
-                const sideloadButton = document.createElement('button');
-                sideloadButton.setAttribute('text', 'Sideload from URL');
-                sideloadButton.setAttribute('callbackKey', 'CHIBI_SIDELOAD_FROM_URL');
-                workspace.registerButtonCallback('CHIBI_SIDELOAD_FROM_URL', () => {
-                    const url = prompt('Enter URL');
-                    if (!url) return;
-                    const mode = confirm('Running in sandbox?') ? 'sandboxed' : 'unsandboxed';
-                    window.chibi.loader.load(url, mode);
-                });
-                xmlList.push(sideloadButton);
-
-                // Add chibi detection
-                const mutation = document.createElement('mutation');
-                mutation.setAttribute('chibi', 'installed');
-                const field = document.createElement('field');
-                field.setAttribute('name', 'VALUE');
-                field.innerHTML = '🧐 Chibi Installed?';
-                const block = document.createElement('block');
-                block.setAttribute('type', 'argument_reporter_boolean');
-                block.setAttribute('gap', '16');
-                block.appendChild(field);
-                block.appendChild(mutation);
-                xmlList.push(block);
-                return xmlList;
-            };
-            const workspace = window.Blockly.getMainWorkspace();
-            workspace.getToolbox().refreshSelection();
-            workspace.toolboxRefreshEnabled_ = true;
-            return;
-        };
+        const blockly = (window.chibi.blockly = getBlocklyInstance(vm));
 
         const originalAddCreateButton_ = blockly.Procedures.addCreateButton_;
         blockly.Procedures.addCreateButton_ = function (
@@ -257,7 +272,10 @@ export function inject (vm: ChibiCompatibleVM) {
 
             // Add dashboard button
             const dashboardButton = document.createElement('button');
-            dashboardButton.setAttribute('text', 'Open Frontend');
+            dashboardButton.setAttribute(
+                'text',
+                lang.format('chibi.openFrontend')
+            );
             dashboardButton.setAttribute('callbackKey', 'CHIBI_FRONTEND');
             workspace.registerButtonCallback('CHIBI_FRONTEND', () => {
                 window.chibi.openFrontend();
@@ -266,12 +284,17 @@ export function inject (vm: ChibiCompatibleVM) {
 
             // Add load from url button
             const sideloadButton = document.createElement('button');
-            sideloadButton.setAttribute('text', 'Sideload from URL');
-            sideloadButton.setAttribute('callbackKey', 'CHIBI_SIDELOAD_FROM_URL');
+            sideloadButton.setAttribute('text', lang.format('chibi.sideload'));
+            sideloadButton.setAttribute(
+                'callbackKey',
+                'CHIBI_SIDELOAD_FROM_URL'
+            );
             workspace.registerButtonCallback('CHIBI_SIDELOAD_FROM_URL', () => {
                 const url = prompt('Enter URL');
                 if (!url) return;
-                const mode = confirm('Running in sandbox?') ? 'sandboxed' : 'unsandboxed';
+                const mode = confirm(lang.format('chibi.loadInSandbox'))
+                    ? 'sandboxed'
+                    : 'unsandboxed';
                 window.chibi.loader.load(url, mode);
             });
             xmlList.push(sideloadButton);
@@ -281,7 +304,7 @@ export function inject (vm: ChibiCompatibleVM) {
             mutation.setAttribute('chibi', 'installed');
             const field = document.createElement('field');
             field.setAttribute('name', 'VALUE');
-            field.innerHTML = '🧐 Chibi Installed?';
+            field.innerHTML = '🧐 Chibi?';
             const block = document.createElement('block');
             block.setAttribute('type', 'argument_reporter_boolean');
             block.setAttribute('gap', '16');
