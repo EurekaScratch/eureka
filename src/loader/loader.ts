@@ -7,7 +7,7 @@ import {
     ExtensionBlockMetadata,
     BlockType,
     MenuItems,
-    BlockArgs,
+    BlockArgs
 } from '../typings';
 import { maybeFormatMessage } from '../util/maybe-format-message';
 import { CentralDispatch as dispatch } from './dispatch/central-dispatch';
@@ -80,11 +80,7 @@ class ChibiLoader {
             );
         }
         dispatch.setService('loader', this).catch((e: Error) => {
-            error(
-                `ChibiLoader was unable to register extension service: ${JSON.stringify(
-                    e
-                )}`
-            );
+            error(`ChibiLoader was unable to register extension service: ${JSON.stringify(e)}`);
         });
     }
 
@@ -93,10 +89,7 @@ class ChibiLoader {
      * @param {ExtensionClass | string} ext - Extension's data.
      * @param {'sandboxed' | 'unsandboxed'} env - Extension's running environment.
      */
-    async load(
-        ext: string | ExtensionClass,
-        env: 'sandboxed' | 'unsandboxed' = 'sandboxed'
-    ) {
+    async load(ext: string | ExtensionClass, env: 'sandboxed' | 'unsandboxed' = 'sandboxed') {
         if (typeof ext === 'string') {
             switch (env) {
                 case 'sandboxed':
@@ -106,7 +99,7 @@ class ChibiLoader {
                         this.pendingExtensions.push({
                             extensionURL: ext,
                             resolve,
-                            reject,
+                            reject
                         });
                         dispatch.addWorker(ExtensionWorker);
                     });
@@ -115,15 +108,9 @@ class ChibiLoader {
                     const originalScript = await response.text();
                     const closureFunc = new Function('Scratch', originalScript);
                     const ctx = makeCtx(this.vm);
-                    ctx.extensions.register = (
-                        extensionObj: ExtensionClass
-                    ) => {
+                    ctx.extensions.register = (extensionObj: ExtensionClass) => {
                         const extensionInfo = extensionObj.getInfo();
-                        this._registerExtensionInfo(
-                            extensionObj,
-                            extensionInfo,
-                            ext
-                        );
+                        this._registerExtensionInfo(extensionObj, extensionInfo, ext);
                     };
                     closureFunc(ctx);
                     return;
@@ -136,11 +123,7 @@ class ChibiLoader {
         // @ts-expect-error Load as builtin extension.
         const extensionObject = new ext(this.vm.runtime);
         const extensionInfo = extensionObject.getInfo() as ExtensionMetadata;
-        this._registerExtensionInfo(
-            extensionObject,
-            extensionInfo,
-            extensionInfo.id
-        );
+        this._registerExtensionInfo(extensionObject, extensionInfo, extensionInfo.id);
         return extensionInfo;
     }
 
@@ -156,11 +139,7 @@ class ChibiLoader {
         // It's running in worker
         if (typeof targetExt.instance === 'string') {
             const info = await dispatch.call(targetExt.instance, 'getInfo');
-            const processedInfo = this._prepareExtensionInfo(
-                null,
-                info,
-                targetExt.instance
-            );
+            const processedInfo = this._prepareExtensionInfo(null, info, targetExt.instance);
             // @ts-expect-error private method
             this.vm.runtime._refreshExtensionPrimitives(processedInfo);
             return processedInfo;
@@ -230,17 +209,11 @@ class ChibiLoader {
                 id: extensionInfo.id,
                 url: extensionURL,
                 info: extensionInfo,
-                instance: (extensionObject ?? serviceName) as
-                    | ExtensionClass
-                    | string,
-                env: serviceName ? 'sandboxed' : 'unsandboxed',
+                instance: (extensionObject ?? serviceName) as ExtensionClass | string,
+                env: serviceName ? 'sandboxed' : 'unsandboxed'
             } as ScratchExtension);
         }
-        extensionInfo = this._prepareExtensionInfo(
-            extensionObject,
-            extensionInfo,
-            serviceName
-        );
+        extensionInfo = this._prepareExtensionInfo(extensionObject, extensionInfo, serviceName);
 
         // @ts-expect-error private method
         this.vm.runtime._registerExtensionPrimitives(extensionInfo);
@@ -297,9 +270,9 @@ class ChibiLoader {
                 } catch (e: unknown) {
                     // TODO: more meaningful error reporting
                     error(
-                        `Error processing block: ${
-                            (e as Error).message
-                        }, Block:\n${JSON.stringify(blockInfo)}`
+                        `Error processing block: ${(e as Error).message}, Block:\n${JSON.stringify(
+                            blockInfo
+                        )}`
                     );
                 }
                 return results;
@@ -340,7 +313,7 @@ class ChibiLoader {
             if (!menuInfo.items) {
                 menuInfo = {
                     // @ts-expect-error
-                    items: menuInfo,
+                    items: menuInfo
                 };
                 menus[menuName] = menuInfo;
             }
@@ -381,41 +354,29 @@ class ChibiLoader {
          */
 
         const editingTarget =
-            this.vm.runtime.getEditingTarget() ||
-            this.vm.runtime.getTargetForStage();
+            this.vm.runtime.getEditingTarget() || this.vm.runtime.getTargetForStage();
         const editingTargetID = editingTarget ? editingTarget.id : null;
         // @ts-expect-error private method
-        const extensionMessageContext =
-            this.vm.runtime.makeMessageContextForTarget(editingTarget);
+        const extensionMessageContext = this.vm.runtime.makeMessageContextForTarget(editingTarget);
 
         // TODO: Fix this to use dispatch.call when extensions are running in workers.
         const menuFunc = extensionObject[menuItemFunctionName] as (
             editingTargetID: string | null
         ) => MenuItems;
-        const menuItems = menuFunc
-            .call(extensionObject, editingTargetID)
-            .map((item) => {
-                item = maybeFormatMessage(item, extensionMessageContext);
-                switch (typeof item) {
-                    case 'object':
-                        return [
-                            maybeFormatMessage(
-                                item.text,
-                                extensionMessageContext
-                            ),
-                            item.value,
-                        ];
-                    case 'string':
-                        return [item, item];
-                    default:
-                        return item;
-                }
-            });
+        const menuItems = menuFunc.call(extensionObject, editingTargetID).map((item) => {
+            item = maybeFormatMessage(item, extensionMessageContext);
+            switch (typeof item) {
+                case 'object':
+                    return [maybeFormatMessage(item.text, extensionMessageContext), item.value];
+                case 'string':
+                    return [item, item];
+                default:
+                    return item;
+            }
+        });
 
         if (!menuItems || menuItems.length < 1) {
-            throw new Error(
-                `Extension menu returned no items: ${menuItemFunctionName}`
-            );
+            throw new Error(`Extension menu returned no items: ${menuItemFunctionName}`);
         }
         return menuItems;
     }
@@ -439,12 +400,11 @@ class ChibiLoader {
                 blockType: BlockType.COMMAND,
                 terminal: false,
                 blockAllThreads: false,
-                arguments: {},
+                arguments: {}
             },
             blockInfo
         );
-        blockInfo.opcode =
-            blockInfo.opcode && this._sanitizeID(blockInfo.opcode);
+        blockInfo.opcode = blockInfo.opcode && this._sanitizeID(blockInfo.opcode);
         blockInfo.text = blockInfo.text || blockInfo.opcode;
 
         switch (blockInfo.blockType) {
@@ -472,21 +432,13 @@ class ChibiLoader {
                     : blockInfo.opcode;
 
                 const getBlockInfo = blockInfo.isDynamic
-                    ? (args: BlockArgs) =>
-                          args && args.mutation && args.mutation.blockInfo
+                    ? (args: BlockArgs) => args && args.mutation && args.mutation.blockInfo
                     : () => blockInfo;
                 const callBlockFunc = (() => {
                     // Maybe there's a worker
                     if (extensionObject === null) {
-                        if (
-                            serviceName &&
-                            dispatch._isRemoteService(serviceName)
-                        ) {
-                            return (
-                                args: BlockArgs,
-                                _util: unknown,
-                                realBlockInfo: unknown
-                            ) =>
+                        if (serviceName && dispatch._isRemoteService(serviceName)) {
+                            return (args: BlockArgs, _util: unknown, realBlockInfo: unknown) =>
                                 dispatch.call(
                                     serviceName,
                                     funcName,
@@ -495,24 +447,16 @@ class ChibiLoader {
                                     realBlockInfo
                                 );
                         }
-                        warn(
-                            `Could not find extension block function called ${funcName}`
-                        );
+                        warn(`Could not find extension block function called ${funcName}`);
                         // eslint-disable-next-line @typescript-eslint/no-empty-function
                         return () => {};
                     }
 
                     if (!extensionObject[funcName]) {
                         // The function might show up later as a dynamic property of the service object
-                        warn(
-                            `Could not find extension block function called ${funcName}`
-                        );
+                        warn(`Could not find extension block function called ${funcName}`);
                     }
-                    return (
-                        args: BlockArgs,
-                        util: unknown,
-                        realBlockInfo: unknown
-                    ) =>
+                    return (args: BlockArgs, util: unknown, realBlockInfo: unknown) =>
                         // @ts-expect-error
                         extensionObject[funcName](args, util, realBlockInfo);
                 })();

@@ -79,7 +79,7 @@ class Color {
             return {
                 r: (parsed >> 16) & 0xff,
                 g: (parsed >> 8) & 0xff,
-                b: parsed & 0xff,
+                b: parsed & 0xff
             };
         } else if (hex.length === 3) {
             const r = (parsed >> 8) & 0xf;
@@ -88,7 +88,7 @@ class Color {
             return {
                 r: (r << 4) | r,
                 g: (g << 4) | g,
-                b: (b << 4) | b,
+                b: (b << 4) | b
             };
         }
         return null;
@@ -180,7 +180,7 @@ class Color {
         return {
             r: Math.floor(r * 255),
             g: Math.floor(g * 255),
-            b: Math.floor(b * 255),
+            b: Math.floor(b * 255)
         };
     }
 
@@ -223,7 +223,7 @@ class Color {
         return {
             r: fraction0 * rgb0.r + fraction1 * rgb1.r,
             g: fraction0 * rgb0.g + fraction1 * rgb1.g,
-            b: fraction0 * rgb0.b + fraction1 * rgb1.b,
+            b: fraction0 * rgb0.b + fraction1 * rgb1.b
         };
     }
 }

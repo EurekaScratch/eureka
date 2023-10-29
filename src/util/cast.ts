@@ -84,11 +84,7 @@ class Cast {
         }
         if (typeof value === 'string') {
             // These specific strings are treated as false in Scratch.
-            if (
-                value === '' ||
-                value === '0' ||
-                value.toLowerCase() === 'false'
-            ) {
+            if (value === '' || value === '0' || value.toLowerCase() === 'false') {
                 return false;
             }
             // All other strings treated as true.
@@ -141,9 +137,7 @@ class Cast {
      * @return {boolean} True if the argument is all white spaces or null / empty.
      */
     static isWhiteSpace(val: unknown) {
-        return (
-            val === null || (typeof val === 'string' && val.trim().length === 0)
-        );
+        return val === null || (typeof val === 'string' && val.trim().length === 0);
     }
 
     /**
@@ -176,10 +170,7 @@ class Cast {
             return 0;
         }
         // Handle the special case of Infinity
-        if (
-            (n1 === Infinity && n2 === Infinity) ||
-            (n1 === -Infinity && n2 === -Infinity)
-        ) {
+        if ((n1 === Infinity && n2 === Infinity) || (n1 === -Infinity && n2 === -Infinity)) {
             return 0;
         }
         // Compare as numbers.

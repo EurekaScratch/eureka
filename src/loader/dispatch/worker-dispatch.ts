@@ -61,9 +61,7 @@ class _WorkerDispatch extends SharedDispatch {
      */
     setService(service: string, provider: unknown) {
         if (this.services.hasOwnProperty(service)) {
-            console.warn(
-                `Worker dispatch replacing existing service provider for ${service}`
-            );
+            console.warn(`Worker dispatch replacing existing service provider for ${service}`);
         }
         this.services[service] = provider;
         return this.waitForConnection.then(() =>
@@ -83,7 +81,7 @@ class _WorkerDispatch extends SharedDispatch {
         const provider = this.services[service];
         return {
             provider: provider || self,
-            isRemote: !provider,
+            isRemote: !provider
         };
     }
 

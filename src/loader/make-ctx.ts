@@ -3,7 +3,7 @@ import {
     TargetType,
     ArgumentType,
     ReporterScope,
-    StandardScratchExtensionClass as ExtensionClass,
+    StandardScratchExtensionClass as ExtensionClass
 } from '../typings';
 import { Cast } from '../util/cast';
 import formatMessage, { Message } from 'format-message';
@@ -26,7 +26,7 @@ export interface Context {
     renderer?: Renderer;
 }
 /**
- * i10n support for Chibi extensions.
+ * I10n support for Chibi extensions.
  * @param vm Virtual machine instance. Optional.
  * @returns Something like Scratch.translate.
  */
@@ -38,7 +38,7 @@ function createTranslate(vm?: VM) {
             // Already in the expected format
         } else if (typeof message === 'string') {
             message = {
-                default: message,
+                default: message
             };
         } else {
             throw new Error('unsupported data type in translate()');
@@ -64,7 +64,7 @@ function createTranslate(vm?: VM) {
             locale: getLocale(),
             missingTranslation: 'ignore',
             generateId,
-            translations: storedTranslations,
+            translations: storedTranslations
         });
     };
 
@@ -96,9 +96,9 @@ export function makeCtx(vm?: VM) {
                 throw new Error('not implemented');
             },
             unsandboxed: !!vm,
-            chibi: true,
+            chibi: true
         },
-        translate: createTranslate(vm),
+        translate: createTranslate(vm)
     };
     if (vm) {
         ctx.vm = vm;

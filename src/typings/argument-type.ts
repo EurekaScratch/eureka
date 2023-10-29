@@ -34,7 +34,7 @@ enum ArgumentType {
     /**
      * Inline image on block (as part of the label)
      */
-    IMAGE = 'image',
+    IMAGE = 'image'
 }
 
 export { ArgumentType };

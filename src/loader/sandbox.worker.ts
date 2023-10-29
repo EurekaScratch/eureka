@@ -47,12 +47,7 @@ class ExtensionWorker {
         const promise = dispatch
             .setService(serviceName, extensionObject)
             .then(() =>
-                dispatch.call(
-                    'loader',
-                    'registerExtensionService',
-                    this.extensionURL,
-                    serviceName
-                )
+                dispatch.call('loader', 'registerExtensionService', this.extensionURL, serviceName)
             );
         if (this.initialRegistrations) {
             this.initialRegistrations.push(promise);
@@ -67,7 +62,6 @@ globalThis.Scratch = makeCtx();
  * Expose only specific parts of the worker to extensions.
  */
 const extensionWorker = new ExtensionWorker();
-globalThis.Scratch.extensions.register =
-    extensionWorker.register.bind(extensionWorker);
+globalThis.Scratch.extensions.register = extensionWorker.register.bind(extensionWorker);
 
 export default null as unknown as any;

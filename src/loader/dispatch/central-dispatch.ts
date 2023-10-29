@@ -12,8 +12,7 @@ class _CentralDispatch extends SharedDispatch {
      * The constructor we will use to recognize workers.
      * @type {Worker | null}
      */
-    workerClass: typeof Worker | null =
-        typeof Worker === 'undefined' ? null : Worker;
+    workerClass: typeof Worker | null = typeof Worker === 'undefined' ? null : Worker;
     /**
      * List of workers attached to this dispatcher.
      * @type {Array}
@@ -43,9 +42,7 @@ class _CentralDispatch extends SharedDispatch {
         const { provider, isRemote } = this._getServiceProvider(service);
         if (provider) {
             if (isRemote) {
-                throw new Error(
-                    `Cannot use 'callSync' on remote provider for service ${service}.`
-                );
+                throw new Error(`Cannot use 'callSync' on remote provider for service ${service}.`);
             }
             return provider[method].apply(provider, args);
         }
@@ -59,9 +56,7 @@ class _CentralDispatch extends SharedDispatch {
      */
     setServiceSync(service: string, provider: any) {
         if (this.services.hasOwnProperty(service)) {
-            console.warn(
-                `Central dispatch replacing existing service provider for ${service}`
-            );
+            console.warn(`Central dispatch replacing existing service provider for ${service}`);
         }
         this.services[service] = provider;
     }
@@ -94,9 +89,7 @@ class _CentralDispatch extends SharedDispatch {
                 console.error(`Could not handshake with worker: ${e}`);
             });
         } else {
-            console.warn(
-                'Central dispatch ignoring attempt to add duplicate worker'
-            );
+            console.warn('Central dispatch ignoring attempt to add duplicate worker');
         }
     }
     /**
@@ -112,10 +105,8 @@ class _CentralDispatch extends SharedDispatch {
             provider && {
                 provider,
                 isRemote: Boolean(
-                    (this.workerClass &&
-                        provider instanceof this.workerClass) ||
-                        provider.isRemote
-                ),
+                    (this.workerClass && provider instanceof this.workerClass) || provider.isRemote
+                )
             }
         );
     }

@@ -7,11 +7,7 @@ import formatMessage from 'format-message';
  * @param {string} [locale] - the locale to pass to `formatMessage` if it gets called.
  * @return {string|*} - the formatted message OR the original `maybeMessage` input.
  */
-export const maybeFormatMessage = function (
-    maybeMessage?: any,
-    args?: any,
-    locale?: any
-) {
+export const maybeFormatMessage = function (maybeMessage?: any, args?: any, locale?: any) {
     if (maybeMessage && maybeMessage.id && maybeMessage.default) {
         return formatMessage(maybeMessage, args, locale);
     }

@@ -91,24 +91,13 @@ class SharedDispatch {
      * @param {*} [args] - the arguments to be copied to the method, if any.
      * @returns {Promise} - a promise for the return value of the service method.
      */
-    transferCall(
-        service: string,
-        method: string,
-        transfer: unknown,
-        ...args: unknown[]
-    ) {
+    transferCall(service: string, method: string, transfer: unknown, ...args: unknown[]) {
         try {
             // @ts-expect-error TS(2339): It's not implemented.
             const { provider, isRemote } = this._getServiceProvider(service);
             if (provider) {
                 if (isRemote) {
-                    return this._remoteTransferCall(
-                        provider,
-                        service,
-                        method,
-                        transfer,
-                        ...args
-                    );
+                    return this._remoteTransferCall(provider, service, method, transfer, ...args);
                 }
                 const result = provider[method](...args);
                 return Promise.resolve(result);
@@ -142,13 +131,7 @@ class SharedDispatch {
         method: string,
         ...args: unknown[]
     ): Promise<unknown> {
-        return this._remoteTransferCall(
-            provider,
-            service,
-            method,
-            null,
-            ...args
-        );
+        return this._remoteTransferCall(provider, service, method, null, ...args);
     }
     /**
      * Like {@link transferCall}, but force the call to be posted through a particular communication channel.
@@ -172,10 +155,7 @@ class SharedDispatch {
                 args = this._purifyObject(args) as unknown[];
             }
             if (transfer) {
-                provider.postMessage(
-                    { service, method, responseId, args },
-                    transfer
-                );
+                provider.postMessage({ service, method, responseId, args }, transfer);
             } else {
                 provider.postMessage({ service, method, responseId, args });
             }
@@ -188,10 +168,7 @@ class SharedDispatch {
      * @returns {*} - a unique response ID for this set of callbacks. See {@link _deliverResponse}.
      * @protected
      */
-    _storeCallbacks(
-        resolve: (value: unknown) => void,
-        reject: (value: unknown) => void
-    ) {
+    _storeCallbacks(resolve: (value: unknown) => void, reject: (value: unknown) => void) {
         const responseId = this.nextResponseId++;
         this.callbacks[responseId] = [resolve, reject];
         return responseId;
@@ -230,17 +207,11 @@ class SharedDispatch {
             if (message.service === 'dispatch') {
                 promise = this._onDispatchMessage(worker, message);
             } else {
-                promise = this.call(
-                    message.service,
-                    message.method,
-                    ...message.args
-                );
+                promise = this.call(message.service, message.method, ...message.args);
             }
         } else if (typeof message.responseId === 'undefined') {
             console.error(
-                `Dispatch caught malformed message from a worker: ${JSON.stringify(
-                    event
-                )}`
+                `Dispatch caught malformed message from a worker: ${JSON.stringify(event)}`
             );
         } else {
             this._deliverResponse(message.responseId, message);
@@ -248,21 +219,19 @@ class SharedDispatch {
         if (promise) {
             if (typeof message.responseId === 'undefined') {
                 console.error(
-                    `Dispatch message missing required response ID: ${JSON.stringify(
-                        event
-                    )}`
+                    `Dispatch message missing required response ID: ${JSON.stringify(event)}`
                 );
             } else {
                 promise.then(
                     (result) =>
                         worker.postMessage({
                             responseId: message.responseId,
-                            result,
+                            result
                         }),
                     (error) =>
                         worker.postMessage({
                             responseId: message.responseId,
-                            error: `${error}`,
+                            error: `${error}`
                         })
                 );
             }
@@ -309,9 +278,7 @@ class SharedDispatch {
             visited.add(obj);
 
             if (Array.isArray(obj)) {
-                return obj.map((item) =>
-                    this._purifyObject(item, visited, depth + 1)
-                );
+                return obj.map((item) => this._purifyObject(item, visited, depth + 1));
             }
             const result: Record<string, unknown> = {};
             for (const key in obj) {

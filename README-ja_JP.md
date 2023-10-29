@@ -26,7 +26,7 @@ Chibi は Tampermonkey/GreasyMonkey に対応するユーザースクリプト�
 - [X] CodingClip
 - [X] Cocrea
 - [X] Aerfaying
-- [X] Cocrea 中国版
+- [X] Co-Create World
 - [X] XMW
 - [X] CodeLab
 - [X] 40code
