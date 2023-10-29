@@ -326,7 +326,7 @@ class ChibiLoader {
                 // @ts-expect-error Bind the function here so we can pass a simple item generation function to Scratch Blocks later
                 menuInfo.items = this._getExtensionMenuItems.bind(
                     this,
-                    extensionObject,
+                    extensionObject!,
                     menuItemFunctionName,
                     serviceName
                 );
