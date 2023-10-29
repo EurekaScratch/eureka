@@ -2,13 +2,13 @@ import { warn } from '../util/log';
 const l10n: Record<string, Record<string, string>> = {
     'zh-cn': {
         'chibi.openFrontend': '打开面板',
-        'chibi.sideload': '从 URL 侧载插件',
+        'chibi.sideload': '从 URL 侧载扩展',
         'chibi.errorIgnored':
-            '在加载扩展插件时出现错误。为了避免加载进程的中断，此错误已被忽略。',
-        'chibi.tryLoad': '🤨 项目正从 {URL} 加载插件 {EXT_URL}。要加载么？',
+            '在加载扩展扩展时出现错误。为了避免加载进程的中断，此错误已被忽略。',
+        'chibi.tryLoad': '🤨 项目正从 {URL} 加载扩展 {EXT_URL}。要加载么？',
         'chibi.tryLoadInEnv':
-            '🤨 项目正以 {ENV} 模式从 {URL} 加载插件 {EXT_URL}。要加载么？',
-        'chibi.loadInSandbox': '🤨 要在沙箱模式中加载插件么？',
+            '🤨 项目正以 {ENV} 模式从 {URL} 加载扩展 {EXT_URL}。要加载么？',
+        'chibi.loadInSandbox': '🤨 要在沙箱模式中加载扩展么？',
         'chibi.enterURL': '🌐 输入',
     },
     en: {
