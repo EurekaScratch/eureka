@@ -372,5 +372,5 @@ export function inject (vm: ChibiCompatibleVM) {
         const workspace = blockly.getMainWorkspace();
         workspace.getToolbox().refreshSelection();
         workspace.toolboxRefreshEnabled_ = true;
-    }, 5000);
+    }, 3000);
 }
