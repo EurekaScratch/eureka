@@ -16,5 +16,12 @@ jobs:
         with:
           node-version: 16.x
           cache: 'yarn'
-      - name: Install and Check types
-        run: yarn install --frozen-lockfile && yarn tsc --noEmit
+      - name: Install
+        run: yarn install --frozen-lockfile
+      - name: Check types and Build
+        run: yarn tsc --noEmit && NODE_ENV=PRODUCTION yarn run build
+      - name: Upload Canary Userscript
+        uses: actions/upload-artifact@v3
+        with:
+          name: Canary Userscript
+          path: dist/chibi.user.js
