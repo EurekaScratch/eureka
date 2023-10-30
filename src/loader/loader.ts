@@ -44,12 +44,6 @@ class ChibiLoader {
     private nextExtensionWorker = 0;
 
     /**
-     * Whether Scratch object should be passed inline.
-     * @type {boolean}
-     */
-    private inlinedCtx = false;
-
-    /**
      * FIFO queue of extensions which have been requested but not yet loaded in a worker,
      * along with promise resolution functions to call once the worker is ready or failed.
      *
@@ -71,14 +65,6 @@ class ChibiLoader {
 
     constructor (vm: VM) {
         this.vm = vm;
-        this.inlinedCtx = typeof window.Scratch === 'object';
-        if (!this.inlinedCtx) {
-            window.Scratch = makeCtx(this.vm);
-        } else {
-            warn(
-                'A Scratch instance already exists in the current environment, so it will be passed inline for unsandboxed extension.'
-            );
-        }
         dispatch.setService('loader', this).catch((e: Error) => {
             error(`ChibiLoader was unable to register extension service: ${JSON.stringify(e)}`);
         });
@@ -108,6 +94,13 @@ class ChibiLoader {
                     const originalScript = await response.text();
                     const closureFunc = new Function('Scratch', originalScript);
                     const ctx = makeCtx(this.vm);
+                    // Provide compatibility support for some extensions
+                    // Nevertheless, it is a very bad behavior for Chibi to directly read the Scratch
+                    // object on the window, because the extension should not depend on unknown external
+                    // environment.
+                    if (!('Scratch' in window)) {
+                        window.Scratch = ctx;
+                    }
                     ctx.extensions.register = (extensionObj: ExtensionClass) => {
                         const extensionInfo = extensionObj.getInfo();
                         this._registerExtensionInfo(extensionObj, extensionInfo, ext);

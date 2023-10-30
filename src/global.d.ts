@@ -1,5 +1,6 @@
 /// <reference path="node_modules/@turbowarp/types/index.d.ts" />
 // <reference path="./loader/loader" />
+// <reference path="./loader/make-ctx" />
 
 declare interface Window {
     Blockly?: Partial<ScratchBlocks>;
@@ -17,4 +18,5 @@ declare interface Window {
         >;
         openFrontend(): void;
     };
+    Scratch?: Context;
 }
