@@ -1,5 +1,6 @@
 /// <reference path="../global.d.ts" />
 import { log, warn, error } from '../util/log';
+import { settings } from '../util/settings';
 import { ChibiLoader } from '../loader/loader';
 import openFrontend from '../frontend';
 import type VM from 'scratch-vm';
@@ -26,6 +27,21 @@ interface ChibiCompatibleVM extends VM {
 }
 
 const MAX_LISTENING_MS = 30 * 1000;
+
+/**
+ * Get sanitized non-core extension ID for a given sb3 opcode.
+ * Note that this should never return a URL. If in the future the SB3 loader supports loading extensions by URL, this
+ * ID should be used to (for example) look up the extension's full URL from a table in the SB3's JSON.
+ * @param {!string} opcode The opcode to examine for extension.
+ * @return {?string} The extension ID, if it exists and is not a core extension.
+ */
+function getExtensionIdForOpcode (opcode: string) {
+    // Allowed ID characters are those matching the regular expression [\w-]: A-Z, a-z, 0-9, and hyphen ("-").
+    const index = opcode.indexOf('_');
+    const forbiddenSymbols = /[^\w-]/g;
+    const prefix = opcode.substring(0, index).replace(forbiddenSymbols, '-');
+    if (prefix !== '') return prefix;
+}
 
 /**
  * Get Blockly instance.
@@ -76,6 +92,7 @@ export function trap (open: typeof window.open): Promise<void> {
         // @ts-expect-error defined in webpack define plugin
         version: __CHIBI_VERSION__,
         registeredExtension: {},
+        settings: settings,
         openFrontend: openFrontend.bind(null, open)
     };
 
@@ -182,9 +199,47 @@ export function inject (vm: ChibiCompatibleVM) {
         // @ts-expect-error internal hack
         const json = originalToJSONFunc.call(this, optTargetId, ...args);
         const obj = JSON.parse(json);
-        const [urls, envs] = window.chibi.loader.getLoadedInfo();
+
+        const urls: Record<string, string> = {};
+        const envs: Record<string, string> = {};
+        const sideloadIds: string[] = [];
+        for (const [extId, ext] of window.chibi.loader.loadedScratchExtension.entries()) {
+            urls[extId] = ext.url;
+            envs[extId] = ext.env;
+            sideloadIds.push(extId);
+        }
         obj.extensionURLs = Object.assign({}, obj.extensionURLs, urls);
         obj.extensionEnvs = Object.assign({}, obj.extensionEnvs, envs);
+
+        if (window.chibi.settings.convertProcCall) {
+            for (const target of obj.targets) {
+                for (const blockId in target.blocks) {
+                    const block = target.blocks[blockId];
+                    if (!block.opcode) continue;
+                    const extensionId = getExtensionIdForOpcode(block.opcode);
+                    if (!extensionId) continue;
+                    if (sideloadIds.includes(extensionId)) {
+                        if (!('mutation' in block)) block.mutation = {};
+                        block.mutation.proccode = `[📎 Sideload] ${block.opcode}`;
+                        block.mutation.children = [];
+                        block.mutation.tagName = 'mutation';
+
+	                    block.opcode = 'procedures_call';
+                    }
+                }
+            }
+            for (const i in obj.monitors) {
+                const monitor = obj.monitors[i];
+                if (!monitor.opcode) continue;
+                const extensionId = getExtensionIdForOpcode(monitor.opcode);
+                if (!extensionId) continue;
+                if (sideloadIds.includes(extensionId)) {
+                    if (!('sideloadMonitors' in obj)) obj.sideloadMonitors = [];
+                    obj.sideloadMonitors.push(monitor);
+                    obj.monitors.splice(i, 1);
+                }
+            }
+        }
         return JSON.stringify(obj);
     };
 
@@ -199,6 +254,32 @@ export function inject (vm: ChibiCompatibleVM) {
                             ? projectJSON.extensionEnvs[id]
                             : 'sandboxed'
                 };
+            }
+            for (const target of projectJSON.targets) {
+                for (const blockId in target.blocks) {
+                    const block = target.blocks[blockId];
+                    if (block.opcode === 'procedures_call' && 'mutation' in block) {
+                        if (!block.mutation.proccode.trim().startsWith('[📎 Sideload] ')) {
+                            continue;
+                        }
+                        const originalOpcode = block.mutation.proccode.trim().substring(14);
+                        const extensionId = getExtensionIdForOpcode(originalOpcode);
+                        if (!extensionId) {
+                            warn(`find a sideload block with an invalid id: ${originalOpcode}, ignored.`);
+                            continue;
+                        }
+                        if (!(extensionId in window.chibi.registeredExtension)) {
+                            warn(`find a sideload block with unregistered extension: ${extensionId}, ignored.`);
+                            continue;
+                        }
+	                    block.opcode = originalOpcode;
+	                    delete block.mutation;
+                    }
+                }
+            }
+            if ('sideloadMonitors' in projectJSON) {
+                projectJSON.monitors.push(...projectJSON.sideloadMonitors);
+                delete projectJSON.sideloadMonitors;
             }
         }
         // @ts-expect-error internal hack

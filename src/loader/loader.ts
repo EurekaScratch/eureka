@@ -94,10 +94,12 @@ class ChibiLoader {
                     const originalScript = await response.text();
                     const closureFunc = new Function('Scratch', originalScript);
                     const ctx = makeCtx(this.vm);
-                    // Provide compatibility support for some extensions
-                    // Nevertheless, it is a very bad behavior for Chibi to directly read the Scratch
-                    // object on the window, because the extension should not depend on unknown external
-                    // environment.
+                    /*
+                     * Provide compatibility support for some extensions
+                     * Nevertheless, it is a very bad behavior for Chibi to directly read the Scratch
+                     * object on the window, because the extension should not depend on unknown external
+                     * environment.
+                     */
                     if (!('Scratch' in window)) {
                         window.Scratch = ctx;
                     }
@@ -142,19 +144,6 @@ class ChibiLoader {
         // @ts-expect-error private method
         this.vm.runtime._refreshExtensionPrimitives(info);
         return info;
-    }
-
-    /**
-     * Get all sideloaded extension infos.
-     */
-    getLoadedInfo () {
-        const extensionURLs: Record<string, string> = {};
-        const extensionEnv: Record<string, string> = {};
-        for (const [extId, ext] of this.loadedScratchExtension.entries()) {
-            extensionURLs[extId] = ext.url;
-            extensionEnv[extId] = ext.env;
-        }
-        return [extensionURLs, extensionEnv];
     }
 
     getIdByUrl (url: string) {

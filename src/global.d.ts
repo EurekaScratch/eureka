@@ -1,6 +1,7 @@
 /// <reference path="node_modules/@turbowarp/types/index.d.ts" />
 // <reference path="./loader/loader" />
 // <reference path="./loader/make-ctx" />
+// <reference path="./util/settings" />
 
 declare interface Window {
     Blockly?: Partial<ScratchBlocks>;
@@ -9,6 +10,7 @@ declare interface Window {
         vm?: VM;
         blockly?: ScratchBlocks | null;
         loader?: ChibiLoader;
+        settings: Settings;
         registeredExtension: Record<
             string,
             {
