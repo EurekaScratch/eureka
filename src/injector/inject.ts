@@ -32,9 +32,9 @@ const MAX_LISTENING_MS = 30 * 1000;
  * @param vm Virtual machine instance. For some reasons we cannot use VM here.
  * @returns Blockly instance.
  */
-function getBlocklyInstance (vm: any): any | undefined {
+function getBlocklyInstance (vm: ChibiCompatibleVM): any | null {
     // Hijack Function.prototype.apply to get React element instance.
-    function hijack (fn: (...args: unknown[]) => void): any {
+    function hijack (fn: (...args: unknown[]) => unknown) {
         const _orig = Function.prototype.apply;
         Function.prototype.apply = function (thisArg: any) {
             return thisArg;
@@ -43,21 +43,27 @@ function getBlocklyInstance (vm: any): any | undefined {
         Function.prototype.apply = _orig;
         return result;
     }
+
+    // @ts-expect-error lazy to extend VM interface
     const events = vm._events?.EXTENSION_ADDED;
     if (events) {
         if (events instanceof Function) {
             // It is a function, just hijack it.
             const result = hijack(events);
-            if (result && result.ScratchBlocks) return result.ScratchBlocks;
+            if (result && typeof result === 'object' && 'ScratchBlocks' in result) {
+                return result.ScratchBlocks;
+            }
         } else {
             // It is an array, hijack every listeners.
             for (const value of events) {
                 const result = hijack(value);
-                if (result && result.ScratchBlocks) return result.ScratchBlocks;
+                if (result && typeof result === 'object' && 'ScratchBlocks' in result) {
+                    return result.ScratchBlocks;
+                }
             }
         }
     }
-    return undefined; // Method failed.
+    return null;
 }
 
 /**
