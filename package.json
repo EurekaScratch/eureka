@@ -5,6 +5,7 @@
   "description": "Load scratch extension everywhere.",
   "repository": "https://github.com/SimonShiki/chibi",
   "author": "SimonShiki",
+  "license": "AGPL-3.0-only",
   "private": true,
   "scripts": {
     "build": "NODE_ENV=production webpack --color --bail",
@@ -23,13 +24,13 @@
     "eslint": "^8.49.0",
     "html-webpack-plugin": "^5.5.3",
     "mini-svg-data-uri": "^1.4.4",
+    "typescript": "^5.2.2",
     "webpack": "^5.88.2",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^4.15.1",
     "webpack-userscript": "^3.2.2"
   },
   "dependencies": {
-    "format-message": "^6.2.4",
-    "typescript": "^5.2.2"
+    "format-message": "6.2.4"
   }
 }

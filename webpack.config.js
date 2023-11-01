@@ -5,7 +5,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { UserscriptPlugin } = require('webpack-userscript');
 const packageJSON = require('./package.json');
 
-const prodConfig = {
+const base = {
     mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
     entry: './src/index.ts',
     output: {
@@ -54,9 +54,11 @@ const prodConfig = {
             headers: {
                 name: packageJSON.displayName,
                 author: packageJSON.author,
+                namespace: 'ScratchChibiLoader',
                 source: packageJSON.repository,
                 description: packageJSON.description,
                 version: packageJSON.version,
+                license: packageJSON.license,
                 grant: ['none'],
                 'run-at': 'document-start',
                 match: [
@@ -86,4 +88,4 @@ const prodConfig = {
     ]
 };
 
-module.exports = prodConfig;
+module.exports = base;
