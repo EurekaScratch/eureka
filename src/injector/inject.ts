@@ -147,21 +147,26 @@ export function inject (vm: ChibiCompatibleVM) {
         if (extensionURL in window.chibi.registeredExtension) {
             const { url, env } = window.chibi.registeredExtension[extensionURL];
             try {
-                const res = env
-                    ? confirm(
-                        format('chibi.tryLoadInEnv', {
-                            extensionURL,
-                            url,
-                            env
-                        })
-                    )
-                    : confirm(
-                        format('chibi.tryLoadInEnv', {
-                            extensionURL,
-                            url
-                        })
-                    );
-                if (res) {
+                let whetherSideload: boolean = false;
+                if (window.chibi.settings.noConfirmDialog) {
+                    whetherSideload = true;
+                } else {
+                    whetherSideload = env ?
+                        confirm(
+                            format('chibi.tryLoadInEnv', {
+                                extensionURL,
+                                url,
+                                env
+                            })
+                        )
+                        : confirm(
+                            format('chibi.tryLoadInEnv', {
+                                extensionURL,
+                                url
+                            })
+                        );
+                }
+                if (whetherSideload) {
                     await loader.load(
                         url,
                         (env

@@ -1,3 +1,5 @@
+import { Settings, getSettingsFromStorage } from '../util/settings';
+
 let dashboardWindow: Window | null = null;
 
 interface MothExtensionInfo {
@@ -17,7 +19,16 @@ interface MothDispatchedAllocate {
     type: 'allocate';
 }
 
-type MothDispatched = MothDispatchedAllocate | MothDispatchedLoad;
+interface MothDispatchedUpdateSettings {
+    type: 'updateSettings';
+    item: {
+        name: keyof Settings,
+        value: Settings[keyof Settings]
+    }
+}
+
+
+type MothDispatched = MothDispatchedAllocate | MothDispatchedLoad | MothDispatchedUpdateSettings;
 
 /**
  * Get all extensions.
@@ -61,6 +72,13 @@ async function messageHandler (event: MessageEvent) {
                 },
                 '*'
             );
+            dashboardWindow?.postMessage(
+                {
+                    type: 'settings',
+                    settings: getSettingsFromStorage()
+                },
+                '*'
+            );
             break;
         case 'load':
             // Load an extension.
@@ -72,6 +90,16 @@ async function messageHandler (event: MessageEvent) {
                 {
                     type: 'extension',
                     extensions: getExtensionInfo()
+                },
+                '*'
+            );
+            break;
+        case 'updateSettings':
+            window.chibi.settings[event.data.item.name] = event.data.item.value;
+            dashboardWindow?.postMessage(
+                {
+                    type: 'settings',
+                    settings: getSettingsFromStorage()
                 },
                 '*'
             );

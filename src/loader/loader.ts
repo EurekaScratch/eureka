@@ -100,7 +100,7 @@ class ChibiLoader {
                      * object on the window, because the extension should not depend on unknown external
                      * environment.
                      */
-                    if (!('Scratch' in window)) {
+                    if (!('Scratch' in window) && !window.chibi.settings.dontExposeCtx) {
                         window.Scratch = ctx;
                     }
                     ctx.extensions.register = (extensionObj: ExtensionClass) => {

@@ -2,14 +2,12 @@ export interface Settings {
     convertProcCall: boolean;
     dontExposeCtx: boolean;
     noConfirmDialog: boolean;
-    takeOverUrlLoadRequest: boolean;
 }
 
 const puppet: Settings = {
     convertProcCall: true,
     dontExposeCtx: false,
-    noConfirmDialog: false,
-    takeOverUrlLoadRequest: false
+    noConfirmDialog: false
 };
 
 const SETTINGS_KEY = '$CHIBI_SETTINGS';
@@ -18,7 +16,7 @@ if (!window.localStorage.getItem(SETTINGS_KEY)) {
     window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(puppet));
 }
 
-function getSettingsFromStorage () {
+export function getSettingsFromStorage () {
     try {
         const item = window.localStorage.getItem(SETTINGS_KEY);
         if (!item) return null;
