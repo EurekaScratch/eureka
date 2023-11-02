@@ -61,7 +61,7 @@ const base = {
                 license: packageJSON.license,
                 grant: ['none'],
                 'run-at': 'document-start',
-                match: [
+                include: [
                     'http://localhost:8601/*',
                     'https://scratch.mit.edu/projects/*',
                     'https://aerfaying.com/Projects/*',
