@@ -27,6 +27,7 @@ Chibi 是一个用户脚本，可以在任何基于 Scratch 的编辑器中加�
 - [x] CodeLab
 - [x] 40code
 - [x] TurboWarp
+- [x] 学而思
 
 # 🔥 使用方法
 1. 安装一个用户脚本管理器扩展, 例如 Tampermonkey 或 Greasymonkey。

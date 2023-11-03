@@ -29,6 +29,7 @@ Chibi is a userscript which can load 3rd-party extensions in any Scratch-based e
 - [x] CodeLab
 - [x] 40code
 - [x] TurboWarp
+- [x] Xueersi (学而思)
 
 # 🔥 Usage
 1. Install UserScript Manager like Tampermonkey or Greasymonkey.

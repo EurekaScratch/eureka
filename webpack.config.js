@@ -75,7 +75,9 @@ const base = {
                     'https://turbowarp.org/*',
                     'https://codingclip.com/*',
                     'https://editor.turbowarp.cn/*',
-                    'https://0832.ink/rc/*'
+                    'https://0832.ink/rc/*',
+                    'https://code.xueersi.com/scratch3/*',
+                    'https://code.xueersi.com/home/project/detail?lang=scratch&pid=*&version=3.0&langType=scratch'
                 ]
             },
             pretty: true,
