@@ -278,8 +278,8 @@ export function inject (vm: ChibiCompatibleVM) {
                             warn(`find a sideload block with unregistered extension: ${extensionId}, ignored.`);
                             continue;
                         }
-	                    block.opcode = originalOpcode;
-	                    delete block.mutation;
+                        block.opcode = originalOpcode;
+                        delete block.mutation;
                     }
                 }
             }

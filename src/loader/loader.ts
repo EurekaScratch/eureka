@@ -39,7 +39,9 @@ export interface ScratchExtension {
  * @returns A promise to wait for the extensions to be loaded.
  */
 async function loadChibiExtension (extensionURL: string, ctx: Context): Promise<void> {
-    const resp = await fetch(extensionURL);
+    const resp = await fetch(extensionURL, {
+        cache: 'no-cache'
+    });
     const code = await resp.text();
     return new Promise<void>((resolve, reject) => {
         const elem = document.createElement('script') as ChibiCompatibleScript;
