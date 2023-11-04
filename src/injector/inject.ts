@@ -7,6 +7,7 @@ import type VM from 'scratch-vm';
 import type Blockly from 'scratch-blocks';
 import * as l10n from '../l10n/l10n.json';
 import formatMessage from 'format-message';
+import { makeCtx } from '../loader/make-ctx';
 
 interface ChibiCompatibleWorkspace extends Blockly.Workspace {
     registerButtonCallback(key: string, callback: Function): void;
@@ -229,7 +230,7 @@ export function inject (vm: ChibiCompatibleVM) {
                         block.mutation.children = [];
                         block.mutation.tagName = 'mutation';
 
-	                    block.opcode = 'procedures_call';
+                        block.opcode = 'procedures_call';
                     }
                 }
             }
@@ -344,9 +345,12 @@ export function inject (vm: ChibiCompatibleVM) {
             return originalGetOrderFunc.call(this, extensions, ...args);
         };
     }
-
+    // Expose a context for developers.
+    if (!window.chibi.settings.dontExposeCtx) {
+        window.Scratch = makeCtx(vm);
+    }
     // Blockly stuffs
-    setTimeout(() => {
+    vm.once('workspaceUpdate', () => {
         const blockly = (window.chibi.blockly = getBlocklyInstance(vm));
         // Deprecated: this method will be removed in the future.
         if (!blockly) {
@@ -464,5 +468,5 @@ export function inject (vm: ChibiCompatibleVM) {
         const workspace = blockly.getMainWorkspace();
         workspace.getToolbox().refreshSelection();
         workspace.toolboxRefreshEnabled_ = true;
-    }, 3000);
+    });
 }

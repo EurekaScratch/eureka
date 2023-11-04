@@ -9,7 +9,9 @@
   "private": true,
   "scripts": {
     "build": "NODE_ENV=production webpack --color --bail",
+    "dev": "NODE_ENV=development webpack --color --bail",
     "lint": "eslint ./src/ --ext .js,.ts,tsx,jsx",
+    "fix": "eslint ./src/ --ext .js,.ts,tsx,jsx --fix",
     "typecheck": "tsc --watch --noEmit"
   },
   "devDependencies": {
