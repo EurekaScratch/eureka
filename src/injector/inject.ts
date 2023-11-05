@@ -210,6 +210,8 @@ export function inject (vm: ChibiCompatibleVM) {
         const envs: Record<string, string> = {};
         const sideloadIds: string[] = [];
         for (const [extId, ext] of window.chibi.loader.loadedScratchExtension.entries()) {
+            // Ignore object urls since it only works at present.
+            if (ext.url.startsWith('blob:')) continue;
             urls[extId] = ext.url;
             envs[extId] = ext.env;
             sideloadIds.push(extId);
@@ -395,7 +397,31 @@ export function inject (vm: ChibiCompatibleVM) {
                         : 'unsandboxed';
                     window.chibi.loader.load(url, mode);
                 });
-                xmlList.push(sideloadButton);
+
+                // Add temporarily load from file button
+                const sideloadTempButton = document.createElement('button');
+                sideloadTempButton.setAttribute('text', format('chibi.sideloadTemporarily'));
+                sideloadTempButton.setAttribute('callbackKey', 'CHIBI_SIDELOAD_FROM_FILE_TEMPORAILY');
+                workspace.registerButtonCallback('CHIBI_SIDELOAD_FROM_FILE_TEMPORAILY', () => {
+                    const input = document.createElement('input');
+                    input.setAttribute('type', 'file');
+                    input.setAttribute('accept', '.js');
+                    input.setAttribute('multiple', 'true');
+                    input.onchange = async (event: Event) => {
+                        const files = (event.target as HTMLInputElement).files;
+                        if (!files) return;
+                        for (const file of files) {
+                            const fileName = file.name;
+
+                            const url = URL.createObjectURL(file);
+                            const mode = confirm(format('chibi.loadInSandbox'))
+                                ? 'sandboxed' : 'unsandboxed';
+                            window.chibi.loader.load(url, mode);
+                        }
+                    };
+                    input.click();
+                });
+                xmlList.push(sideloadTempButton);
 
                 // Add chibi detection
                 const mutation = document.createElement('mutation');
@@ -451,6 +477,31 @@ export function inject (vm: ChibiCompatibleVM) {
                 window.chibi.loader.load(url, mode);
             });
             xmlList.push(sideloadButton);
+
+            // Add temporarily load from file button
+            const sideloadTempButton = document.createElement('button');
+            sideloadTempButton.setAttribute('text', format('chibi.sideloadTemporarily'));
+            sideloadTempButton.setAttribute('callbackKey', 'CHIBI_SIDELOAD_FROM_FILE_TEMPORAILY');
+            workspace.registerButtonCallback('CHIBI_SIDELOAD_FROM_FILE_TEMPORAILY', () => {
+                const input = document.createElement('input');
+                input.setAttribute('type', 'file');
+                input.setAttribute('accept', '.js');
+                input.setAttribute('multiple', 'true');
+                input.onchange = async (event: Event) => {
+                    const files = (event.target as HTMLInputElement).files;
+                    if (!files) return;
+                    for (const file of files) {
+                        const fileName = file.name;
+
+                        const url = URL.createObjectURL(file);
+                        const mode = confirm(format('chibi.loadInSandbox'))
+                            ? 'sandboxed' : 'unsandboxed';
+                        window.chibi.loader.load(url, mode);
+                    }
+                };
+                input.click();
+            });
+            xmlList.push(sideloadTempButton);
 
             // Add chibi detection
             const mutation = document.createElement('mutation');
