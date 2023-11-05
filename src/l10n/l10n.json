@@ -1,29 +1,32 @@
 {
     "zh-cn": {
-        "chibi.openFrontend": "打开面板",
-        "chibi.sideload": "从 URL 侧载扩展",
-        "chibi.sideloadTemporarily": "从文件侧载扩展",
-        "chibi.errorIgnored": "在加载扩展扩展时出现错误。为了避免加载进程的中断，此错误已被忽略。",
+        "chibi.openFrontend": "🎨 打开面板",
+        "chibi.sideload": "🌏 从 URL 侧载扩展",
+        "chibi.sideloadTemporarily": "📄 从文件侧载扩展",
+        "chibi.errorIgnored": "❌ 在加载扩展扩展时出现错误。为了避免加载进程的中断，此错误已被忽略。",
+        "chibi.exprimentalFileWarning": "🛠️ 这是一项实验性功能 -- 刷新页面后插件将不可用。\n确定要继续么？",
         "chibi.tryLoad": "🤨 项目正从 {url} 加载扩展 {extensionURL}。要加载么？",
         "chibi.tryLoadInEnv": "🤨 项目正以 {env} 模式从 {url} 加载扩展 {extensionURL}。要加载么？",
         "chibi.loadInSandbox": "🤨 要在沙箱模式中加载扩展么？",
-        "chibi.enterURL": "🌐 输入 URL"
+        "chibi.enterURL": "🌐 输入 URL。"
     },
     "en": {
-        "chibi.openFrontend": "Open Frontend",
-        "chibi.sideload": "Sideload from URL",
-        "chibi.sideloadTemporarily": "Sideload from File",
-        "chibi.errorIgnored": "Error occurred while sideloading extension. To avoid interrupting the loading process, we chose to ignore this error.",
+        "chibi.openFrontend": "🎨 Open Frontend",
+        "chibi.sideload": "🌎 Sideload from URL",
+        "chibi.sideloadTemporarily": "📄 Sideload from File",
+        "chibi.errorIgnored": "❌ Error occurred while sideloading extension. To avoid interrupting the loading process, we chose to ignore this error.",
+        "chibi.exprimentalFileWarning": "🛠️ This is an experimental feature -- the extension will be unavailable after reloading.\nAre you sure you want to continue?",
         "chibi.tryLoad": "🤨 Project is trying to sideloading {extensionURL} from {url}. Do you want to load?",
         "chibi.tryLoadInEnv": "🤨 Project is trying to sideloading {extensionURL} from {url} in {env} mode. Do you want to load?",
         "chibi.loadInSandbox": "🤨 Do you want to load it in the sandbox?",
-        "chibi.enterURL": "🌐 Enter URL"
+        "chibi.enterURL": "🌐 Enter URL."
     },
     "ja": {
-        "chibi.openFrontend": "ダッシュボードを開く",
-        "chibi.sideload": "URL から拡張機能を導入",
-        "chibi.sideloadTemporarily": "ファイルから拡張機能を導入",
-        "chibi.errorIgnored": "拡張機能のサイドロード中でエラーが発生しました。ロードの中断を防ぐために、このエラーは無視しました。",
+        "chibi.openFrontend": "🎨 ダッシュボードを開く",
+        "chibi.sideload": "🌏 URL から拡張機能を導入",
+        "chibi.sideloadTemporarily": "📄 ファイルから拡張機能を導入",
+        "chibi.errorIgnored": "❌ 拡張機能のサイドロード中でエラーが発生しました。ロードの中断を防ぐために、このエラーは無視しました。",
+        "chibi.exprimentalFileWarning": "🛠️ これは実験機能であり -- ページをリロードしたら、拡張機能は使用できなくなります。\nよろしいですか？",
         "chibi.tryLoad": "🤨 プロジェクトは {url} から {extensionURL} をサイドロードしています。ロードしますか？",
         "chibi.tryLoadInEnv": "🤨 プロジェクトは {env} モードで、{url} から {extensionURL} をサイドロードしています。ロードしますか？",
         "chibi.loadInSandbox": "🤨 サンドボックス環境でロードしますか？",

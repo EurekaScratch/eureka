@@ -1,5 +1,5 @@
 /// <reference path="../global.d.ts" />
-import { warn, error, log } from '../util/log';
+import { warn, error } from '../util/log';
 import {
     StandardScratchExtensionClass as ExtensionClass,
     ExtensionMetadata,
@@ -39,43 +39,48 @@ class UnsandboxedLoader {
      */
     loading: Promise<void> = Promise.resolve();
 
-    async load (extensionURL: string, ctx: Context) {
+    async load(extensionURL: string, ctx: Context) {
         return (this.loading = this.loading.then(() => {
             return (async () => {
-                const resp = await fetch(extensionURL, {
-                    cache: 'no-cache'
-                });
-                const code = await resp.text();
-                return new Promise<void>((resolve, reject) => {
-                    const elem = document.createElement('script') as ChibiCompatibleScript;
-                    const src = URL.createObjectURL(
-                        new Blob(
-                            [
-                                `
+                try {
+                    const resp = await fetch(extensionURL, {
+                        cache: 'no-cache'
+                    });
+                    const code = await resp.text();
+                    return new Promise<void>((resolve) => {
+                        const elem = document.createElement('script') as ChibiCompatibleScript;
+                        const src = URL.createObjectURL(
+                            new Blob(
+                                [
+                                    `
 var Scratch = document.getElementById('chibiExtension')?.Scratch;
 eval(${JSON.stringify(`${code}\n//# sourceURL=${extensionURL}`)});
 `
-                            ],
-                            { type: 'text/javascript' }
-                        )
-                    );
-                    elem.defer = true;
-                    elem.Scratch = ctx;
-                    elem.type = 'module'; // Experimental ESM support
-                    elem.src = src;
-                    elem.id = 'chibiExtension';
-                    document.head.appendChild(elem);
-                    elem.addEventListener('load', () => {
-                        URL.revokeObjectURL(src);
-                        document.head.removeChild(elem);
-                        resolve();
+                                ],
+                                { type: 'text/javascript' }
+                            )
+                        );
+                        elem.defer = true;
+                        elem.Scratch = ctx;
+                        elem.type = 'module'; // Experimental ESM support
+                        elem.src = src;
+                        elem.id = 'chibiExtension';
+                        document.head.appendChild(elem);
+                        elem.addEventListener('load', () => {
+                            URL.revokeObjectURL(src);
+                            document.head.removeChild(elem);
+                            resolve();
+                        });
+                        elem.addEventListener('error', (err) => {
+                            URL.revokeObjectURL(src);
+                            document.head.removeChild(elem);
+                            error(err.error);
+                            resolve();
+                        });
                     });
-                    elem.addEventListener('error', (err) => {
-                        URL.revokeObjectURL(src);
-                        document.head.removeChild(elem);
-                        reject(err);
-                    });
-                });
+                } catch (e) {
+                    error(e);
+                }
             })();
         }));
     }
@@ -117,7 +122,7 @@ class ChibiLoader {
      */
     loadedScratchExtension = new Map<string, ScratchExtension>();
 
-    constructor (vm: VM) {
+    constructor(vm: VM) {
         this.vm = vm;
         dispatch.setService('loader', this).catch((e: Error) => {
             error(`ChibiLoader was unable to register extension service: ${JSON.stringify(e)}`);
@@ -129,7 +134,7 @@ class ChibiLoader {
      * @param {ExtensionClass | string} ext - Extension's data.
      * @param {'sandboxed' | 'unsandboxed'} env - Extension's running environment.
      */
-    async load (ext: string | ExtensionClass, env: 'sandboxed' | 'unsandboxed' = 'sandboxed') {
+    async load(ext: string | ExtensionClass, env: 'sandboxed' | 'unsandboxed' = 'sandboxed') {
         if (typeof ext === 'string') {
             switch (env) {
                 case 'sandboxed':
@@ -177,7 +182,7 @@ class ChibiLoader {
      * Reload a scratch-standard extension.
      * @param {string} extensionId - Extension's ID
      */
-    async reload (extensionId: string) {
+    async reload(extensionId: string) {
         const targetExt = this.loadedScratchExtension.get(extensionId);
         if (!targetExt) {
             throw new Error(`Cannot locate extension ${extensionId}.`);
@@ -197,7 +202,7 @@ class ChibiLoader {
         return info;
     }
 
-    getIdByUrl (url: string) {
+    getIdByUrl(url: string) {
         for (const [extId, ext] of this.loadedScratchExtension.entries()) {
             if (ext.url === url) {
                 return extId;
@@ -211,7 +216,7 @@ class ChibiLoader {
      *  original extension manager to reload locales. It should
      * be replaced when there's a better solution.
      */
-    reloadAll () {
+    reloadAll() {
         const allPromises: Promise<ExtensionMetadata | void>[] = [];
         for (const [extId] of this.loadedScratchExtension.entries()) {
             allPromises.push(this.reload(extId));
@@ -226,7 +231,7 @@ class ChibiLoader {
      * @param {string} serviceName - the name of the service hosting the extension
      * @private
      */
-    private _registerExtensionInfo (
+    private _registerExtensionInfo(
         extensionObject: ExtensionClass | null,
         extensionInfo: ExtensionMetadata,
         extensionURL: string,
@@ -258,7 +263,7 @@ class ChibiLoader {
      * @returns {string} - the sanitized text
      * @private
      */
-    private _sanitizeID (text: string) {
+    private _sanitizeID(text: string) {
         return text.toString().replace(/[<"&]/, '_');
     }
 
@@ -271,7 +276,7 @@ class ChibiLoader {
      * @returns {ExtensionInfo} - a new extension info object with cleaned-up values
      * @private
      */
-    private _prepareExtensionInfo (
+    private _prepareExtensionInfo(
         extensionObject: ExtensionClass | null,
         extensionInfo: ExtensionMetadata,
         serviceName?: string
@@ -329,7 +334,7 @@ class ChibiLoader {
      * @returns {Array.<MenuInfo>} - a menuInfo object with all preprocessing done.
      * @private
      */
-    private _prepareMenuInfo (
+    private _prepareMenuInfo(
         extensionObject: ExtensionClass | null,
         menus: Record<string, ExtensionMenu>,
         serviceName?: string
@@ -376,7 +381,7 @@ class ChibiLoader {
      * @returns {Array} menu items ready for scratch-blocks.
      * @private
      */
-    private _getExtensionMenuItems (
+    private _getExtensionMenuItems(
         extensionObject: ExtensionClass,
         menuItemFunctionName: string,
         serviceName?: string
@@ -422,7 +427,7 @@ class ChibiLoader {
      * @returns {ExtensionBlockMetadata} - a new block info object which has values for all relevant optional fields.
      * @private
      */
-    private _prepareBlockInfo (
+    private _prepareBlockInfo(
         extensionObject: ExtensionClass | null,
         blockInfo: ExtensionBlockMetadata,
         serviceName?: string
@@ -507,7 +512,7 @@ class ChibiLoader {
         return blockInfo;
     }
 
-    async updateLocales () {
+    async updateLocales() {
         await this.reloadAll();
     }
 
@@ -515,11 +520,11 @@ class ChibiLoader {
      * Regenerate blockinfo for any loaded extensions
      * @returns {Promise} resolved once all the extensions have been reinitialized
      */
-    async refreshBlocks () {
+    async refreshBlocks() {
         await this.reloadAll();
     }
 
-    allocateWorker () {
+    allocateWorker() {
         const workerInfo = this.pendingExtensions.shift();
         if (!workerInfo) {
             warn('pending extension queue is empty');
@@ -534,7 +539,7 @@ class ChibiLoader {
      * Collect extension metadata from the specified service and begin the extension registration process.
      * @param {string} serviceName - the name of the service hosting the extension.
      */
-    async registerExtensionService (extensionURL: string, serviceName: string) {
+    async registerExtensionService(extensionURL: string, serviceName: string) {
         const info = await dispatch.call(serviceName, 'getInfo');
         this._registerExtensionInfo(null, info, extensionURL, serviceName);
     }
@@ -544,7 +549,7 @@ class ChibiLoader {
      * @param {int} id - the worker ID.
      * @param {*?} e - the error encountered during initialization, if any.
      */
-    onWorkerInit (id: number, e?: Error) {
+    onWorkerInit(id: number, e?: Error) {
         const workerInfo = this.pendingWorkers[id];
         delete this.pendingWorkers[id];
         if (e) {

@@ -36,7 +36,7 @@ const MAX_LISTENING_MS = 30 * 1000;
  * @param {!string} opcode The opcode to examine for extension.
  * @return {?string} The extension ID, if it exists and is not a core extension.
  */
-function getExtensionIdForOpcode (opcode: string) {
+function getExtensionIdForOpcode(opcode: string) {
     // Allowed ID characters are those matching the regular expression [\w-]: A-Z, a-z, 0-9, and hyphen ("-").
     const index = opcode.indexOf('_');
     const forbiddenSymbols = /[^\w-]/g;
@@ -49,9 +49,9 @@ function getExtensionIdForOpcode (opcode: string) {
  * @param vm Virtual machine instance. For some reasons we cannot use VM here.
  * @returns Blockly instance.
  */
-function getBlocklyInstance (vm: ChibiCompatibleVM): any | null {
+function getBlocklyInstance(vm: ChibiCompatibleVM): any | null {
     // Hijack Function.prototype.apply to get React element instance.
-    function hijack (fn: (...args: unknown[]) => unknown) {
+    function hijack(fn: (...args: unknown[]) => unknown) {
         const _orig = Function.prototype.apply;
         Function.prototype.apply = function (thisArg: any) {
             return thisArg;
@@ -88,7 +88,7 @@ function getBlocklyInstance (vm: ChibiCompatibleVM): any | null {
  * @param open window.open function (compatible with ccw).
  * @return Callback promise. After that you could use window.chibi.vm to get the virtual machine.
  */
-export function trap (open: typeof window.open): Promise<void> {
+export function trap(open: typeof window.open): Promise<void> {
     window.chibi = {
         // @ts-expect-error defined in webpack define plugin
         version: __CHIBI_VERSION__,
@@ -130,7 +130,7 @@ export function trap (open: typeof window.open): Promise<void> {
  * Inject into the original virtual machine.
  * @param vm {ChibiCompatibleVM} Original virtual machine instance.
  */
-export function inject (vm: ChibiCompatibleVM) {
+export function inject(vm: ChibiCompatibleVM) {
     const loader = (window.chibi.loader = new ChibiLoader(vm));
     const originalLoadFunc = vm.extensionManager.loadExtensionURL;
     const getLocale = vm.getLocale;
@@ -154,18 +154,18 @@ export function inject (vm: ChibiCompatibleVM) {
                 } else {
                     whetherSideload = env
                         ? confirm(
-                            format('chibi.tryLoadInEnv', {
-                                extensionURL,
-                                url,
-                                env
-                            })
-                        )
+                              format('chibi.tryLoadInEnv', {
+                                  extensionURL,
+                                  url,
+                                  env
+                              })
+                          )
                         : confirm(
-                            format('chibi.tryLoadInEnv', {
-                                extensionURL,
-                                url
-                            })
-                        );
+                              format('chibi.tryLoadInEnv', {
+                                  extensionURL,
+                                  url
+                              })
+                          );
                 }
                 if (whetherSideload) {
                     await loader.load(
@@ -173,8 +173,8 @@ export function inject (vm: ChibiCompatibleVM) {
                         (env
                             ? env
                             : confirm(format('chibi.loadInSandbox'))
-                                ? 'sandboxed'
-                                : 'unsandboxed') as 'unsandboxed' | 'sandboxed'
+                            ? 'sandboxed'
+                            : 'unsandboxed') as 'unsandboxed' | 'sandboxed'
                     );
                     const extensionId = loader.getIdByUrl(url);
                     // @ts-expect-error internal hack
@@ -406,24 +406,28 @@ export function inject (vm: ChibiCompatibleVM) {
                     'CHIBI_SIDELOAD_FROM_FILE_TEMPORAILY'
                 );
                 workspace.registerButtonCallback('CHIBI_SIDELOAD_FROM_FILE_TEMPORAILY', () => {
-                    const input = document.createElement('input');
-                    input.setAttribute('type', 'file');
-                    input.setAttribute('accept', '.js');
-                    input.setAttribute('multiple', 'true');
-                    input.addEventListener('change', async (event: Event) => {
-                        const files = (event.target as HTMLInputElement).files;
-                        if (!files) return;
-                        for (const file of files) {
-                            const url = `data:text/javascript;charset=utf-8,${encodeURIComponent(
-                                await file.text()
-                            )}`;
-                            const mode = confirm(format('chibi.loadInSandbox'))
-                                ? 'sandboxed'
-                                : 'unsandboxed';
-                            window.chibi.loader.load(url, mode);
-                        }
-                    });
-                    input.click();
+                    if (prompt(format('chibi.exprimentalFileWarning'))) {
+                        const input = document.createElement('input');
+                        input.setAttribute('type', 'file');
+                        input.setAttribute('accept', '.js');
+                        input.setAttribute('multiple', 'true');
+                        input.addEventListener('change', async (event: Event) => {
+                            const files = (event.target as HTMLInputElement).files;
+                            if (!files) return;
+                            for (const file of files) {
+                                const url = URL.createObjectURL(file);
+                                const mode = confirm(format('chibi.loadInSandbox'))
+                                    ? 'sandboxed'
+                                    : 'unsandboxed';
+                                try {
+                                    await window.chibi.loader.load(url, mode);
+                                } finally {
+                                    URL.revokeObjectURL(url);
+                                }
+                            }
+                        });
+                        input.click();
+                    }
                 });
                 xmlList.push(sideloadTempButton);
 
