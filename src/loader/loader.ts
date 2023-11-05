@@ -32,41 +32,57 @@ export interface ScratchExtension {
     info: ExtensionMetadata;
     instance: string | ExtensionClass; // The serviceName or extensionClass.
 }
-/**
- * Load unsandboxed extensions with ESM support.
- * @param extensionURL Extension's URL.
- * @param ctx Scratch context.
- * @returns A promise to wait for the extensions to be loaded.
- */
-async function loadChibiExtension (extensionURL: string, ctx: Context): Promise<void> {
-    const resp = await fetch(extensionURL, {
-        cache: 'no-cache'
-    });
-    const code = await resp.text();
-    return new Promise<void>((resolve, reject) => {
-        const elem = document.createElement('script') as ChibiCompatibleScript;
-        elem.id = 'chibiExtension';
-        elem.defer = true;
-        elem.Scratch = ctx;
-        elem.type = 'module'; // Experimental ESM support
-        elem.src =
-            URL.createObjectURL(new Blob([`
+
+class UnsandboxedLoader {
+    /**
+     * Whether the extension is loading.
+     */
+    loading: Promise<void> = Promise.resolve();
+
+    async load (extensionURL: string, ctx: Context) {
+        return (this.loading = this.loading.then(() => {
+            return (async () => {
+                const resp = await fetch(extensionURL, {
+                    cache: 'no-cache'
+                });
+                const code = await resp.text();
+                return new Promise<void>((resolve, reject) => {
+                    const elem = document.createElement('script') as ChibiCompatibleScript;
+                    const src = URL.createObjectURL(
+                        new Blob(
+                            [
+                                `
 var Scratch = document.getElementById('chibiExtension')?.Scratch;
-eval(${JSON.stringify(code + `\n//# sourceURL=${extensionURL}`)});
-`], { type: 'text/javascript' }));
-        document.head.appendChild(elem);
-        elem.addEventListener('load', () => {
-            URL.revokeObjectURL(elem.src);
-            document.head.removeChild(elem);
-            resolve();
-        });
-        elem.addEventListener('error', (err) => {
-            URL.revokeObjectURL(elem.src);
-            document.head.removeChild(elem);
-            reject(err);
-        });
-    });
+eval(${JSON.stringify(`${code}\n//# sourceURL=${extensionURL}`)});
+`
+                            ],
+                            { type: 'text/javascript' }
+                        )
+                    );
+                    elem.defer = true;
+                    elem.Scratch = ctx;
+                    elem.type = 'module'; // Experimental ESM support
+                    elem.src = src;
+                    elem.id = 'chibiExtension';
+                    document.head.appendChild(elem);
+                    elem.addEventListener('load', () => {
+                        URL.revokeObjectURL(src);
+                        document.head.removeChild(elem);
+                        resolve();
+                    });
+                    elem.addEventListener('error', (err) => {
+                        URL.revokeObjectURL(src);
+                        document.head.removeChild(elem);
+                        reject(err);
+                    });
+                });
+            })();
+        }));
+    }
 }
+
+const unsandboxedLoader = new UnsandboxedLoader();
+
 class ChibiLoader {
     /**
      * Editor's Virtual Machine instance.
@@ -135,7 +151,6 @@ class ChibiLoader {
                      * object on the window, because the extension should not depend on unknown external
                      * environment.
                      */
-                    const originalScratch = window.Scratch;
                     if (!window.chibi.settings.dontExposeCtx) {
                         window.Scratch = ctx;
                     }
@@ -143,10 +158,7 @@ class ChibiLoader {
                         const extensionInfo = extensionObj.getInfo();
                         this._registerExtensionInfo(extensionObj, extensionInfo, ext);
                     };
-                    await loadChibiExtension(ext, ctx);
-                    if (!window.chibi.settings.dontExposeCtx) {
-                        window.Scratch = originalScratch;
-                    }
+                    await unsandboxedLoader.load(ext, ctx);
                     return;
                 }
                 default:

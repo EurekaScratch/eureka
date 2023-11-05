@@ -5,7 +5,6 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { UserscriptPlugin } = require('webpack-userscript');
 const packageJSON = require('./package.json');
 const process = require('node:process');
-var __dirname;
 
 function getMatchURL () {
     const url = [
@@ -35,6 +34,7 @@ const base = {
     mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
     entry: './src/index.ts',
     output: {
+        // eslint-disable-next-line no-undef
         path: path.resolve(__dirname, 'dist'),
         publicPath: './',
         filename: 'chibi.js'
