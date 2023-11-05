@@ -4,7 +4,7 @@ import { WorkerDispatch as dispatch } from './dispatch/worker-dispatch';
 
 declare global {
     // eslint-disable-next-line no-var
-    var Scratch: Context;
+    var Scratch: Context | undefined;
 }
 /**
  * Here we implements a Worker dispatcher for sandboxed extensions.

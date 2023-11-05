@@ -1,5 +1,5 @@
 /// <reference path="../global.d.ts" />
-import { log, warn, error } from '../util/log';
+import { warn, error } from '../util/log';
 import {
     StandardScratchExtensionClass as ExtensionClass,
     ExtensionMetadata,
@@ -11,7 +11,7 @@ import {
 } from '../typings';
 import { maybeFormatMessage } from '../util/maybe-format-message';
 import { CentralDispatch as dispatch } from './dispatch/central-dispatch';
-import { makeCtx } from './make-ctx';
+import { Context, makeCtx } from './make-ctx';
 import ExtensionSandbox from './sandbox.worker';
 import type VM from 'scratch-vm';
 
@@ -21,6 +21,10 @@ interface PendingExtensionWorker {
     reject: (value: unknown) => void;
 }
 
+interface ChibiCompatibleScript extends HTMLScriptElement {
+    Scratch?: Context;
+}
+
 export interface ScratchExtension {
     id: string;
     url: string;
@@ -28,6 +32,61 @@ export interface ScratchExtension {
     info: ExtensionMetadata;
     instance: string | ExtensionClass; // The serviceName or extensionClass.
 }
+
+class UnsandboxedLoader {
+    /**
+     * Whether the extension is loading.
+     */
+    loading: Promise<void> = Promise.resolve();
+
+    async load (extensionURL: string, ctx: Context) {
+        return (this.loading = this.loading.then(() => {
+            return (async () => {
+                try {
+                    const resp = await fetch(extensionURL, {
+                        cache: 'no-cache'
+                    });
+                    const code = await resp.text();
+                    return new Promise<void>((resolve) => {
+                        const elem = document.createElement('script') as ChibiCompatibleScript;
+                        const src = URL.createObjectURL(
+                            new Blob(
+                                [
+                                    `
+var Scratch = document.getElementById('chibiExtension')?.Scratch;
+eval(${JSON.stringify(`${code}\n//# sourceURL=${extensionURL}`)});
+`
+                                ],
+                                { type: 'text/javascript' }
+                            )
+                        );
+                        elem.defer = true;
+                        elem.Scratch = ctx;
+                        elem.type = 'module'; // Experimental ESM support
+                        elem.src = src;
+                        elem.id = 'chibiExtension';
+                        document.head.appendChild(elem);
+                        elem.addEventListener('load', () => {
+                            URL.revokeObjectURL(src);
+                            document.head.removeChild(elem);
+                            resolve();
+                        });
+                        elem.addEventListener('error', (err) => {
+                            URL.revokeObjectURL(src);
+                            document.head.removeChild(elem);
+                            error(err.error);
+                            resolve();
+                        });
+                    });
+                } catch (e) {
+                    error(e);
+                }
+            })();
+        }));
+    }
+}
+
+const unsandboxedLoader = new UnsandboxedLoader();
 
 class ChibiLoader {
     /**
@@ -90,9 +149,6 @@ class ChibiLoader {
                         dispatch.addWorker(ExtensionWorker);
                     });
                 case 'unsandboxed': {
-                    const response = await fetch(ext);
-                    const originalScript = await response.text();
-                    const closureFunc = new Function('Scratch', originalScript);
                     const ctx = makeCtx(this.vm);
                     /*
                      * Provide compatibility support for some extensions
@@ -100,14 +156,14 @@ class ChibiLoader {
                      * object on the window, because the extension should not depend on unknown external
                      * environment.
                      */
-                    if (!('Scratch' in window) && !window.chibi.settings.dontExposeCtx) {
+                    if (!window.chibi.settings.dontExposeCtx) {
                         window.Scratch = ctx;
                     }
                     ctx.extensions.register = (extensionObj: ExtensionClass) => {
                         const extensionInfo = extensionObj.getInfo();
                         this._registerExtensionInfo(extensionObj, extensionInfo, ext);
                     };
-                    closureFunc(ctx);
+                    await unsandboxedLoader.load(ext, ctx);
                     return;
                 }
                 default:

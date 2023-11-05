@@ -31,6 +31,7 @@ Chibi は Tampermonkey/GreasyMonkey に対応するユーザースクリプト�
 - [X] CodeLab
 - [X] 40code
 - [X] TurboWarp
+- [X] Xueersi
 
 # 🔥 使い方
 

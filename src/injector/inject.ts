@@ -7,6 +7,7 @@ import type VM from 'scratch-vm';
 import type Blockly from 'scratch-blocks';
 import * as l10n from '../l10n/l10n.json';
 import formatMessage from 'format-message';
+import { makeCtx } from '../loader/make-ctx';
 
 interface ChibiCompatibleWorkspace extends Blockly.Workspace {
     registerButtonCallback(key: string, callback: Function): void;
@@ -151,8 +152,8 @@ export function inject (vm: ChibiCompatibleVM) {
                 if (window.chibi.settings.noConfirmDialog) {
                     whetherSideload = true;
                 } else {
-                    whetherSideload = env ?
-                        confirm(
+                    whetherSideload = env
+                        ? confirm(
                             format('chibi.tryLoadInEnv', {
                                 extensionURL,
                                 url,
@@ -231,7 +232,7 @@ export function inject (vm: ChibiCompatibleVM) {
                         block.mutation.children = [];
                         block.mutation.tagName = 'mutation';
 
-	                    block.opcode = 'procedures_call';
+                        block.opcode = 'procedures_call';
                     }
                 }
             }
@@ -272,15 +273,19 @@ export function inject (vm: ChibiCompatibleVM) {
                         const originalOpcode = block.mutation.proccode.trim().substring(14);
                         const extensionId = getExtensionIdForOpcode(originalOpcode);
                         if (!extensionId) {
-                            warn(`find a sideload block with an invalid id: ${originalOpcode}, ignored.`);
+                            warn(
+                                `find a sideload block with an invalid id: ${originalOpcode}, ignored.`
+                            );
                             continue;
                         }
                         if (!(extensionId in window.chibi.registeredExtension)) {
-                            warn(`find a sideload block with unregistered extension: ${extensionId}, ignored.`);
+                            warn(
+                                `find a sideload block with unregistered extension: ${extensionId}, ignored.`
+                            );
                             continue;
                         }
-	                    block.opcode = originalOpcode;
-	                    delete block.mutation;
+                        block.opcode = originalOpcode;
+                        delete block.mutation;
                     }
                 }
             }
@@ -346,9 +351,8 @@ export function inject (vm: ChibiCompatibleVM) {
             return originalGetOrderFunc.call(this, extensions, ...args);
         };
     }
-
     // Blockly stuffs
-    setTimeout(() => {
+    vm.once('workspaceUpdate', () => {
         const blockly = (window.chibi.blockly = getBlocklyInstance(vm));
         // Deprecated: this method will be removed in the future.
         if (!blockly) {
@@ -397,25 +401,33 @@ export function inject (vm: ChibiCompatibleVM) {
                 // Add temporarily load from file button
                 const sideloadTempButton = document.createElement('button');
                 sideloadTempButton.setAttribute('text', format('chibi.sideloadTemporarily'));
-                sideloadTempButton.setAttribute('callbackKey', 'CHIBI_SIDELOAD_FROM_FILE_TEMPORAILY');
+                sideloadTempButton.setAttribute(
+                    'callbackKey',
+                    'CHIBI_SIDELOAD_FROM_FILE_TEMPORAILY'
+                );
                 workspace.registerButtonCallback('CHIBI_SIDELOAD_FROM_FILE_TEMPORAILY', () => {
-                    const input = document.createElement('input');
-                    input.setAttribute('type', 'file');
-                    input.setAttribute('accept', '.js');
-                    input.setAttribute('multiple', 'true');
-                    input.onchange = async (event: Event) => {
-                        const files = (event.target as HTMLInputElement).files;
-                        if (!files) return;
-                        for (const file of files) {
-                            const fileName = file.name;
-
-                            const url = URL.createObjectURL(file);
-                            const mode = confirm(format('chibi.loadInSandbox'))
-                                ? 'sandboxed' : 'unsandboxed';
-                            window.chibi.loader.load(url, mode);
-                        }
-                    };
-                    input.click();
+                    if (prompt(format('chibi.exprimentalFileWarning'))) {
+                        const input = document.createElement('input');
+                        input.setAttribute('type', 'file');
+                        input.setAttribute('accept', '.js');
+                        input.setAttribute('multiple', 'true');
+                        input.addEventListener('change', async (event: Event) => {
+                            const files = (event.target as HTMLInputElement).files;
+                            if (!files) return;
+                            for (const file of files) {
+                                const url = URL.createObjectURL(file);
+                                const mode = confirm(format('chibi.loadInSandbox'))
+                                    ? 'sandboxed'
+                                    : 'unsandboxed';
+                                try {
+                                    await window.chibi.loader.load(url, mode);
+                                } finally {
+                                    URL.revokeObjectURL(url);
+                                }
+                            }
+                        });
+                        input.click();
+                    }
                 });
                 xmlList.push(sideloadTempButton);
 
@@ -479,23 +491,28 @@ export function inject (vm: ChibiCompatibleVM) {
             sideloadTempButton.setAttribute('text', format('chibi.sideloadTemporarily'));
             sideloadTempButton.setAttribute('callbackKey', 'CHIBI_SIDELOAD_FROM_FILE_TEMPORAILY');
             workspace.registerButtonCallback('CHIBI_SIDELOAD_FROM_FILE_TEMPORAILY', () => {
-                const input = document.createElement('input');
-                input.setAttribute('type', 'file');
-                input.setAttribute('accept', '.js');
-                input.setAttribute('multiple', 'true');
-                input.onchange = async (event: Event) => {
-                    const files = (event.target as HTMLInputElement).files;
-                    if (!files) return;
-                    for (const file of files) {
-                        const fileName = file.name;
-
-                        const url = URL.createObjectURL(file);
-                        const mode = confirm(format('chibi.loadInSandbox'))
-                            ? 'sandboxed' : 'unsandboxed';
-                        window.chibi.loader.load(url, mode);
-                    }
-                };
-                input.click();
+                if (prompt(format('chibi.exprimentalFileWarning'))) {
+                    const input = document.createElement('input');
+                    input.setAttribute('type', 'file');
+                    input.setAttribute('accept', '.js');
+                    input.setAttribute('multiple', 'true');
+                    input.addEventListener('change', async (event: Event) => {
+                        const files = (event.target as HTMLInputElement).files;
+                        if (!files) return;
+                        for (const file of files) {
+                            const url = URL.createObjectURL(file);
+                            const mode = confirm(format('chibi.loadInSandbox'))
+                                ? 'sandboxed'
+                                : 'unsandboxed';
+                            try {
+                                await window.chibi.loader.load(url, mode);
+                            } finally {
+                                URL.revokeObjectURL(url);
+                            }
+                        }
+                    });
+                    input.click();
+                }
             });
             xmlList.push(sideloadTempButton);
 
@@ -515,5 +532,5 @@ export function inject (vm: ChibiCompatibleVM) {
         const workspace = blockly.getMainWorkspace();
         workspace.getToolbox().refreshSelection();
         workspace.toolboxRefreshEnabled_ = true;
-    }, 3000);
+    });
 }

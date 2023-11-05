@@ -4,11 +4,37 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { UserscriptPlugin } = require('webpack-userscript');
 const packageJSON = require('./package.json');
+const process = require('node:process');
 
+function getMatchURL () {
+    const url = [
+        'https://scratch.mit.edu/projects/*',
+        'https://aerfaying.com/Projects/*',
+        'https://www.ccw.site/*',
+        'https://gitblock.cn/Projects/*',
+        'https://world.xiaomawang.com/*',
+        'https://cocrea.world/*',
+        'https://create.codelab.club/*',
+        'https://www.scratch-cn.cn/*',
+        'https://www.40code.com/*',
+        'https://turbowarp.org/*',
+        'https://codingclip.com/*',
+        'https://editor.turbowarp.cn/*',
+        'https://0832.ink/rc/*',
+        'https://code.xueersi.com/scratch3/*',
+        'https://code.xueersi.com/home/project/detail?lang=scratch&pid=*&version=3.0&langType=scratch'
+    ];
+    if (process.env.NODE_ENV === 'development') {
+        url.unshift('http://localhost:8601/*');
+        return { include: url };
+    }
+    return { match: url };
+}
 const base = {
     mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
     entry: './src/index.ts',
     output: {
+        // eslint-disable-next-line no-undef
         path: path.resolve(__dirname, 'dist'),
         publicPath: './',
         filename: 'chibi.js'
@@ -30,9 +56,7 @@ const base = {
             },
             {
                 test: /\.tsx?/,
-                use: [
-                    'babel-loader'
-                ],
+                use: ['babel-loader'],
                 exclude: /node_moudles/
             },
             {
@@ -43,15 +67,14 @@ const base = {
                 test: /\.svg$/,
                 type: 'asset/inline',
                 generator: {
-                    dataUrl: content =>
-                        svgToMiniDataURI(content.toString())
+                    dataUrl: (content) => svgToMiniDataURI(content.toString())
                 }
             }
         ]
     },
     plugins: [
         new UserscriptPlugin({
-            headers: {
+            headers: Object.assign({
                 name: packageJSON.displayName,
                 author: packageJSON.author,
                 namespace: 'ScratchChibiLoader',
@@ -61,31 +84,13 @@ const base = {
                 license: packageJSON.license,
                 grant: ['none'],
                 'run-at': 'document-start',
-                include: [
-                    'http://localhost:8601/*',
-                    'https://scratch.mit.edu/projects/*',
-                    'https://aerfaying.com/Projects/*',
-                    'https://www.ccw.site/*', 
-                    'https://gitblock.cn/Projects/*',
-                    'https://world.xiaomawang.com/*',
-                    'https://cocrea.world/*',
-                    'https://create.codelab.club/*',
-                    'https://www.scratch-cn.cn/*',
-                    'https://www.40code.com/*',
-                    'https://turbowarp.org/*',
-                    'https://codingclip.com/*',
-                    'https://editor.turbowarp.cn/*',
-                    'https://0832.ink/rc/*',
-                    'https://code.xueersi.com/scratch3/*',
-                    'https://code.xueersi.com/home/project/detail?lang=scratch&pid=*&version=3.0&langType=scratch'
-                ]
-            },
+            }, getMatchURL()),
             pretty: true,
             strict: true,
             whitelist: true
         }),
         new webpack.DefinePlugin({
-            '__CHIBI_VERSION__': JSON.stringify(packageJSON.version)
+            __CHIBI_VERSION__: JSON.stringify(packageJSON.version)
         })
     ]
 };
