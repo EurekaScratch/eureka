@@ -406,7 +406,7 @@ export function inject (vm: ChibiCompatibleVM) {
                     'CHIBI_SIDELOAD_FROM_FILE_TEMPORAILY'
                 );
                 workspace.registerButtonCallback('CHIBI_SIDELOAD_FROM_FILE_TEMPORAILY', () => {
-                    if (prompt(format('chibi.exprimentalFileWarning'))) {
+                    if (confirm(format('chibi.exprimentalFileWarning'))) {
                         const input = document.createElement('input');
                         input.setAttribute('type', 'file');
                         input.setAttribute('accept', '.js');

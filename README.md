@@ -16,7 +16,7 @@ Chibi is a userscript which can load 3rd-party extensions in any Scratch-based e
 - [x] Load Scratch standard extensions
 - [x] Unsandboxed extensions
 - [x] TurboWarp Extension API (very small part)
-- [ ] Fallback solution for visitors without script installation
+- [x] Fallback solution for visitors without script installation
 - [x] Load from editor
 
 # 🌈 Supported platforms

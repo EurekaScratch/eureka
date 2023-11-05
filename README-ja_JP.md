@@ -14,24 +14,24 @@ Chibi は Tampermonkey/GreasyMonkey に対応するユーザースクリプト�
 
 # ✨ 仕様
 
-- [X] 標準 Scratch 拡張機能をロードできる
-- [X] Unsandboxed 拡張機能をロードできる
-- [X] どこでも Turbowarp 専用機能を使える (一部)
-- [ ] 拡張機能をインストールしなくでもサードパーティー拡張機能を搭載したプロジェクトを起動できる
-- [X] 直接的にエディターから拡張機能をロードできる
+- [x] 標準 Scratch 拡張機能をロードできる
+- [x] Unsandboxed 拡張機能をロードできる
+- [x] どこでも Turbowarp 専用機能を使える (一部)
+- [x] 拡張機能をインストールしなくでもサードパーティー拡張機能を搭載したプロジェクトを起動できる
+- [x] 直接的にエディターから拡張機能をロードできる
 
 # 🌈 プラットフォーム
 
-- [X] Scratch
-- [X] CodingClip
-- [X] Cocrea
-- [X] Aerfaying
-- [X] Co-Create World
-- [X] XMW
-- [X] CodeLab
-- [X] 40code
-- [X] TurboWarp
-- [X] Xueersi
+- [x] Scratch
+- [x] CodingClip
+- [x] Cocrea
+- [x] Aerfaying
+- [x] Co-Create World
+- [x] xMW
+- [x] CodeLab
+- [x] 40code
+- [x] TurboWarp
+- [x] xueersi
 
 # 🔥 使い方
 
