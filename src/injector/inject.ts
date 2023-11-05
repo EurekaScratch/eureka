@@ -491,24 +491,28 @@ export function inject (vm: ChibiCompatibleVM) {
             sideloadTempButton.setAttribute('text', format('chibi.sideloadTemporarily'));
             sideloadTempButton.setAttribute('callbackKey', 'CHIBI_SIDELOAD_FROM_FILE_TEMPORAILY');
             workspace.registerButtonCallback('CHIBI_SIDELOAD_FROM_FILE_TEMPORAILY', () => {
-                const input = document.createElement('input');
-                input.setAttribute('type', 'file');
-                input.setAttribute('accept', '.js');
-                input.setAttribute('multiple', 'true');
-                input.onchange = async (event: Event) => {
-                    const files = (event.target as HTMLInputElement).files;
-                    if (!files) return;
-                    for (const file of files) {
-                        const fileName = file.name;
-
-                        const url = URL.createObjectURL(file);
-                        const mode = confirm(format('chibi.loadInSandbox'))
-                            ? 'sandboxed'
-                            : 'unsandboxed';
-                        window.chibi.loader.load(url, mode);
-                    }
-                };
-                input.click();
+                if (prompt(format('chibi.exprimentalFileWarning'))) {
+                    const input = document.createElement('input');
+                    input.setAttribute('type', 'file');
+                    input.setAttribute('accept', '.js');
+                    input.setAttribute('multiple', 'true');
+                    input.addEventListener('change', async (event: Event) => {
+                        const files = (event.target as HTMLInputElement).files;
+                        if (!files) return;
+                        for (const file of files) {
+                            const url = URL.createObjectURL(file);
+                            const mode = confirm(format('chibi.loadInSandbox'))
+                                ? 'sandboxed'
+                                : 'unsandboxed';
+                            try {
+                                await window.chibi.loader.load(url, mode);
+                            } finally {
+                                URL.revokeObjectURL(url);
+                            }
+                        }
+                    });
+                    input.click();
+                }
             });
             xmlList.push(sideloadTempButton);
 
