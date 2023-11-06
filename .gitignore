@@ -10,3 +10,4 @@ yarn-error.log
 
 # generated build files
 /dist
+/extension/scripts/chibi.user.js

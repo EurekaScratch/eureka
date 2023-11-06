@@ -20,8 +20,12 @@ jobs:
         run: yarn install --frozen-lockfile
       - name: Check types and Build
         run: yarn tsc --noEmit && NODE_ENV=PRODUCTION yarn run build
-      - name: Upload Canary Userscript
+      - name: Pack Chrome Extension
+        run: yarn run extension-pack
+      - name: Upload Userscript And Extension
         uses: actions/upload-artifact@v3
         with:
-          name: Canary Userscript
-          path: dist/chibi.user.js
+          name: Userscript and Unpacked Extension
+          path: |
+            dist/chibi.user.js
+            dist/unpacked-extension.zip

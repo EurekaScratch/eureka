@@ -9,7 +9,7 @@
   "private": true,
   "scripts": {
     "build": "NODE_ENV=production webpack --color --bail",
-    "dev": "NODE_ENV=development webpack --color --bail",
+    "extension:pack": "node ./scripts/generate-extension.js",
     "lint": "eslint ./src/ --ext .js,.ts,tsx,jsx",
     "typecheck": "tsc --watch --noEmit"
   },
@@ -20,6 +20,7 @@
     "@turbowarp/types": "^0.0.11",
     "@typescript-eslint/eslint-plugin": "^6.7.0",
     "@typescript-eslint/parser": "^6.7.0",
+    "archiver": "^6.0.1",
     "babel-loader": "^9.1.3",
     "codingclip-worker-loader": "^3.0.9",
     "eslint": "^8.49.0",
