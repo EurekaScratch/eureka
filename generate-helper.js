@@ -17,6 +17,16 @@ const includeURLs = [
     'http://localhost:8601/*'
 ];
 
+function pathFiltered () {
+    const filtered = [];
+    for (const originalUrl of includeURLs) {
+        const urlObject = new URL(originalUrl);
+        filtered.push(`${urlObject.origin}/*`);
+    }
+    return filtered;
+}
+
 module.exports = {
-    includeURLs
+    includeURLs,
+    pathFiltered
 };
