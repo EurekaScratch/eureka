@@ -21,7 +21,7 @@ jobs:
       - name: Check types and Build
         run: yarn tsc --noEmit && NODE_ENV=PRODUCTION yarn run build
       - name: Pack Chrome Extension
-        run: yarn run extension-pack
+        run: yarn run extension:pack
       - name: Upload Userscript And Extension
         uses: actions/upload-artifact@v3
         with:
