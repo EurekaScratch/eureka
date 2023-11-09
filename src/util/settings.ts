@@ -2,12 +2,14 @@ export interface Settings {
     convertProcCall: boolean;
     dontExposeCtx: boolean;
     noConfirmDialog: boolean;
+    sideloadOnly: boolean;
 }
 
 const puppet: Settings = {
     convertProcCall: true,
     dontExposeCtx: false,
-    noConfirmDialog: false
+    noConfirmDialog: false,
+    sideloadOnly: true
 };
 
 const SETTINGS_KEY = '$CHIBI_SETTINGS';

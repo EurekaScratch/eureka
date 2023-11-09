@@ -30,6 +30,10 @@ enum BlockType {
      */
     HAT = 'hat',
     /**
+     * A text label (not an actual block) for adding comments or labling blocks
+     */
+    LABEL = 'label',
+    /**
      * Specialized command block which may or may not run a child branch
      * If a child branch runs, the thread evaluates the loop block again.
      */
@@ -39,9 +43,9 @@ enum BlockType {
      */
     REPORTER = 'reporter',
     /**
-     * Lambda reporter with callable function.
+     * Arbitrary scratch-blocks XML.
      */
-    Lambda = 'Lambda'
+     XML = 'xml'
 }
 
 export { BlockType };

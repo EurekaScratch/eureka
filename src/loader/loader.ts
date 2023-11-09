@@ -1,5 +1,6 @@
 /// <reference path="../global.d.ts" />
 import { warn, error } from '../util/log';
+import xmlEscape from '../util/xml-escape';
 import {
     StandardScratchExtensionClass as ExtensionClass,
     ExtensionMetadata,
@@ -131,6 +132,7 @@ class ChibiLoader {
         dispatch.setService('loader', this).catch((e: Error) => {
             error(`ChibiLoader was unable to register extension service: ${JSON.stringify(e)}`);
         });
+        this.patchVM();
     }
 
     /**
@@ -304,7 +306,8 @@ class ChibiLoader {
                             result = this._prepareBlockInfo(
                                 extensionObject,
                                 blockInfo as ExtensionBlockMetadata,
-                                serviceName
+                                serviceName,
+                                extensionInfo
                             );
                             break;
                     }
@@ -434,7 +437,8 @@ class ChibiLoader {
     private _prepareBlockInfo (
         extensionObject: ExtensionClass | null,
         blockInfo: ExtensionBlockMetadata,
-        serviceName?: string
+        serviceName?: string,
+        extensionInfo?: ExtensionMetadata
     ) {
         blockInfo = Object.assign(
             {},
@@ -457,10 +461,69 @@ class ChibiLoader {
                     );
                 }
                 break;
-            case BlockType.BUTTON:
+            case BlockType.BUTTON: {
+                if (!blockInfo.func) {
+                    break;
+                }
                 if (blockInfo.opcode) {
                     warn(
                         `Ignoring opcode "${blockInfo.opcode}" for button with text: ${blockInfo.text}`
+                    );
+                }
+
+                const predefinedCallbackKeys = ['MAKE_A_LIST', 'MAKE_A_PROCEDURE', 'MAKE_A_VARIABLE'];
+                if (predefinedCallbackKeys.includes(blockInfo.func)) {
+                    break;
+                }
+
+                // Use for avoid conflict between different extensions use one button func.
+                const prefix = extensionInfo?.id;
+                if (!prefix) {
+                    warn(`Cannot assign prefix for button: ${blockInfo.func}`);
+                    break;
+                }
+                const callbackName = `${prefix}_${blockInfo.func}`;
+
+                const funcName = blockInfo.func;
+                const buttonCallback = (() => {
+                    // Maybe there's a worker
+                    if (extensionObject === null) {
+                        if (serviceName && dispatch._isRemoteService(serviceName)) {
+                            return () =>
+                                dispatch.call(
+                                    serviceName,
+                                    funcName
+                                );
+                        }
+                        warn(`Could not find extension block function called ${funcName}`);
+                        // eslint-disable-next-line @typescript-eslint/no-empty-function
+                        return () => {};
+                    }
+
+                    if (!extensionObject[funcName]) {
+                        // The function might show up later as a dynamic property of the service object
+                        warn(`Could not find extension block function called ${funcName}`);
+                    }
+                    return () =>
+                        // @ts-expect-error
+                        extensionObject[funcName]();
+                })();
+                // @ts-expect-error
+                blockInfo.callback = buttonCallback;
+                blockInfo.func = callbackName;
+                break;
+            }
+            case BlockType.LABEL:
+                if (blockInfo.opcode) {
+                    warn(
+                        `Ignoring opcode "${blockInfo.opcode}" for label with text: ${blockInfo.text}`
+                    );
+                }
+                break;
+            case BlockType.XML:
+                if (blockInfo.opcode) {
+                    warn(
+                        `Ignoring opcode "${blockInfo.opcode}" for xml: ${blockInfo.xml}`
                     );
                 }
                 break;
@@ -514,6 +577,54 @@ class ChibiLoader {
         }
 
         return blockInfo;
+    }
+
+    /**
+     *  Overwrite some runtime methods to extend extension system.
+     */
+    private patchVM () {
+        // @ts-expect-error private method
+        const origConvertFunc = this.vm.runtime._convertForScratchBlocks;
+        // @ts-expect-error private method
+        this.vm.runtime._convertForScratchBlocks = function (
+            blockInfo: ExtensionBlockMetadata,
+            categoryInfo: unknown,
+            ...args: unknown[]
+        ) {
+            if (typeof blockInfo !== 'string') {
+                switch (blockInfo.blockType) {
+                case BlockType.LABEL:
+                    return {
+                        info: blockInfo,
+                        xml: `<label text="${xmlEscape(blockInfo.text)}"/>`
+                    };
+                case BlockType.XML:
+                    return {
+                        info: blockInfo,
+                        xml: blockInfo.xml
+                    };
+                default:
+                    return origConvertFunc.call(this, blockInfo, categoryInfo, ...args);
+                }
+            }
+            return origConvertFunc.call(this, blockInfo, categoryInfo, ...args);
+        }
+
+        // @ts-expect-error private method
+        const origConvButtonFunc = this.vm.runtime._convertButtonForScratchBlocks;
+        // @ts-expect-error private method
+        this.vm.runtime._convertButtonForScratchBlocks = function (
+            buttonInfo: ExtensionBlockMetadata,
+            ...args: unknown[]
+        ) {
+            const supportedCallbackKeys = ['MAKE_A_LIST', 'MAKE_A_PROCEDURE', 'MAKE_A_VARIABLE'];
+            if (window.chibi.blockly && !supportedCallbackKeys.includes(buttonInfo.func!)) {
+                const workspace = window.Blockly.getMainWorkspace();
+                // @ts-expect-error
+                workspace.registerButtonCallback(buttonInfo.func, buttonInfo.callback);
+            }
+            return origConvButtonFunc.call(this, buttonInfo, ...args);
+        }
     }
 
     async updateLocales () {

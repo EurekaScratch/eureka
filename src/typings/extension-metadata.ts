@@ -188,13 +188,17 @@ export interface ExtensionBlockMetadata {
      */
     blockAllThreads?: boolean;
     /**
-     * @deprecated it exists in the source code, but not in the official documentation.
+     * Whether the block is controlled dynamically by mutation.
      */
     isDynamic?: boolean;
     /**
      * List of target types for which this block should appear.
      */
     filter?: TargetType[];
+    /**
+     * Arbitrary scratch-blocks XML string.
+     */
+    xml?: string;
 }
 
 export interface ExtensionArgumentMetadata {

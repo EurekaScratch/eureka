@@ -160,12 +160,14 @@ export function inject (vm: ChibiCompatibleVM) {
                                 env
                             })
                         )
-                        : confirm(
-                            format('chibi.tryLoadInEnv', {
+                        : (window.chibi.settings.sideloadOnly ?
+                            false :
+                            confirm(
+                                format('chibi.tryLoad', {
                                 extensionURL,
                                 url
-                            })
-                        );
+                                })
+                        ));
                 }
                 if (whetherSideload) {
                     await loader.load(
