@@ -33,7 +33,7 @@ Eureka is a userscript which can load 3rd-party extensions in any Scratch-based 
 
 # 🔥 Usage
 1. Install UserScript Manager like Tampermonkey or Greasymonkey.
-2. Open [release](https://github.com/EurekaScratch/eureka/releases), Then click one release to install.
+2. Open [release](https://github.com/EurekaScratch/eureka-loader/releases), Then click one release to install.
 3. Find 'Open Frontend' button in 'My Blocks' category. you can sideload your extension by clicking it. You may have to wait 5 seconds to make the button appeared.
 
 > Or... Due to editor differences, the button may not appear. There are other ways you can sideload extensions.   

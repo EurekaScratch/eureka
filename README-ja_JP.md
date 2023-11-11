@@ -36,7 +36,7 @@ Eureka は Tampermonkey/GreasyMonkey に対応するユーザースクリプト�
 # 🔥 使い方
 
 1. Tampermonkey / Greasymonkey をインストールします。
-2. [リリースページ](https://github.com/EurekaScratch/chibi/releases)を開き、バージョンを選択してインストールします。
+2. [リリースページ](https://github.com/EurekaScratch/eureka-loader/releases)を開き、バージョンを選択してインストールします。
 3. 'ブロック定義'のカテゴリーで、'Open Frontend' が現れます。クリックすると拡張機能をサイドロードできます。（都合により、およそ５秒のラグがあります）
 
 > うん…エディターによって、ボタンが正常に現れない場合もあります。その時は DevTools で拡張機能をロードできます。
