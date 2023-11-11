@@ -3,7 +3,7 @@
   "displayName": "Eureka",
   "version": "6",
   "description": "Universal scratch extension loader.",
-  "repository": "https://github.com/SimonShiki/eureka",
+  "repository": "https://github.com/EurekaScratch/eureka",
   "author": "SimonShiki",
   "license": "AGPL-3.0-only",
   "private": true,
