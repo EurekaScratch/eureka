@@ -27,5 +27,5 @@ jobs:
         with:
           name: Userscript and Unpacked Extension
           path: |
-            dist/chibi.user.js
+            dist/eureka-loader.user.js
             dist/unpacked-extension.zip
