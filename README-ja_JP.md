@@ -1,8 +1,8 @@
 <div align="center">
 
-<img alt="logo" src="./assets/chibi.png" width="200px">
+<img alt="logo" src="./assets/eureka.svg" width="200px">
 
-# Chibi (チビ)
+# Eureka
 
 #### とあるユニバーサル Scratch 拡張機能ローダーです。
 
@@ -10,7 +10,7 @@
 
 ---
 
-Chibi は Tampermonkey/GreasyMonkey に対応するユーザースクリプトであり、「どのエディターでも拡張機能が使える」という仕様が搭載されています（理論的に）。
+Eureka は Tampermonkey/GreasyMonkey に対応するユーザースクリプトであり、「どのエディターでも拡張機能が使える」という仕様が搭載されています（理論的に）。
 
 # ✨ 仕様
 
@@ -42,12 +42,12 @@ Chibi は Tampermonkey/GreasyMonkey に対応するユーザースクリプト�
 > うん…エディターによって、ボタンが正常に現れない場合もあります。その時は DevTools で拡張機能をロードできます。
 
 1. 'Ctrl + Shift + J' (Windows) / 'Cmd + Opt + J' (MacOS) で DevTools を開きます。
-2. コンソールで ``chibi.openFrontend()`` や ``chibi.loader.load([extensionURL], [load mode, like 'unsandboxed'])'``を実行します。
+2. コンソールで ``eureka.openFrontend()`` や ``eureka.loader.load([extensionURL], [load mode, like 'unsandboxed'])'``を実行します。
 3. これで完成。
 
 # 🥰 拡張機能の投稿
 
-Chibi のダッシュボードには拡張機能のギャラリーがあります。どうぞ自由に好きな拡張機能を使ってください。
+Eureka のダッシュボードには拡張機能のギャラリーがあります。どうぞ自由に好きな拡張機能を使ってください。
 
 もし良かったら [moth](https://github.com/SimonShiki/moth) で自分の一番好きな拡張機能を投稿してください。
 

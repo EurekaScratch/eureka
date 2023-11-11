@@ -21,12 +21,13 @@ export interface Context {
         register: (extensionObj: ExtensionClass) => void;
         unsandboxed: boolean;
         chibi: true;
+        eureka: true;
     };
     vm?: VM;
     renderer?: Renderer;
 }
 /**
- * I10n support for Chibi extensions.
+ * I10n support for Eureka extensions.
  * @param vm Virtual machine instance. Optional.
  * @returns Something like Scratch.translate.
  */
@@ -71,7 +72,7 @@ function createTranslate (vm?: VM) {
     translate.setup({});
 
     if (vm) {
-        // @ts-expect-error emitted by chibi
+        // @ts-expect-error emitted by eureka
         vm.on('LOCALE_CHANGED', () => {
             translate.setup(null);
         });
@@ -96,7 +97,8 @@ export function makeCtx (vm?: VM) {
                 throw new Error('not implemented');
             },
             unsandboxed: !!vm,
-            chibi: true
+            chibi: true,
+            eureka: true
         },
         translate: createTranslate(vm)
     };

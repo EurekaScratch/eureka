@@ -5,11 +5,11 @@
 
 declare interface Window {
     Blockly?: Partial<ScratchBlocks>;
-    chibi: {
+    eureka: {
         version: string;
         vm?: VM;
         blockly?: ScratchBlocks | null;
-        loader?: ChibiLoader;
+        loader?: EurekaLoader;
         settings: Settings;
         registeredExtension: Record<
             string,

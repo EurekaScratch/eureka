@@ -1,9 +1,9 @@
 {
-  "name": "chibi",
-  "displayName": "Chibi",
+  "name": "eureka-loader",
+  "displayName": "Eureka",
   "version": "6",
-  "description": "Load scratch extension everywhere.",
-  "repository": "https://github.com/SimonShiki/chibi",
+  "description": "Universal scratch extension loader.",
+  "repository": "https://github.com/SimonShiki/eureka",
   "author": "SimonShiki",
   "license": "AGPL-3.0-only",
   "private": true,

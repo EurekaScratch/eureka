@@ -14,7 +14,7 @@ const base = {
         // eslint-disable-next-line no-undef
         path: path.resolve(__dirname, 'dist'),
         publicPath: './',
-        filename: 'chibi.js'
+        filename: 'eureka-loader.js'
     },
     resolve: {
         extensions: ['.ts', '.js', '.tsx', '.jsx']
@@ -54,7 +54,7 @@ const base = {
             headers: {
                 name: packageJSON.displayName,
                 author: packageJSON.author,
-                namespace: 'ScratchChibiLoader',
+                namespace: 'EurekaLoader',
                 source: packageJSON.repository,
                 description: packageJSON.description,
                 version: packageJSON.version,
@@ -68,7 +68,7 @@ const base = {
             whitelist: true
         }),
         new webpack.DefinePlugin({
-            __CHIBI_VERSION__: JSON.stringify(packageJSON.version)
+            __EUREKA_VERSION__: JSON.stringify(packageJSON.version)
         })
     ]
 };

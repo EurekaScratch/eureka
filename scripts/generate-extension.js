@@ -31,7 +31,7 @@ const manifest = {
     ],
     web_accessible_resources: [
         {
-            resources: ['scripts/chibi.user.js'],
+            resources: ['scripts/eureka-loader.user.js'],
             matches: pathFiltered()
         }
     ]
@@ -61,8 +61,8 @@ function zipDirectory (sourceDir, outPath) {
 (async function pack () {
     console.log(`Packing extension for ${env}`);
     fs.copyFileSync(
-        path.resolve(__dirname, '../dist/chibi.user.js'),
-        path.resolve(__dirname, '../extension/scripts/chibi.user.js')
+        path.resolve(__dirname, '../dist/eureka-loader.user.js'),
+        path.resolve(__dirname, '../extension/scripts/eureka-loader.user.js')
     );
     fs.writeFileSync(
         path.resolve(__dirname, '../extension/manifest.json'),

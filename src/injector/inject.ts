@@ -1,7 +1,7 @@
 /// <reference path="../global.d.ts" />
 import { log, warn, error } from '../util/log';
 import { settings } from '../util/settings';
-import { ChibiLoader } from '../loader/loader';
+import { EurekaLoader } from '../loader/loader';
 import openFrontend from '../frontend';
 import type VM from 'scratch-vm';
 import type Blockly from 'scratch-blocks';
@@ -9,11 +9,11 @@ import * as l10n from '../l10n/l10n.json';
 import formatMessage from 'format-message';
 import { makeCtx } from '../loader/make-ctx';
 
-interface ChibiCompatibleWorkspace extends Blockly.Workspace {
+interface EurekaCompatibleWorkspace extends Blockly.Workspace {
     registerButtonCallback(key: string, callback: Function): void;
 }
 
-interface ChibiCompatibleVM extends VM {
+interface EurekaCompatibleVM extends VM {
     ccExtensionManager?: {
         info: Record<
             string,
@@ -49,7 +49,7 @@ function getExtensionIdForOpcode (opcode: string) {
  * @param vm Virtual machine instance. For some reasons we cannot use VM here.
  * @returns Blockly instance.
  */
-function getBlocklyInstance (vm: ChibiCompatibleVM): any | null {
+function getBlocklyInstance (vm: EurekaCompatibleVM): any | null {
     // Hijack Function.prototype.apply to get React element instance.
     function hijack (fn: (...args: unknown[]) => unknown) {
         const _orig = Function.prototype.apply;
@@ -86,12 +86,12 @@ function getBlocklyInstance (vm: ChibiCompatibleVM): any | null {
 /**
  * Trap to get Virtual Machine instance.
  * @param open window.open function (compatible with ccw).
- * @return Callback promise. After that you could use window.chibi.vm to get the virtual machine.
+ * @return Callback promise. After that you could use window.eureka.vm to get the virtual machine.
  */
 export function trap (open: typeof window.open): Promise<void> {
-    window.chibi = {
+    window.eureka = {
         // @ts-expect-error defined in webpack define plugin
-        version: __CHIBI_VERSION__,
+        version: __EUREKA_VERSION__,
         registeredExtension: {},
         settings: settings,
         openFrontend: openFrontend.bind(null, open)
@@ -115,7 +115,7 @@ export function trap (open: typeof window.open): Promise<void> {
                 Object.prototype.hasOwnProperty.call(args[0], 'runtime')
             ) {
                 log('VM detected!');
-                window.chibi.vm = args[0];
+                window.eureka.vm = args[0];
                 Function.prototype.bind = oldBind;
                 clearTimeout(timeoutId);
                 resolve();
@@ -128,10 +128,10 @@ export function trap (open: typeof window.open): Promise<void> {
 
 /**
  * Inject into the original virtual machine.
- * @param vm {ChibiCompatibleVM} Original virtual machine instance.
+ * @param vm {EurekaCompatibleVM} Original virtual machine instance.
  */
-export function inject (vm: ChibiCompatibleVM) {
-    const loader = (window.chibi.loader = new ChibiLoader(vm));
+export function inject (vm: EurekaCompatibleVM) {
+    const loader = (window.eureka.loader = new EurekaLoader(vm));
     const originalLoadFunc = vm.extensionManager.loadExtensionURL;
     const getLocale = vm.getLocale;
     const format = formatMessage.namespace();
@@ -145,25 +145,25 @@ export function inject (vm: ChibiCompatibleVM) {
         extensionURL: string,
         ...args: unknown[]
     ) {
-        if (extensionURL in window.chibi.registeredExtension) {
-            const { url, env } = window.chibi.registeredExtension[extensionURL];
+        if (extensionURL in window.eureka.registeredExtension) {
+            const { url, env } = window.eureka.registeredExtension[extensionURL];
             try {
                 let whetherSideload: boolean = false;
-                if (window.chibi.settings.noConfirmDialog) {
+                if (window.eureka.settings.noConfirmDialog) {
                     whetherSideload = true;
                 } else {
                     whetherSideload = env
                         ? confirm(
-                            format('chibi.tryLoadInEnv', {
+                            format('eureka.tryLoadInEnv', {
                                 extensionURL,
                                 url,
                                 env
                             })
                         )
-                        : (window.chibi.settings.sideloadOnly ?
+                        : (window.eureka.settings.sideloadOnly ?
                             false :
                             confirm(
-                                format('chibi.tryLoad', {
+                                format('eureka.tryLoad', {
                                 extensionURL,
                                 url
                                 })
@@ -174,19 +174,19 @@ export function inject (vm: ChibiCompatibleVM) {
                         url,
                         (env
                             ? env
-                            : confirm(format('chibi.loadInSandbox'))
+                            : confirm(format('eureka.loadInSandbox'))
                                 ? 'sandboxed'
                                 : 'unsandboxed') as 'unsandboxed' | 'sandboxed'
                     );
                     const extensionId = loader.getIdByUrl(url);
                     // @ts-expect-error internal hack
-                    vm.extensionManager._loadedExtensions.set(extensionId, 'Chibi');
+                    vm.extensionManager._loadedExtensions.set(extensionId, 'Eureka');
                 } else {
                     // @ts-expect-error internal hack
                     return originalLoadFunc.call(this, extensionURL, ...args);
                 }
             } catch (e: unknown) {
-                error(format('chibi.errorIgnored'), e);
+                error(format('eureka.errorIgnored'), e);
             }
         } else {
             // @ts-expect-error internal hack
@@ -198,7 +198,7 @@ export function inject (vm: ChibiCompatibleVM) {
     vm.extensionManager.refreshBlocks = async function (...args: unknown[]) {
         // @ts-expect-error internal hack
         const result = await originalRefreshBlocksFunc.call(this, ...args);
-        await window.chibi.loader.refreshBlocks();
+        await window.eureka.loader.refreshBlocks();
         return result;
     };
 
@@ -211,7 +211,7 @@ export function inject (vm: ChibiCompatibleVM) {
         const urls: Record<string, string> = {};
         const envs: Record<string, string> = {};
         const sideloadIds: string[] = [];
-        for (const [extId, ext] of window.chibi.loader.loadedScratchExtension.entries()) {
+        for (const [extId, ext] of window.eureka.loader.loadedScratchExtension.entries()) {
             // Ignore object urls since it only works at present.
             if (ext.url.startsWith('blob:')) continue;
             urls[extId] = ext.url;
@@ -221,7 +221,7 @@ export function inject (vm: ChibiCompatibleVM) {
         obj.extensionURLs = Object.assign({}, obj.extensionURLs, urls);
         obj.extensionEnvs = Object.assign({}, obj.extensionEnvs, envs);
 
-        if (window.chibi.settings.convertProcCall) {
+        if (window.eureka.settings.convertProcCall) {
             for (const target of obj.targets) {
                 for (const blockId in target.blocks) {
                     const block = target.blocks[blockId];
@@ -257,7 +257,7 @@ export function inject (vm: ChibiCompatibleVM) {
     vm.deserializeProject = function (projectJSON: Record<string, any>, ...args: unknown[]) {
         if (typeof projectJSON.extensionURLs === 'object') {
             for (const id in projectJSON.extensionURLs) {
-                window.chibi.registeredExtension[id] = {
+                window.eureka.registeredExtension[id] = {
                     url: projectJSON.extensionURLs[id],
                     env:
                         typeof projectJSON.extensionEnvs === 'object'
@@ -280,7 +280,7 @@ export function inject (vm: ChibiCompatibleVM) {
                             );
                             continue;
                         }
-                        if (!(extensionId in window.chibi.registeredExtension)) {
+                        if (!(extensionId in window.eureka.registeredExtension)) {
                             warn(
                                 `find a sideload block with unregistered extension: ${extensionId}, ignored.`
                             );
@@ -320,12 +320,15 @@ export function inject (vm: ChibiCompatibleVM) {
         args: Record<string, unknown>,
         ...otherArgs: unknown[]
     ) {
-        const chibiFlag = args.VALUE;
-        switch (chibiFlag) {
-            case '🧐 Chibi Installed?':
-                warn("'🧐 Chibi Installed?' is deprecated, use '🧐 Chibi?' instead.");
-                return true;
+        const eurekaFlag = args.VALUE;
+        switch (eurekaFlag) {
             case '🧐 Chibi?':
+                warn("'🧐 Chibi?' is deprecated, use '🧐 Eureka?' instead.");
+                return true;
+            case '🧐 Chibi Installed?':
+                warn("'🧐 Chibi Installed?' is deprecated, use '🧐 Eureka?' instead.");
+                return true;
+            case '🧐 Eureka?':
                 return true;
             default:
                 return originalArgReporterBooleanFunc.call(this, args, ...otherArgs);
@@ -342,7 +345,7 @@ export function inject (vm: ChibiCompatibleVM) {
             for (const extensionId of extensions) {
                 if (
                     !vm.ccExtensionManager!.info.hasOwnProperty(extensionId) &&
-                    extensionId in window.chibi.registeredExtension
+                    extensionId in window.eureka.registeredExtension
                 ) {
                     vm.ccExtensionManager!.info[extensionId] = {
                         api: 0
@@ -355,7 +358,7 @@ export function inject (vm: ChibiCompatibleVM) {
     }
     // Blockly stuffs
     vm.once('workspaceUpdate', () => {
-        const blockly = (window.chibi.blockly = getBlocklyInstance(vm));
+        const blockly = (window.eureka.blockly = getBlocklyInstance(vm));
         // Deprecated: this method will be removed in the future.
         if (!blockly) {
             warn('Cannot find real blockly instance, try alternative method...');
@@ -366,7 +369,7 @@ export function inject (vm: ChibiCompatibleVM) {
                 return;
             }
             window.Blockly.getMainWorkspace().toolboxCategoryCallbacks_.PROCEDURE = function (
-                workspace: ChibiCompatibleWorkspace,
+                workspace: EurekaCompatibleWorkspace,
                 ...args: unknown[]
             ) {
                 const xmlList = originalProcedureCallback.call(this, workspace, ...args);
@@ -375,40 +378,40 @@ export function inject (vm: ChibiCompatibleVM) {
                 sep.setAttribute('gap', '36');
                 xmlList.push(sep);
                 const label = document.createElement('label');
-                label.setAttribute('text', '😎 Chibi');
+                label.setAttribute('text', '💡 Eureka');
                 xmlList.push(label);
 
                 // Add dashboard button
                 const dashboardButton = document.createElement('button');
-                dashboardButton.setAttribute('text', format('chibi.openFrontend'));
-                dashboardButton.setAttribute('callbackKey', 'CHIBI_FRONTEND');
-                workspace.registerButtonCallback('CHIBI_FRONTEND', () => {
-                    window.chibi.openFrontend();
+                dashboardButton.setAttribute('text', format('eureka.openFrontend'));
+                dashboardButton.setAttribute('callbackKey', 'EUREKA_FRONTEND');
+                workspace.registerButtonCallback('EUREKA_FRONTEND', () => {
+                    window.eureka.openFrontend();
                 });
                 xmlList.push(dashboardButton);
 
                 // Add load from url button
                 const sideloadButton = document.createElement('button');
-                sideloadButton.setAttribute('text', format('chibi.sideload'));
-                sideloadButton.setAttribute('callbackKey', 'CHIBI_SIDELOAD_FROM_URL');
-                workspace.registerButtonCallback('CHIBI_SIDELOAD_FROM_URL', () => {
-                    const url = prompt(format('chibi.enterURL'));
+                sideloadButton.setAttribute('text', format('eureka.sideload'));
+                sideloadButton.setAttribute('callbackKey', 'EUREKA_SIDELOAD_FROM_URL');
+                workspace.registerButtonCallback('EUREKA_EUREKA_FROM_URL', () => {
+                    const url = prompt(format('eureka.enterURL'));
                     if (!url) return;
-                    const mode = confirm(format('chibi.loadInSandbox'))
+                    const mode = confirm(format('eureka.loadInSandbox'))
                         ? 'sandboxed'
                         : 'unsandboxed';
-                    window.chibi.loader.load(url, mode);
+                    window.eureka.loader.load(url, mode);
                 });
 
                 // Add temporarily load from file button
                 const sideloadTempButton = document.createElement('button');
-                sideloadTempButton.setAttribute('text', format('chibi.sideloadTemporarily'));
+                sideloadTempButton.setAttribute('text', format('eureka.sideloadTemporarily'));
                 sideloadTempButton.setAttribute(
                     'callbackKey',
-                    'CHIBI_SIDELOAD_FROM_FILE_TEMPORAILY'
+                    'EUREKA_SIDELOAD_FROM_FILE_TEMPORAILY'
                 );
-                workspace.registerButtonCallback('CHIBI_SIDELOAD_FROM_FILE_TEMPORAILY', () => {
-                    if (confirm(format('chibi.exprimentalFileWarning'))) {
+                workspace.registerButtonCallback('EUREKA_SIDELOAD_FROM_FILE_TEMPORAILY', () => {
+                    if (confirm(format('eureka.exprimentalFileWarning'))) {
                         const input = document.createElement('input');
                         input.setAttribute('type', 'file');
                         input.setAttribute('accept', '.js');
@@ -418,11 +421,11 @@ export function inject (vm: ChibiCompatibleVM) {
                             if (!files) return;
                             for (const file of files) {
                                 const url = URL.createObjectURL(file);
-                                const mode = confirm(format('chibi.loadInSandbox'))
+                                const mode = confirm(format('eureka.loadInSandbox'))
                                     ? 'sandboxed'
                                     : 'unsandboxed';
                                 try {
-                                    await window.chibi.loader.load(url, mode);
+                                    await window.eureka.loader.load(url, mode);
                                 } finally {
                                     URL.revokeObjectURL(url);
                                 }
@@ -433,12 +436,12 @@ export function inject (vm: ChibiCompatibleVM) {
                 });
                 xmlList.push(sideloadTempButton);
 
-                // Add chibi detection
+                // Add eureka detection
                 const mutation = document.createElement('mutation');
-                mutation.setAttribute('chibi', 'installed');
+                mutation.setAttribute('eureka', 'installed');
                 const field = document.createElement('field');
                 field.setAttribute('name', 'VALUE');
-                field.innerHTML = '🧐 Chibi?';
+                field.innerHTML = '🧐 Eureka?';
                 const block = document.createElement('block');
                 block.setAttribute('type', 'argument_reporter_boolean');
                 block.setAttribute('gap', '16');
@@ -454,7 +457,7 @@ export function inject (vm: ChibiCompatibleVM) {
         }
         const originalAddCreateButton_ = blockly.Procedures.addCreateButton_;
         blockly.Procedures.addCreateButton_ = function (
-            workspace: ChibiCompatibleWorkspace,
+            workspace: EurekaCompatibleWorkspace,
             xmlList: unknown[],
             ...args: unknown[]
         ) {
@@ -464,36 +467,36 @@ export function inject (vm: ChibiCompatibleVM) {
             sep.setAttribute('gap', '36');
             xmlList.push(sep);
             const label = document.createElement('label');
-            label.setAttribute('text', '😎 Chibi');
+            label.setAttribute('text', '💡 Eureka');
             xmlList.push(label);
 
             // Add dashboard button
             const dashboardButton = document.createElement('button');
-            dashboardButton.setAttribute('text', format('chibi.openFrontend'));
-            dashboardButton.setAttribute('callbackKey', 'CHIBI_FRONTEND');
-            workspace.registerButtonCallback('CHIBI_FRONTEND', () => {
-                window.chibi.openFrontend();
+            dashboardButton.setAttribute('text', format('eureka.openFrontend'));
+            dashboardButton.setAttribute('callbackKey', 'EUREKA_FRONTEND');
+            workspace.registerButtonCallback('EUREKA_FRONTEND', () => {
+                window.eureka.openFrontend();
             });
             xmlList.push(dashboardButton);
 
             // Add load from url button
             const sideloadButton = document.createElement('button');
-            sideloadButton.setAttribute('text', format('chibi.sideload'));
-            sideloadButton.setAttribute('callbackKey', 'CHIBI_SIDELOAD_FROM_URL');
-            workspace.registerButtonCallback('CHIBI_SIDELOAD_FROM_URL', () => {
-                const url = prompt(format('chibi.enterURL'));
+            sideloadButton.setAttribute('text', format('eureka.sideload'));
+            sideloadButton.setAttribute('callbackKey', 'EUREKA_SIDELOAD_FROM_URL');
+            workspace.registerButtonCallback('EUREKA_SIDELOAD_FROM_URL', () => {
+                const url = prompt(format('eureka.enterURL'));
                 if (!url) return;
-                const mode = confirm(format('chibi.loadInSandbox')) ? 'sandboxed' : 'unsandboxed';
-                window.chibi.loader.load(url, mode);
+                const mode = confirm(format('eureka.loadInSandbox')) ? 'sandboxed' : 'unsandboxed';
+                window.eureka.loader.load(url, mode);
             });
             xmlList.push(sideloadButton);
 
             // Add temporarily load from file button
             const sideloadTempButton = document.createElement('button');
-            sideloadTempButton.setAttribute('text', format('chibi.sideloadTemporarily'));
-            sideloadTempButton.setAttribute('callbackKey', 'CHIBI_SIDELOAD_FROM_FILE_TEMPORAILY');
-            workspace.registerButtonCallback('CHIBI_SIDELOAD_FROM_FILE_TEMPORAILY', () => {
-                if (confirm(format('chibi.exprimentalFileWarning'))) {
+            sideloadTempButton.setAttribute('text', format('eureka.sideloadTemporarily'));
+            sideloadTempButton.setAttribute('callbackKey', 'EUREKA_SIDELOAD_FROM_FILE_TEMPORAILY');
+            workspace.registerButtonCallback('EUREKA_SIDELOAD_FROM_FILE_TEMPORAILY', () => {
+                if (confirm(format('eureka.exprimentalFileWarning'))) {
                     const input = document.createElement('input');
                     input.setAttribute('type', 'file');
                     input.setAttribute('accept', '.js');
@@ -503,11 +506,11 @@ export function inject (vm: ChibiCompatibleVM) {
                         if (!files) return;
                         for (const file of files) {
                             const url = URL.createObjectURL(file);
-                            const mode = confirm(format('chibi.loadInSandbox'))
+                            const mode = confirm(format('eureka.loadInSandbox'))
                                 ? 'sandboxed'
                                 : 'unsandboxed';
                             try {
-                                await window.chibi.loader.load(url, mode);
+                                await window.eureka.loader.load(url, mode);
                             } finally {
                                 URL.revokeObjectURL(url);
                             }
@@ -518,12 +521,12 @@ export function inject (vm: ChibiCompatibleVM) {
             });
             xmlList.push(sideloadTempButton);
 
-            // Add chibi detection
+            // Add eureka detection
             const mutation = document.createElement('mutation');
-            mutation.setAttribute('chibi', 'installed');
+            mutation.setAttribute('eureka', 'installed');
             const field = document.createElement('field');
             field.setAttribute('name', 'VALUE');
-            field.innerHTML = '🧐 Chibi?';
+            field.innerHTML = '🧐 Eureka?';
             const block = document.createElement('block');
             block.setAttribute('type', 'argument_reporter_boolean');
             block.setAttribute('gap', '16');

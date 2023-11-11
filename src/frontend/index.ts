@@ -36,7 +36,7 @@ type MothDispatched = MothDispatchedAllocate | MothDispatchedLoad | MothDispatch
  */
 function getExtensionInfo () {
     const processedExtInfo: MothExtensionInfo[] = [];
-    for (const [extId, ext] of window.chibi.loader.loadedScratchExtension.entries()) {
+    for (const [extId, ext] of window.eureka.loader.loadedScratchExtension.entries()) {
         processedExtInfo.push({
             name: extId,
             sandboxed: ext.env === 'sandboxed'
@@ -59,7 +59,7 @@ async function messageHandler (event: MessageEvent) {
                 {
                     type: 'handshake',
                     clientInfo: {
-                        version: Number(window.chibi.version),
+                        version: Number(window.eureka.version),
                         url: window.location.host
                     }
                 },
@@ -82,7 +82,7 @@ async function messageHandler (event: MessageEvent) {
             break;
         case 'load':
             // Load an extension.
-            await window.chibi.loader.load(
+            await window.eureka.loader.load(
                 event.data.info.url,
                 event.data.info.sandboxed ? 'sandboxed' : 'unsandboxed'
             );
@@ -95,7 +95,7 @@ async function messageHandler (event: MessageEvent) {
             );
             break;
         case 'updateSettings':
-            window.chibi.settings[event.data.item.name] = event.data.item.value;
+            window.eureka.settings[event.data.item.name] = event.data.item.value;
             dashboardWindow?.postMessage(
                 {
                     type: 'settings',
@@ -116,8 +116,8 @@ window.addEventListener('message', messageHandler);
  */
 function openFrontend (open: typeof window.open) {
     dashboardWindow = open(
-        'https://chibi.codingclip.cc/#manage',
-        'Chibi',
+        'https://eureka.codingclip.cc/#manage',
+        'Eureka',
         'popup=yes,status=no,location=no,toolbar=no,menubar=no'
     );
 }
