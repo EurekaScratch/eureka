@@ -29,10 +29,10 @@ class ExtensionWorker {
                     this.initialRegistrations = [];
 
                     Promise.all(initialRegistrations).then(() =>
-                        dispatch.call('scratchAdapter', 'onWorkerInit', id)
+                        dispatch.call('loader', 'onWorkerInit', id)
                     );
                 } catch (e) {
-                    dispatch.call('scratchAdapter', 'onWorkerInit', id, e);
+                    dispatch.call('loader', 'onWorkerInit', id, e);
                 }
             });
         });

@@ -49,7 +49,7 @@ function getExtensionInfo () {
  * @param event Event from the frontend.
  */
 async function messageHandler (event: MessageEvent) {
-    if (event.origin !== 'https://chibi.codingclip.cc') return;
+    if (event.origin !== 'https://eureka.codingclip.cc') return;
     if (!('type' in event.data)) return;
     switch ((event.data as MothDispatched).type) {
         // Handshake: send current extension info in order to prepare frontend.
