@@ -10,5 +10,5 @@ yarn-error.log
 
 # generated build files
 /dist
-/extension/scripts/chibi.user.js
+/extension/scripts/eureka-loader.user.js
 /extension/manifest.json

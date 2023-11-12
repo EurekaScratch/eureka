@@ -16,16 +16,28 @@ export interface Context {
     TargetType: typeof TargetType;
     ReporterScope: typeof ReporterScope;
     Cast: Cast;
-    translate: ReturnType<typeof createTranslate>;
     extensions: {
         register: (extensionObj: ExtensionClass) => void;
         unsandboxed: boolean;
         chibi: true;
         eureka: true;
     };
+    // Non-standard API
     vm?: VM;
+    translate: ReturnType<typeof createTranslate>;
     renderer?: Renderer;
+    fetch: typeof fetch;
+    canFetch (url: string): boolean;
 }
+
+function parseURL (url: string) {
+    try {
+        return new URL(url, location.href);
+    } catch (e) {
+        return null;
+    }
+}
+
 /**
  * I10n support for Eureka extensions.
  * @param vm Virtual machine instance. Optional.
@@ -80,8 +92,9 @@ function createTranslate (vm?: VM) {
 
     return translate;
 }
+
 /**
- * Make a fake scratch context.
+ * Make a Scratch context.
  * @param vm Virtual machine instance.
  * @returns The context.
  */
@@ -100,7 +113,12 @@ export function makeCtx (vm?: VM) {
             chibi: true,
             eureka: true
         },
-        translate: createTranslate(vm)
+        translate: createTranslate(vm),
+        fetch: globalThis.fetch,
+        canFetch: (url: string) => {
+            const parsed = parseURL(url);
+            return !!parsed;
+        }
     };
     if (vm) {
         ctx.vm = vm;
