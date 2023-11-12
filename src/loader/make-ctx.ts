@@ -114,7 +114,7 @@ export function makeCtx (vm?: VM) {
             eureka: true
         },
         translate: createTranslate(vm),
-        fetch: globalThis.fetch,
+        fetch: (url: URL | RequestInfo, options?: RequestInit | undefined) => fetch(url, options),
         canFetch: (url: string) => {
             const parsed = parseURL(url);
             return !!parsed;
