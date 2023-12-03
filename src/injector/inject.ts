@@ -363,7 +363,7 @@ export function inject (vm: EurekaCompatibleVM) {
         if (!blockly) {
             warn('Cannot find real blockly instance, try alternative method...');
             const originalProcedureCallback =
-                window.Blockly?.getMainWorkspace().toolboxCategoryCallbacks_.PROCEDURE;
+                window.Blockly?.getMainWorkspace()?.toolboxCategoryCallbacks_?.PROCEDURE;
             if (!originalProcedureCallback) {
                 error('alternative method failed, stop injecting');
                 return;
