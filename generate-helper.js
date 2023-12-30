@@ -13,6 +13,8 @@ const includeURLs = [
     'https://editor.turbowarp.cn/*',
     'https://0832.ink/rc/*',
     'https://code.xueersi.com/scratch3/*',
+    'https://play.creaticode.com/projects/*',
+    'https://www.adacraft.org/*',
     'https://code.xueersi.com/home/project/detail?lang=scratch&pid=*&version=3.0&langType=scratch',
     'http://localhost:8601/*'
 ];
