@@ -15,6 +15,7 @@ const includeURLs = [
     'https://code.xueersi.com/scratch3/*',
     'https://play.creaticode.com/projects/*',
     'https://www.adacraft.org/*',
+    'https://studio.penguinmod.com/*',
     'https://code.xueersi.com/home/project/detail?lang=scratch&pid=*&version=3.0&langType=scratch',
     'http://localhost:8601/*'
 ];
