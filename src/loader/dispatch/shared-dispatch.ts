@@ -281,9 +281,7 @@ class SharedDispatch {
                 return obj.map((item) => this._purifyObject(item, visited, depth + 1));
             }
             const result: Record<string, unknown> = {};
-            for (const key in obj) {
-                // @ts-expect-error
-                const value = obj[key];
+            for (const [key, value] of Object.entries(obj)) {
                 result[key] = this._purifyObject(value, visited, depth + 1);
             }
             return result;

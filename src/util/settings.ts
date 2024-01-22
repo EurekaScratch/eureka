@@ -18,7 +18,7 @@ if (!window.localStorage.getItem(SETTINGS_KEY)) {
     window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(puppet));
 }
 
-export function getSettingsFromStorage () {
+export function getSettingsFromStorage (): Settings | null {
     try {
         const item = window.localStorage.getItem(SETTINGS_KEY);
         if (!item) return null;
@@ -28,33 +28,35 @@ export function getSettingsFromStorage () {
     }
 }
 
-function saveSettingsToStorage (prop: string, value: string) {
-    try {
-        const item = window.localStorage.getItem(SETTINGS_KEY);
-        if (!item) throw 'missing item';
-        const obj = JSON.parse(item);
-        obj[prop] = value;
-        window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(obj));
-    } catch (_: unknown) {
-        const newObject = Object.assign({}, puppet, {
-            [prop]: value
-        });
-        window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(newObject));
-    }
-}
+/*
+ * Function saveSettingsToStorage (prop: string, value: string) {
+ *     try {
+ *         const item = window.localStorage.getItem(SETTINGS_KEY);
+ *         if (!item) throw 'missing item';
+ *         const obj = JSON.parse(item);
+ *         obj[prop] = value;
+ *         window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(obj));
+ *     } catch (_: unknown) {
+ *         const newObject = Object.assign({}, puppet, {
+ *             [prop]: value
+ *         });
+ *         window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(newObject));
+ *     }
+ * }
+ */
 
 export const settings = new Proxy(puppet, {
     get (target, prop) {
         const storage = getSettingsFromStorage();
-        if (!storage || !(prop in storage)) return target[prop as keyof Settings];
-        return storage[prop];
+        if (!storage || !(prop in storage)) return Reflect.get(target, prop);
+        return Reflect.get(storage, prop);
     },
     set (target, prop, value) {
         let storage = getSettingsFromStorage();
         if (!storage) {
             storage = Object.assign({}, puppet);
         }
-        storage[prop] = value;
+        Reflect.set(storage, prop, value);
         window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(storage));
         return true;
     }

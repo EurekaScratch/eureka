@@ -49,6 +49,9 @@
         "keyword-spacing": [2, {
             "before": true,
             "after": true
-        }]
+        }],
+        // disabled rules
+        "@typescript-eslint/triple-slash-reference": "off",
+        "@typescript-eslint/no-explicit-any": "off"
     }
 }

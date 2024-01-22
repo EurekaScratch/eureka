@@ -44,7 +44,7 @@ class _CentralDispatch extends SharedDispatch {
             if (isRemote) {
                 throw new Error(`Cannot use 'callSync' on remote provider for service ${service}.`);
             }
-            return provider[method].apply(provider, args);
+            return provider[method](...args);
         }
         throw new Error(`Provider not found for service: ${service}`);
     }
@@ -55,7 +55,7 @@ class _CentralDispatch extends SharedDispatch {
      * @param {object} provider - a local object which provides this service.
      */
     setServiceSync (service: string, provider: any) {
-        if (this.services.hasOwnProperty(service)) {
+        if (Object.prototype.hasOwnProperty.call(this.services, service)) {
             console.warn(`Central dispatch replacing existing service provider for ${service}`);
         }
         this.services[service] = provider;

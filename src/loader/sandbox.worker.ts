@@ -64,4 +64,4 @@ globalThis.Scratch = makeCtx();
 const extensionWorker = new ExtensionWorker();
 globalThis.Scratch.extensions.register = extensionWorker.register.bind(extensionWorker);
 
-export default null as unknown as any;
+export default null as any;

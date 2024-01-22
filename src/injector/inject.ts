@@ -7,10 +7,9 @@ import type VM from 'scratch-vm';
 import type Blockly from 'scratch-blocks';
 import * as l10n from '../l10n/l10n.json';
 import formatMessage from 'format-message';
-import { makeCtx } from '../loader/make-ctx';
 
 interface EurekaCompatibleWorkspace extends Blockly.Workspace {
-    registerButtonCallback(key: string, callback: Function): void;
+    registerButtonCallback(key: string, callback: () => void): void;
 }
 
 interface EurekaCompatibleVM extends VM {
@@ -49,38 +48,64 @@ function getExtensionIdForOpcode (opcode: string) {
  * @param vm Virtual machine instance. For some reasons we cannot use VM here.
  * @returns Blockly instance.
  */
-function getBlocklyInstance (vm: EurekaCompatibleVM): any | null {
-    // Hijack Function.prototype.apply to get React element instance.
-    function hijack (fn: (...args: unknown[]) => unknown) {
-        const _orig = Function.prototype.apply;
-        Function.prototype.apply = function (thisArg: any) {
-            return thisArg;
-        };
-        const result = fn();
-        Function.prototype.apply = _orig;
-        return result;
-    }
+async function getBlocklyInstance (vm: EurekaCompatibleVM): Promise<any> {
+    function getBlocklyInstanceInternal (): any | null {
+        // Hijack Function.prototype.apply to get React element instance.
+        function hijack (fn: (...args: unknown[]) => unknown) {
+            const _orig = Function.prototype.apply;
+            Function.prototype.apply = function (thisArg: any) {
+                return thisArg;
+            };
+            const result = fn();
+            Function.prototype.apply = _orig;
+            return result;
+        }
 
-    // @ts-expect-error lazy to extend VM interface
-    const events = vm._events?.EXTENSION_ADDED;
-    if (events) {
-        if (events instanceof Function) {
-            // It is a function, just hijack it.
-            const result = hijack(events);
-            if (result && typeof result === 'object' && 'ScratchBlocks' in result) {
-                return result.ScratchBlocks;
-            }
-        } else {
-            // It is an array, hijack every listeners.
-            for (const value of events) {
-                const result = hijack(value);
+        // @ts-expect-error lazy to extend VM interface
+        const events = vm._events?.EXTENSION_ADDED;
+        if (events) {
+            if (events instanceof Function) {
+                // It is a function, just hijack it.
+                const result = hijack(events);
                 if (result && typeof result === 'object' && 'ScratchBlocks' in result) {
                     return result.ScratchBlocks;
                 }
+            } else {
+                // It is an array, hijack every listeners.
+                for (const value of events) {
+                    const result = hijack(value);
+                    if (result && typeof result === 'object' && 'ScratchBlocks' in result) {
+                        return result.ScratchBlocks;
+                    }
+                }
             }
         }
+        return null;
     }
-    return null;
+    let res = getBlocklyInstanceInternal();
+    return (
+        res ??
+        new Promise((resolve) => {
+            let state: any = undefined;
+            // @ts-expect-error lazy to extend VM interface
+            Reflect.defineProperty(vm._events, 'EXTENSION_ADDED', {
+                get: () => state,
+                set (v) {
+                    state = v;
+                    res = getBlocklyInstanceInternal();
+                    if (res) {
+                        // @ts-expect-error lazy to extend VM interface
+                        Reflect.defineProperty(vm._events, 'EXTENSION_ADDED', {
+                            value: state,
+                            writable: true
+                        });
+                        resolve(res);
+                    }
+                },
+                configurable: true
+            });
+        })
+    );
 }
 
 /**
@@ -160,14 +185,14 @@ export function inject (vm: EurekaCompatibleVM) {
                                 env
                             })
                         )
-                        : (window.eureka.settings.sideloadOnly ?
-                            false :
-                            confirm(
+                        : window.eureka.settings.sideloadOnly
+                            ? false
+                            : confirm(
                                 format('eureka.tryLoad', {
                                     extensionURL,
                                     url
                                 })
-                            ));
+                            );
                 }
                 if (whetherSideload) {
                     await loader.load(
@@ -178,25 +203,24 @@ export function inject (vm: EurekaCompatibleVM) {
                                 ? 'sandboxed'
                                 : 'unsandboxed') as 'unsandboxed' | 'sandboxed'
                     );
-                    const extensionId = loader.getIdByUrl(url);
-                    // @ts-expect-error internal hack
-                    vm.extensionManager._loadedExtensions.set(extensionId, 'Eureka');
+                    /*
+                     * Const extensionId = loader.getIdByUrl(url);
+                     * @ ts-expect-error internal hack
+                     * vm.extensionManager._loadedExtensions.set(extensionId, 'Eureka');
+                     */
                 } else {
-                    // @ts-expect-error internal hack
                     return originalLoadFunc.call(this, extensionURL, ...args);
                 }
             } catch (e: unknown) {
                 error(format('eureka.errorIgnored'), e);
             }
         } else {
-            // @ts-expect-error internal hack
             return originalLoadFunc.call(this, extensionURL, ...args);
         }
     };
 
     const originalRefreshBlocksFunc = vm.extensionManager.refreshBlocks;
     vm.extensionManager.refreshBlocks = async function (...args: unknown[]) {
-        // @ts-expect-error internal hack
         const result = await originalRefreshBlocksFunc.call(this, ...args);
         await window.eureka.loader.refreshBlocks();
         return result;
@@ -204,7 +228,6 @@ export function inject (vm: EurekaCompatibleVM) {
 
     const originalToJSONFunc = vm.toJSON;
     vm.toJSON = function (optTargetId: string, ...args: unknown[]) {
-        // @ts-expect-error internal hack
         const json = originalToJSONFunc.call(this, optTargetId, ...args);
         const obj = JSON.parse(json);
 
@@ -296,7 +319,6 @@ export function inject (vm: EurekaCompatibleVM) {
                 delete projectJSON.sideloadMonitors;
             }
         }
-        // @ts-expect-error internal hack
         return originalDrserializeFunc.call(this, projectJSON, ...args);
     };
 
@@ -344,7 +366,7 @@ export function inject (vm: EurekaCompatibleVM) {
         ) {
             for (const extensionId of extensions) {
                 if (
-                    !vm.ccExtensionManager!.info.hasOwnProperty(extensionId) &&
+                    !Object.prototype.hasOwnProperty.call(vm.ccExtensionManager!.info, extensionId) &&
                     extensionId in window.eureka.registeredExtension
                 ) {
                     vm.ccExtensionManager!.info[extensionId] = {
@@ -358,9 +380,31 @@ export function inject (vm: EurekaCompatibleVM) {
     }
 
     // Blockly stuffs
-    vm.once('workspaceUpdate', () => {
-        const blockly = (window.eureka.blockly = getBlocklyInstance(vm));
-        if (!blockly) {
+    let initalized = false;
+    getBlocklyInstance(vm).then((blockly) => {
+        if (!initalized) {
+            window.eureka.blockly = blockly;
+            initalized = true;
+            const originalAddCreateButton_ = blockly.Procedures.addCreateButton_;
+            blockly.Procedures.addCreateButton_ = function (
+                workspace: EurekaCompatibleWorkspace,
+                xmlList: HTMLElement[],
+                ...args: unknown[]
+            ) {
+                originalAddCreateButton_.call(this, workspace, xmlList, ...args);
+                injectToolbox(xmlList, workspace, format);
+            };
+            const workspace = blockly.getMainWorkspace();
+            workspace.getToolbox().refreshSelection();
+            workspace.toolboxRefreshEnabled_ = true;
+        }
+    });
+    /*
+     * Const blockly = (window.eureka.blockly = getBlocklyInstance(vm));
+     * Deprecated: this method will be removed in the future.
+     */
+    setTimeout(() => {
+        if (!initalized) {
             warn('Cannot find real blockly instance, try alternative method...');
             const originalProcedureCallback =
                 window.Blockly?.getMainWorkspace()?.toolboxCategoryCallbacks_?.PROCEDURE;
@@ -368,6 +412,7 @@ export function inject (vm: EurekaCompatibleVM) {
                 error('alternative method failed, stop injecting');
                 return;
             }
+            initalized = true;
             window.Blockly.getMainWorkspace().toolboxCategoryCallbacks_.PROCEDURE = function (
                 workspace: EurekaCompatibleWorkspace,
                 ...args: unknown[]
@@ -379,24 +424,9 @@ export function inject (vm: EurekaCompatibleVM) {
             const workspace = window.Blockly.getMainWorkspace();
             workspace.getToolbox().refreshSelection();
             workspace.toolboxRefreshEnabled_ = true;
-            return;
         }
-
-        const originalAddCreateButton_ = blockly.Procedures.addCreateButton_;
-        blockly.Procedures.addCreateButton_ = function (
-            workspace: EurekaCompatibleWorkspace,
-            xmlList: HTMLElement[],
-            ...args: unknown[]
-        ) {
-            originalAddCreateButton_.call(this, workspace, xmlList, ...args);
-            injectToolbox(xmlList, workspace, format);
-        };
-        const workspace = blockly.getMainWorkspace();
-        workspace.getToolbox().refreshSelection();
-        workspace.toolboxRefreshEnabled_ = true;
-    });
+    }, 3000);
 }
-
 function injectToolbox (xmlList: HTMLElement[], workspace: EurekaCompatibleWorkspace, format: typeof formatMessage) {
     // Add separator and label
     const sep = document.createElement('sep');

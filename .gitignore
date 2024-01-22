@@ -7,6 +7,9 @@ npm-*
 
 # Yarn
 yarn-error.log
+.yarn/
+.pnp.cjs
+.pnp.loader.mjs
 
 # generated build files
 /dist

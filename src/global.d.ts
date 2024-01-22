@@ -1,3 +1,4 @@
+// eslint-disable-next-line multiline-comment-style
 /// <reference path="node_modules/@turbowarp/types/index.d.ts" />
 /// <reference path="./loader/loader" />
 /// <reference path="./loader/make-ctx" />

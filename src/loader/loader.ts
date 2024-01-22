@@ -197,13 +197,11 @@ class EurekaLoader {
         if (typeof targetExt.instance === 'string') {
             const info = await dispatch.call(targetExt.instance, 'getInfo');
             const processedInfo = this._prepareExtensionInfo(null, info, targetExt.instance);
-            // @ts-expect-error private method
             this.vm.runtime._refreshExtensionPrimitives(processedInfo);
             return processedInfo;
         }
         let info = targetExt.instance.getInfo();
         info = this._prepareExtensionInfo(targetExt.instance, info);
-        // @ts-expect-error private method
         this.vm.runtime._refreshExtensionPrimitives(info);
         return info;
     }
@@ -256,10 +254,11 @@ class EurekaLoader {
                 instance: (extensionObject ?? serviceName) as ExtensionClass | string,
                 env: serviceName ? 'sandboxed' : 'unsandboxed'
             } as ScratchExtension);
+            // @ts-expect-error internal hack
+            vm.extensionManager._loadedExtensions.set(extensionInfo.id, 'Eureka');
         }
         extensionInfo = this._prepareExtensionInfo(extensionObject, extensionInfo, serviceName);
 
-        // @ts-expect-error private method
         this.vm.runtime._registerExtensionPrimitives(extensionInfo);
     }
 
@@ -357,7 +356,7 @@ class EurekaLoader {
              */
             if (!menuInfo.items) {
                 menuInfo = {
-                    // @ts-expect-error
+                    // @ts-expect-error lazy to write type hint
                     items: menuInfo
                 };
                 menus[menuName] = menuInfo;
@@ -391,6 +390,7 @@ class EurekaLoader {
     private _getExtensionMenuItems (
         extensionObject: ExtensionClass,
         menuItemFunctionName: string,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         serviceName?: string
     ): any[] {
         /*
@@ -401,7 +401,6 @@ class EurekaLoader {
         const editingTarget =
             this.vm.runtime.getEditingTarget() || this.vm.runtime.getTargetForStage();
         const editingTargetID = editingTarget ? editingTarget.id : null;
-        // @ts-expect-error private method
         const extensionMessageContext = this.vm.runtime.makeMessageContextForTarget(editingTarget);
 
         // TODO: Fix this to use dispatch.call when extensions are running in workers.
@@ -471,7 +470,11 @@ class EurekaLoader {
                     );
                 }
 
-                const predefinedCallbackKeys = ['MAKE_A_LIST', 'MAKE_A_PROCEDURE', 'MAKE_A_VARIABLE'];
+                const predefinedCallbackKeys = [
+                    'MAKE_A_LIST',
+                    'MAKE_A_PROCEDURE',
+                    'MAKE_A_VARIABLE'
+                ];
                 if (predefinedCallbackKeys.includes(blockInfo.func)) {
                     break;
                 }
@@ -489,11 +492,7 @@ class EurekaLoader {
                     // Maybe there's a worker
                     if (extensionObject === null) {
                         if (serviceName && dispatch._isRemoteService(serviceName)) {
-                            return () =>
-                                dispatch.call(
-                                    serviceName,
-                                    funcName
-                                );
+                            return () => dispatch.call(serviceName, funcName);
                         }
                         warn(`Could not find extension block function called ${funcName}`);
                         // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -505,10 +504,10 @@ class EurekaLoader {
                         warn(`Could not find extension block function called ${funcName}`);
                     }
                     return () =>
-                        // @ts-expect-error
+                        // @ts-expect-error it is callable
                         extensionObject[funcName]();
                 })();
-                // @ts-expect-error
+                // @ts-expect-error internal hack
                 blockInfo.callback = buttonCallback;
                 blockInfo.func = callbackName;
                 break;
@@ -522,9 +521,7 @@ class EurekaLoader {
                 break;
             case BlockType.XML:
                 if (blockInfo.opcode) {
-                    warn(
-                        `Ignoring opcode "${blockInfo.opcode}" for xml: ${blockInfo.xml}`
-                    );
+                    warn(`Ignoring opcode "${blockInfo.opcode}" for xml: ${blockInfo.xml}`);
                 }
                 break;
             default: {
@@ -562,11 +559,11 @@ class EurekaLoader {
                         warn(`Could not find extension block function called ${funcName}`);
                     }
                     return (args: BlockArgs, util: unknown, realBlockInfo: unknown) =>
-                        // @ts-expect-error
+                        // @ts-expect-error it is callable
                         extensionObject[funcName](args, util, realBlockInfo);
                 })();
 
-                // @ts-expect-error
+                // @ts-expect-error internal hack
                 blockInfo.func = (args: BlockArgs, util: unknown) => {
                     const realBlockInfo = getBlockInfo(args);
                     // TODO: filter args using the keys of realBlockInfo.arguments? maybe only if sandboxed?
@@ -583,9 +580,7 @@ class EurekaLoader {
      *  Overwrite some runtime methods to extend extension system.
      */
     private patchVM () {
-        // @ts-expect-error private method
         const origConvertFunc = this.vm.runtime._convertForScratchBlocks;
-        // @ts-expect-error private method
         this.vm.runtime._convertForScratchBlocks = function (
             blockInfo: ExtensionBlockMetadata,
             categoryInfo: unknown,
@@ -610,9 +605,7 @@ class EurekaLoader {
             return origConvertFunc.call(this, blockInfo, categoryInfo, ...args);
         };
 
-        // @ts-expect-error private method
         const origConvButtonFunc = this.vm.runtime._convertButtonForScratchBlocks;
-        // @ts-expect-error private method
         this.vm.runtime._convertButtonForScratchBlocks = function (
             buttonInfo: ExtensionBlockMetadata,
             ...args: unknown[]
@@ -620,7 +613,7 @@ class EurekaLoader {
             const supportedCallbackKeys = ['MAKE_A_LIST', 'MAKE_A_PROCEDURE', 'MAKE_A_VARIABLE'];
             if (window.eureka.blockly && !supportedCallbackKeys.includes(buttonInfo.func!)) {
                 const workspace = window.Blockly.getMainWorkspace();
-                // @ts-expect-error
+                // @ts-expect-error lazy to extend ExtensionBlockMetadata interface
                 workspace.registerButtonCallback(buttonInfo.func, buttonInfo.callback);
             }
             return origConvButtonFunc.call(this, buttonInfo, ...args);
