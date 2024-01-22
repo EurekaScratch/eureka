@@ -24,8 +24,8 @@ class _WorkerDispatch extends SharedDispatch {
      */
     _connectionPromise: Promise<unknown>;
     _onConnect!: (value?: unknown) => void;
-    // @ts-expect-error
-    _onMessage!: (worker: window & globalThis, event: MessageEvent) => void;
+    // @ts-expect-error no type description
+    _onMessage!: (worker: Window & globalThis, event: MessageEvent) => void;
     constructor () {
         super();
 
@@ -35,7 +35,7 @@ class _WorkerDispatch extends SharedDispatch {
 
         this._onMessage = this._onMessage.bind(this, self);
         if (typeof self !== 'undefined') {
-            // @ts-expect-error
+            // @ts-expect-error no type description
             self.onmessage = this._onMessage;
         }
     }
@@ -60,7 +60,7 @@ class _WorkerDispatch extends SharedDispatch {
      * @returns {Promise} - a promise which will resolve once the service is registered.
      */
     setService (service: string, provider: unknown) {
-        if (this.services.hasOwnProperty(service)) {
+        if (Object.prototype.hasOwnProperty.call(this.services, service)) {
             console.warn(`Worker dispatch replacing existing service provider for ${service}`);
         }
         this.services[service] = provider;

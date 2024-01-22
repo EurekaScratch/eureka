@@ -69,7 +69,7 @@ function createTranslate (vm?: VM) {
     };
 
     let storedTranslations = {};
-    translate.setup = (newTranslations: Message | {} | null) => {
+    translate.setup = (newTranslations: Message | object | null) => {
         if (newTranslations) {
             storedTranslations = newTranslations;
         }

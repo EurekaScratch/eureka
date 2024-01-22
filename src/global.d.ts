@@ -1,3 +1,5 @@
+/* eslint-disable multiline-comment-style */
+/* eslint-disable @typescript-eslint/triple-slash-reference */
 /// <reference path="node_modules/@turbowarp/types/index.d.ts" />
 /// <reference path="./loader/loader" />
 /// <reference path="./loader/make-ctx" />
