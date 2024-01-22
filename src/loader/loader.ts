@@ -197,11 +197,13 @@ class EurekaLoader {
         if (typeof targetExt.instance === 'string') {
             const info = await dispatch.call(targetExt.instance, 'getInfo');
             const processedInfo = this._prepareExtensionInfo(null, info, targetExt.instance);
+            // @ts-expect-error private method
             this.vm.runtime._refreshExtensionPrimitives(processedInfo);
             return processedInfo;
         }
         let info = targetExt.instance.getInfo();
         info = this._prepareExtensionInfo(targetExt.instance, info);
+        // @ts-expect-error private method
         this.vm.runtime._refreshExtensionPrimitives(info);
         return info;
     }
@@ -258,7 +260,7 @@ class EurekaLoader {
             vm.extensionManager._loadedExtensions.set(extensionInfo.id, 'Eureka');
         }
         extensionInfo = this._prepareExtensionInfo(extensionObject, extensionInfo, serviceName);
-
+        // @ts-expect-error private method
         this.vm.runtime._registerExtensionPrimitives(extensionInfo);
     }
 
@@ -401,6 +403,7 @@ class EurekaLoader {
         const editingTarget =
             this.vm.runtime.getEditingTarget() || this.vm.runtime.getTargetForStage();
         const editingTargetID = editingTarget ? editingTarget.id : null;
+        // @ts-expect-error private method
         const extensionMessageContext = this.vm.runtime.makeMessageContextForTarget(editingTarget);
 
         // TODO: Fix this to use dispatch.call when extensions are running in workers.
@@ -580,7 +583,9 @@ class EurekaLoader {
      *  Overwrite some runtime methods to extend extension system.
      */
     private patchVM () {
+        // @ts-expect-error private method
         const origConvertFunc = this.vm.runtime._convertForScratchBlocks;
+        // @ts-expect-error private method
         this.vm.runtime._convertForScratchBlocks = function (
             blockInfo: ExtensionBlockMetadata,
             categoryInfo: unknown,
@@ -604,8 +609,9 @@ class EurekaLoader {
             }
             return origConvertFunc.call(this, blockInfo, categoryInfo, ...args);
         };
-
+        // @ts-expect-error private method
         const origConvButtonFunc = this.vm.runtime._convertButtonForScratchBlocks;
+        // @ts-expect-error private method
         this.vm.runtime._convertButtonForScratchBlocks = function (
             buttonInfo: ExtensionBlockMetadata,
             ...args: unknown[]

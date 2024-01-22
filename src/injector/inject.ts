@@ -168,7 +168,7 @@ export function inject (vm: EurekaCompatibleVM) {
     });
     vm.extensionManager.loadExtensionURL = async function (
         extensionURL: string,
-        ...args: unknown[]
+        ...args: []
     ) {
         if (extensionURL in window.eureka.registeredExtension) {
             const { url, env } = window.eureka.registeredExtension[extensionURL];
@@ -220,14 +220,14 @@ export function inject (vm: EurekaCompatibleVM) {
     };
 
     const originalRefreshBlocksFunc = vm.extensionManager.refreshBlocks;
-    vm.extensionManager.refreshBlocks = async function (...args: unknown[]) {
+    vm.extensionManager.refreshBlocks = async function (...args) {
         const result = await originalRefreshBlocksFunc.call(this, ...args);
         await window.eureka.loader.refreshBlocks();
         return result;
     };
 
     const originalToJSONFunc = vm.toJSON;
-    vm.toJSON = function (optTargetId: string, ...args: unknown[]) {
+    vm.toJSON = function (optTargetId: string, ...args) {
         const json = originalToJSONFunc.call(this, optTargetId, ...args);
         const obj = JSON.parse(json);
 
@@ -277,7 +277,7 @@ export function inject (vm: EurekaCompatibleVM) {
     };
 
     const originalDrserializeFunc = vm.deserializeProject;
-    vm.deserializeProject = function (projectJSON: Record<string, any>, ...args: unknown[]) {
+    vm.deserializeProject = function (projectJSON: Record<string, any>, ...args) {
         if (typeof projectJSON.extensionURLs === 'object') {
             for (const id in projectJSON.extensionURLs) {
                 window.eureka.registeredExtension[id] = {
