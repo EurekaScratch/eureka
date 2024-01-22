@@ -28,23 +28,6 @@ export function getSettingsFromStorage (): Settings | null {
     }
 }
 
-/*
- * Function saveSettingsToStorage (prop: string, value: string) {
- *     try {
- *         const item = window.localStorage.getItem(SETTINGS_KEY);
- *         if (!item) throw 'missing item';
- *         const obj = JSON.parse(item);
- *         obj[prop] = value;
- *         window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(obj));
- *     } catch (_: unknown) {
- *         const newObject = Object.assign({}, puppet, {
- *             [prop]: value
- *         });
- *         window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(newObject));
- *     }
- * }
- */
-
 export const settings = new Proxy(puppet, {
     get (target, prop) {
         const storage = getSettingsFromStorage();

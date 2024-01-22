@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="../global.d.ts" />
 import { log, warn, error } from '../util/log';
 import { settings } from '../util/settings';
@@ -166,10 +167,7 @@ export function inject (vm: EurekaCompatibleVM) {
         generateId: (defaultMessage: string) => `${defaultMessage}`,
         translations: l10n
     });
-    vm.extensionManager.loadExtensionURL = async function (
-        extensionURL: string,
-        ...args: []
-    ) {
+    vm.extensionManager.loadExtensionURL = async function (extensionURL: string, ...args: []) {
         if (extensionURL in window.eureka.registeredExtension) {
             const { url, env } = window.eureka.registeredExtension[extensionURL];
             try {
@@ -203,11 +201,6 @@ export function inject (vm: EurekaCompatibleVM) {
                                 ? 'sandboxed'
                                 : 'unsandboxed') as 'unsandboxed' | 'sandboxed'
                     );
-                    /*
-                     * Const extensionId = loader.getIdByUrl(url);
-                     * @ ts-expect-error internal hack
-                     * vm.extensionManager._loadedExtensions.set(extensionId, 'Eureka');
-                     */
                 } else {
                     return originalLoadFunc.call(this, extensionURL, ...args);
                 }
@@ -277,44 +270,51 @@ export function inject (vm: EurekaCompatibleVM) {
     };
 
     const originalDrserializeFunc = vm.deserializeProject;
-    vm.deserializeProject = function (projectJSON: Record<string, any>, ...args) {
+    vm.deserializeProject = function (projectJSON: Record<string, unknown>, ...args) {
         if (typeof projectJSON.extensionURLs === 'object') {
-            for (const id in projectJSON.extensionURLs) {
+            const extensionURLs = projectJSON.extensionURLs as Record<string, unknown>;
+            const extensionEnvs: Record<string, unknown> =
+                typeof projectJSON.extensionEnvs === 'object'
+                    ? (projectJSON.extensionEnvs as Record<string, unknown>)
+                    : {};
+            for (const id in extensionURLs) {
                 window.eureka.registeredExtension[id] = {
-                    url: projectJSON.extensionURLs[id],
-                    env:
-                        typeof projectJSON.extensionEnvs === 'object'
-                            ? projectJSON.extensionEnvs[id]
-                            : 'sandboxed'
+                    url: String(extensionURLs[id]),
+                    env: String(extensionEnvs[id] ?? 'sandboxed')
                 };
             }
-            for (const target of projectJSON.targets) {
-                for (const blockId in target.blocks) {
-                    const block = target.blocks[blockId];
-                    if (block.opcode === 'procedures_call' && 'mutation' in block) {
-                        if (!block.mutation.proccode.trim().startsWith('[📎 Sideload] ')) {
-                            continue;
+            if (projectJSON.targets instanceof Array) {
+                for (const target of projectJSON.targets) {
+                    for (const blockId in target.blocks) {
+                        const block = target.blocks[blockId];
+                        if (block.opcode === 'procedures_call' && 'mutation' in block) {
+                            if (!block.mutation.proccode.trim().startsWith('[📎 Sideload] ')) {
+                                continue;
+                            }
+                            const originalOpcode = block.mutation.proccode.trim().substring(14);
+                            const extensionId = getExtensionIdForOpcode(originalOpcode);
+                            if (!extensionId) {
+                                warn(
+                                    `find a sideload block with an invalid id: ${originalOpcode}, ignored.`
+                                );
+                                continue;
+                            }
+                            if (!(extensionId in window.eureka.registeredExtension)) {
+                                warn(
+                                    `find a sideload block with unregistered extension: ${extensionId}, ignored.`
+                                );
+                                continue;
+                            }
+                            block.opcode = originalOpcode;
+                            delete block.mutation;
                         }
-                        const originalOpcode = block.mutation.proccode.trim().substring(14);
-                        const extensionId = getExtensionIdForOpcode(originalOpcode);
-                        if (!extensionId) {
-                            warn(
-                                `find a sideload block with an invalid id: ${originalOpcode}, ignored.`
-                            );
-                            continue;
-                        }
-                        if (!(extensionId in window.eureka.registeredExtension)) {
-                            warn(
-                                `find a sideload block with unregistered extension: ${extensionId}, ignored.`
-                            );
-                            continue;
-                        }
-                        block.opcode = originalOpcode;
-                        delete block.mutation;
                     }
                 }
             }
-            if ('sideloadMonitors' in projectJSON) {
+            if (
+                projectJSON.sideloadMonitors instanceof Array &&
+                projectJSON.monitors instanceof Array
+            ) {
                 projectJSON.monitors.push(...projectJSON.sideloadMonitors);
                 delete projectJSON.sideloadMonitors;
             }
@@ -366,7 +366,10 @@ export function inject (vm: EurekaCompatibleVM) {
         ) {
             for (const extensionId of extensions) {
                 if (
-                    !Object.prototype.hasOwnProperty.call(vm.ccExtensionManager!.info, extensionId) &&
+                    !Object.prototype.hasOwnProperty.call(
+                        vm.ccExtensionManager!.info,
+                        extensionId
+                    ) &&
                     extensionId in window.eureka.registeredExtension
                 ) {
                     vm.ccExtensionManager!.info[extensionId] = {
@@ -399,10 +402,6 @@ export function inject (vm: EurekaCompatibleVM) {
             workspace.toolboxRefreshEnabled_ = true;
         }
     });
-    /*
-     * Const blockly = (window.eureka.blockly = getBlocklyInstance(vm));
-     * Deprecated: this method will be removed in the future.
-     */
     setTimeout(() => {
         if (!initalized) {
             warn('Cannot find real blockly instance, try alternative method...');
@@ -417,7 +416,11 @@ export function inject (vm: EurekaCompatibleVM) {
                 workspace: EurekaCompatibleWorkspace,
                 ...args: unknown[]
             ) {
-                const xmlList = originalProcedureCallback.call(this, workspace, ...args) as HTMLElement[];
+                const xmlList = originalProcedureCallback.call(
+                    this,
+                    workspace,
+                    ...args
+                ) as HTMLElement[];
                 injectToolbox(xmlList, workspace, format);
                 return xmlList;
             };
@@ -427,7 +430,11 @@ export function inject (vm: EurekaCompatibleVM) {
         }
     }, 3000);
 }
-function injectToolbox (xmlList: HTMLElement[], workspace: EurekaCompatibleWorkspace, format: typeof formatMessage) {
+function injectToolbox (
+    xmlList: HTMLElement[],
+    workspace: EurekaCompatibleWorkspace,
+    format: typeof formatMessage
+) {
     // Add separator and label
     const sep = document.createElement('sep');
     sep.setAttribute('gap', '36');

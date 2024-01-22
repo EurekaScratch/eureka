@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/triple-slash-reference */
 /// <reference path="../global.d.ts" />
 import { warn, error } from '../util/log';
 import xmlEscape from '../util/xml-escape';
@@ -411,7 +412,7 @@ class EurekaLoader {
             editingTargetID: string | null
         ) => MenuItems;
         const menuItems = menuFunc.call(extensionObject, editingTargetID).map((item) => {
-            item = maybeFormatMessage(item, extensionMessageContext);
+            item = maybeFormatMessage(item, extensionMessageContext)!;
             switch (typeof item) {
                 case 'object':
                     return [maybeFormatMessage(item.text, extensionMessageContext), item.value];
