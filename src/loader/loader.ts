@@ -258,7 +258,7 @@ class EurekaLoader {
                 env: serviceName ? 'sandboxed' : 'unsandboxed'
             } as ScratchExtension);
             // @ts-expect-error internal hack
-            vm.extensionManager._loadedExtensions.set(extensionInfo.id, 'Eureka');
+            this.vm.extensionManager._loadedExtensions.set(extensionInfo.id, 'Eureka');
         }
         extensionInfo = this._prepareExtensionInfo(extensionObject, extensionInfo, serviceName);
         // @ts-expect-error private method
