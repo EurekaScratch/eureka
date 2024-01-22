@@ -593,22 +593,22 @@ class EurekaLoader {
         ) {
             if (typeof blockInfo !== 'string') {
                 switch (blockInfo.blockType) {
-                case BlockType.LABEL:
-                    return {
-                        info: blockInfo,
-                        xml: `<label text="${xmlEscape(blockInfo.text)}"/>`
-                    };
-                case BlockType.XML:
-                    return {
-                        info: blockInfo,
-                        xml: blockInfo.xml
-                    };
-                default:
-                    return origConvertFunc.call(this, blockInfo, categoryInfo, ...args);
+                    case BlockType.LABEL:
+                        return {
+                            info: blockInfo,
+                            xml: `<label text="${xmlEscape(blockInfo.text)}"/>`
+                        };
+                    case BlockType.XML:
+                        return {
+                            info: blockInfo,
+                            xml: blockInfo.xml
+                        };
+                    default:
+                        return origConvertFunc.call(this, blockInfo, categoryInfo, ...args);
                 }
             }
             return origConvertFunc.call(this, blockInfo, categoryInfo, ...args);
-        }
+        };
 
         // @ts-expect-error private method
         const origConvButtonFunc = this.vm.runtime._convertButtonForScratchBlocks;
@@ -624,7 +624,7 @@ class EurekaLoader {
                 workspace.registerButtonCallback(buttonInfo.func, buttonInfo.callback);
             }
             return origConvButtonFunc.call(this, buttonInfo, ...args);
-        }
+        };
     }
 
     async updateLocales () {

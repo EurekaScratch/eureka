@@ -164,10 +164,10 @@ export function inject (vm: EurekaCompatibleVM) {
                             false :
                             confirm(
                                 format('eureka.tryLoad', {
-                                extensionURL,
-                                url
+                                    extensionURL,
+                                    url
                                 })
-                        ));
+                            ));
                 }
                 if (whetherSideload) {
                     await loader.load(
@@ -356,10 +356,10 @@ export function inject (vm: EurekaCompatibleVM) {
             return originalGetOrderFunc.call(this, extensions, ...args);
         };
     }
+
     // Blockly stuffs
     vm.once('workspaceUpdate', () => {
         const blockly = (window.eureka.blockly = getBlocklyInstance(vm));
-        // Deprecated: this method will be removed in the future.
         if (!blockly) {
             warn('Cannot find real blockly instance, try alternative method...');
             const originalProcedureCallback =
@@ -372,82 +372,8 @@ export function inject (vm: EurekaCompatibleVM) {
                 workspace: EurekaCompatibleWorkspace,
                 ...args: unknown[]
             ) {
-                const xmlList = originalProcedureCallback.call(this, workspace, ...args);
-                // Add separator and label
-                const sep = document.createElement('sep');
-                sep.setAttribute('gap', '36');
-                xmlList.push(sep);
-                const label = document.createElement('label');
-                label.setAttribute('text', '💡 Eureka');
-                xmlList.push(label);
-
-                // Add dashboard button
-                const dashboardButton = document.createElement('button');
-                dashboardButton.setAttribute('text', format('eureka.openFrontend'));
-                dashboardButton.setAttribute('callbackKey', 'EUREKA_FRONTEND');
-                workspace.registerButtonCallback('EUREKA_FRONTEND', () => {
-                    window.eureka.openFrontend();
-                });
-                xmlList.push(dashboardButton);
-
-                // Add load from url button
-                const sideloadButton = document.createElement('button');
-                sideloadButton.setAttribute('text', format('eureka.sideload'));
-                sideloadButton.setAttribute('callbackKey', 'EUREKA_SIDELOAD_FROM_URL');
-                workspace.registerButtonCallback('EUREKA_EUREKA_FROM_URL', () => {
-                    const url = prompt(format('eureka.enterURL'));
-                    if (!url) return;
-                    const mode = confirm(format('eureka.loadInSandbox'))
-                        ? 'sandboxed'
-                        : 'unsandboxed';
-                    window.eureka.loader.load(url, mode);
-                });
-
-                // Add temporarily load from file button
-                const sideloadTempButton = document.createElement('button');
-                sideloadTempButton.setAttribute('text', format('eureka.sideloadTemporarily'));
-                sideloadTempButton.setAttribute(
-                    'callbackKey',
-                    'EUREKA_SIDELOAD_FROM_FILE_TEMPORAILY'
-                );
-                workspace.registerButtonCallback('EUREKA_SIDELOAD_FROM_FILE_TEMPORAILY', () => {
-                    if (confirm(format('eureka.exprimentalFileWarning'))) {
-                        const input = document.createElement('input');
-                        input.setAttribute('type', 'file');
-                        input.setAttribute('accept', '.js');
-                        input.setAttribute('multiple', 'true');
-                        input.addEventListener('change', async (event: Event) => {
-                            const files = (event.target as HTMLInputElement).files;
-                            if (!files) return;
-                            for (const file of files) {
-                                const url = URL.createObjectURL(file);
-                                const mode = confirm(format('eureka.loadInSandbox'))
-                                    ? 'sandboxed'
-                                    : 'unsandboxed';
-                                try {
-                                    await window.eureka.loader.load(url, mode);
-                                } finally {
-                                    URL.revokeObjectURL(url);
-                                }
-                            }
-                        });
-                        input.click();
-                    }
-                });
-                xmlList.push(sideloadTempButton);
-
-                // Add eureka detection
-                const mutation = document.createElement('mutation');
-                mutation.setAttribute('eureka', 'installed');
-                const field = document.createElement('field');
-                field.setAttribute('name', 'VALUE');
-                field.innerHTML = '🧐 Eureka?';
-                const block = document.createElement('block');
-                block.setAttribute('type', 'argument_reporter_boolean');
-                block.setAttribute('gap', '16');
-                block.appendChild(field);
-                block.appendChild(mutation);
-                xmlList.push(block);
+                const xmlList = originalProcedureCallback.call(this, workspace, ...args) as HTMLElement[];
+                injectToolbox(xmlList, workspace, format);
                 return xmlList;
             };
             const workspace = window.Blockly.getMainWorkspace();
@@ -455,87 +381,93 @@ export function inject (vm: EurekaCompatibleVM) {
             workspace.toolboxRefreshEnabled_ = true;
             return;
         }
+
         const originalAddCreateButton_ = blockly.Procedures.addCreateButton_;
         blockly.Procedures.addCreateButton_ = function (
             workspace: EurekaCompatibleWorkspace,
-            xmlList: unknown[],
+            xmlList: HTMLElement[],
             ...args: unknown[]
         ) {
             originalAddCreateButton_.call(this, workspace, xmlList, ...args);
-            // Add separator and label
-            const sep = document.createElement('sep');
-            sep.setAttribute('gap', '36');
-            xmlList.push(sep);
-            const label = document.createElement('label');
-            label.setAttribute('text', '💡 Eureka');
-            xmlList.push(label);
-
-            // Add dashboard button
-            const dashboardButton = document.createElement('button');
-            dashboardButton.setAttribute('text', format('eureka.openFrontend'));
-            dashboardButton.setAttribute('callbackKey', 'EUREKA_FRONTEND');
-            workspace.registerButtonCallback('EUREKA_FRONTEND', () => {
-                window.eureka.openFrontend();
-            });
-            xmlList.push(dashboardButton);
-
-            // Add load from url button
-            const sideloadButton = document.createElement('button');
-            sideloadButton.setAttribute('text', format('eureka.sideload'));
-            sideloadButton.setAttribute('callbackKey', 'EUREKA_SIDELOAD_FROM_URL');
-            workspace.registerButtonCallback('EUREKA_SIDELOAD_FROM_URL', () => {
-                const url = prompt(format('eureka.enterURL'));
-                if (!url) return;
-                const mode = confirm(format('eureka.loadInSandbox')) ? 'sandboxed' : 'unsandboxed';
-                window.eureka.loader.load(url, mode);
-            });
-            xmlList.push(sideloadButton);
-
-            // Add temporarily load from file button
-            const sideloadTempButton = document.createElement('button');
-            sideloadTempButton.setAttribute('text', format('eureka.sideloadTemporarily'));
-            sideloadTempButton.setAttribute('callbackKey', 'EUREKA_SIDELOAD_FROM_FILE_TEMPORAILY');
-            workspace.registerButtonCallback('EUREKA_SIDELOAD_FROM_FILE_TEMPORAILY', () => {
-                if (confirm(format('eureka.exprimentalFileWarning'))) {
-                    const input = document.createElement('input');
-                    input.setAttribute('type', 'file');
-                    input.setAttribute('accept', '.js');
-                    input.setAttribute('multiple', 'true');
-                    input.addEventListener('change', async (event: Event) => {
-                        const files = (event.target as HTMLInputElement).files;
-                        if (!files) return;
-                        for (const file of files) {
-                            const url = URL.createObjectURL(file);
-                            const mode = confirm(format('eureka.loadInSandbox'))
-                                ? 'sandboxed'
-                                : 'unsandboxed';
-                            try {
-                                await window.eureka.loader.load(url, mode);
-                            } finally {
-                                URL.revokeObjectURL(url);
-                            }
-                        }
-                    });
-                    input.click();
-                }
-            });
-            xmlList.push(sideloadTempButton);
-
-            // Add eureka detection
-            const mutation = document.createElement('mutation');
-            mutation.setAttribute('eureka', 'installed');
-            const field = document.createElement('field');
-            field.setAttribute('name', 'VALUE');
-            field.innerHTML = '🧐 Eureka?';
-            const block = document.createElement('block');
-            block.setAttribute('type', 'argument_reporter_boolean');
-            block.setAttribute('gap', '16');
-            block.appendChild(field);
-            block.appendChild(mutation);
-            xmlList.push(block);
+            injectToolbox(xmlList, workspace, format);
         };
         const workspace = blockly.getMainWorkspace();
         workspace.getToolbox().refreshSelection();
         workspace.toolboxRefreshEnabled_ = true;
     });
+}
+
+function injectToolbox (xmlList: HTMLElement[], workspace: EurekaCompatibleWorkspace, format: typeof formatMessage) {
+    // Add separator and label
+    const sep = document.createElement('sep');
+    sep.setAttribute('gap', '36');
+    xmlList.push(sep);
+    const label = document.createElement('label');
+    label.setAttribute('text', '💡 Eureka');
+    xmlList.push(label);
+
+    // Add dashboard button
+    const dashboardButton = document.createElement('button');
+    dashboardButton.setAttribute('text', format('eureka.openFrontend'));
+    dashboardButton.setAttribute('callbackKey', 'EUREKA_FRONTEND');
+    workspace.registerButtonCallback('EUREKA_FRONTEND', () => {
+        window.eureka.openFrontend();
+    });
+    xmlList.push(dashboardButton);
+
+    // Add load from url button
+    const sideloadButton = document.createElement('button');
+    sideloadButton.setAttribute('text', format('eureka.sideload'));
+    sideloadButton.setAttribute('callbackKey', 'EUREKA_SIDELOAD_FROM_URL');
+    workspace.registerButtonCallback('EUREKA_SIDELOAD_FROM_URL', () => {
+        const url = prompt(format('eureka.enterURL'));
+        if (!url) return;
+        const mode = confirm(format('eureka.loadInSandbox')) ? 'sandboxed' : 'unsandboxed';
+        window.eureka.loader.load(url, mode);
+    });
+    xmlList.push(sideloadButton);
+
+    // Add temporarily load from file button
+    const sideloadTempButton = document.createElement('button');
+    sideloadTempButton.setAttribute('text', format('eureka.sideloadTemporarily'));
+    sideloadTempButton.setAttribute('callbackKey', 'EUREKA_SIDELOAD_FROM_FILE_TEMPORAILY');
+    workspace.registerButtonCallback('EUREKA_SIDELOAD_FROM_FILE_TEMPORAILY', () => {
+        if (confirm(format('eureka.exprimentalFileWarning'))) {
+            const input = document.createElement('input');
+            input.setAttribute('type', 'file');
+            input.setAttribute('accept', '.js');
+            input.setAttribute('multiple', 'true');
+            input.addEventListener('change', async (event: Event) => {
+                const files = (event.target as HTMLInputElement).files;
+                if (!files) return;
+                for (const file of files) {
+                    const url = URL.createObjectURL(file);
+                    const mode = confirm(format('eureka.loadInSandbox'))
+                        ? 'sandboxed'
+                        : 'unsandboxed';
+                    try {
+                        await window.eureka.loader.load(url, mode);
+                    } finally {
+                        URL.revokeObjectURL(url);
+                    }
+                }
+            });
+            input.click();
+        }
+    });
+    xmlList.push(sideloadTempButton);
+
+    // Add eureka detection
+    const mutation = document.createElement('mutation');
+    mutation.setAttribute('eureka', 'installed');
+    const field = document.createElement('field');
+    field.setAttribute('name', 'VALUE');
+    field.innerHTML = '🧐 Eureka?';
+    const block = document.createElement('block');
+    block.setAttribute('type', 'argument_reporter_boolean');
+    block.setAttribute('gap', '16');
+    block.appendChild(field);
+    block.appendChild(mutation);
+    xmlList.push(block);
+    return xmlList;
 }

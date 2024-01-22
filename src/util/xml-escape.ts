@@ -1,6 +1,6 @@
 import * as log from './log';
 
- /**
+/**
  * Escape a string to be safe to use in XML content.
  * CC-BY-SA: hgoebl
  * https://stackoverflow.com/questions/7918868/
@@ -11,8 +11,10 @@ import * as log from './log';
 function xmlEscape (unsafe: string | string[]) {
     if (typeof unsafe !== 'string') {
         if (Array.isArray(unsafe)) {
-            // This happens when we have hacked blocks from 2.0
-            // See #1030
+            /*
+             * This happens when we have hacked blocks from 2.0
+             * See #1030
+             */
             unsafe = String(unsafe);
         } else {
             log.error('Unexpected input recieved in replaceUnsafeChars');
@@ -21,13 +23,13 @@ function xmlEscape (unsafe: string | string[]) {
     }
     return unsafe.replace(/[<>&'"]/g, (c: string) => {
         switch (c) {
-        case '<': return '&lt;';
-        case '>': return '&gt;';
-        case '&': return '&amp;';
-        case '\'': return '&apos;';
-        case '"': return '&quot;';
+            case '<': return '&lt;';
+            case '>': return '&gt;';
+            case '&': return '&amp;';
+            case '\'': return '&apos;';
+            case '"': return '&quot;';
         }
         return '';
     });
-};
+}
 export default xmlEscape;
