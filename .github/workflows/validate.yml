@@ -29,3 +29,15 @@ jobs:
           path: |
             dist/eureka-loader.user.js
             dist/unpacked-extension.zip
+      - name: Create Nightly Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: nightly
+          release_name: Nightly ${{ github.ref }}
+          body: |
+            ⚠️ Here is an nightly preview version, which may contain bugs, errors, or incomplete features. Nightly releases are not stable or supported, and are intended for testing and feedback purposes only. Use them at your own risk
+          draft: false
+          prerelease: true
