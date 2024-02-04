@@ -197,8 +197,14 @@ export interface ExtensionBlockMetadata {
     filter?: TargetType[];
     /**
      * Arbitrary scratch-blocks XML string.
+     * (TurboWarp specific)
      */
     xml?: string;
+    /**
+     * List of scratch-blocks extensions to use.
+     * (TurboWarp specific)
+     */
+    extensions?: string[];
 }
 
 export interface ExtensionArgumentMetadata {

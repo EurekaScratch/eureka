@@ -604,8 +604,19 @@ class EurekaLoader {
                             info: blockInfo,
                             xml: blockInfo.xml
                         };
-                    default:
+                    default: {
+                        if ('extensions' in blockInfo) {
+                            const converted = origConvertFunc.call(this, blockInfo, categoryInfo, ...args);
+                            for (const extension of blockInfo.extensions!) {
+                                if (!('extensions' in converted.json)) converted.json = [/*'scratch_extension'*/];
+                                if (!converted.json.extensions.includes(extension)) {
+                                    converted.json.extensions.push(extension);
+                                }
+                            }
+                            return converted;
+                        }
                         return origConvertFunc.call(this, blockInfo, categoryInfo, ...args);
+                    }
                 }
             }
             return origConvertFunc.call(this, blockInfo, categoryInfo, ...args);

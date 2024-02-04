@@ -31,6 +31,7 @@ enum BlockType {
     HAT = 'hat',
     /**
      * A text label (not an actual block) for adding comments or labling blocks
+     * (TurboWarp specific)
      */
     LABEL = 'label',
     /**
@@ -44,6 +45,7 @@ enum BlockType {
     REPORTER = 'reporter',
     /**
      * Arbitrary scratch-blocks XML.
+     * (TurboWarp specific)
      */
      XML = 'xml'
 }
