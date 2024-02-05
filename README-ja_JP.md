@@ -27,11 +27,14 @@ Eureka は Tampermonkey/GreasyMonkey に対応するユーザースクリプト�
 - [x] Cocrea
 - [x] Aerfaying
 - [x] Co-Create World
-- [x] xMW
+- [x] XMW
 - [x] CodeLab
 - [x] 40code
 - [x] TurboWarp
-- [x] xueersi
+- [x] Xueersi
+- [x] Creaticode
+- [x] Adacraft
+- [x] PenguinMod
 
 # 🔥 使い方
 
