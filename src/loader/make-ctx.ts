@@ -90,6 +90,13 @@ function createTranslate (vm?: VM) {
         });
     }
 
+    // TurboWarp/scratch-vm@24b6036
+    Object.defineProperty(translate, 'language', {
+        configurable: true,
+        enumerable: true,
+        get: () => getLocale()
+    });
+
     return translate;
 }
 

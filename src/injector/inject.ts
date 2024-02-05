@@ -238,9 +238,37 @@ export function inject (vm: EurekaCompatibleVM) {
         obj.extensionEnvs = Object.assign({}, obj.extensionEnvs, envs);
 
         if (window.eureka.settings.convertProcCall) {
-            for (const target of obj.targets) {
-                for (const blockId in target.blocks) {
-                    const block = target.blocks[blockId];
+            if ('targets' in obj) {
+                for (const target of obj.targets) {
+                    for (const blockId in target.blocks) {
+                        const block = target.blocks[blockId];
+                        if (!block.opcode) continue;
+                        const extensionId = getExtensionIdForOpcode(block.opcode);
+                        if (!extensionId) continue;
+                        if (sideloadIds.includes(extensionId)) {
+                            if (!('mutation' in block)) block.mutation = {};
+                            block.mutation.proccode = `[📎 Sideload] ${block.opcode}`;
+                            block.mutation.children = [];
+                            block.mutation.tagName = 'mutation';
+
+                            block.opcode = 'procedures_call';
+                        }
+                    }
+                }
+                for (const i in obj.monitors) {
+                    const monitor = obj.monitors[i];
+                    if (!monitor.opcode) continue;
+                    const extensionId = getExtensionIdForOpcode(monitor.opcode);
+                    if (!extensionId) continue;
+                    if (sideloadIds.includes(extensionId)) {
+                        if (!('sideloadMonitors' in obj)) obj.sideloadMonitors = [];
+                        obj.sideloadMonitors.push(monitor);
+                        obj.monitors.splice(i, 1);
+                    }
+                }
+            } else {
+                for (const blockId in obj.blocks) {
+                    const block = obj.blocks[blockId];
                     if (!block.opcode) continue;
                     const extensionId = getExtensionIdForOpcode(block.opcode);
                     if (!extensionId) continue;
@@ -252,17 +280,6 @@ export function inject (vm: EurekaCompatibleVM) {
 
                         block.opcode = 'procedures_call';
                     }
-                }
-            }
-            for (const i in obj.monitors) {
-                const monitor = obj.monitors[i];
-                if (!monitor.opcode) continue;
-                const extensionId = getExtensionIdForOpcode(monitor.opcode);
-                if (!extensionId) continue;
-                if (sideloadIds.includes(extensionId)) {
-                    if (!('sideloadMonitors' in obj)) obj.sideloadMonitors = [];
-                    obj.sideloadMonitors.push(monitor);
-                    obj.monitors.splice(i, 1);
                 }
             }
         }
