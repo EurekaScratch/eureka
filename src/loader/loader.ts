@@ -607,7 +607,7 @@ class EurekaLoader {
                     default: {
                         if ('extensions' in blockInfo) {
                             const converted = origConvertFunc.call(this, blockInfo, categoryInfo, ...args);
-                            if (!('extensions' in converted.json)) converted.extensions.json = [/*'scratch_extension'*/];
+                            if (!('extensions' in converted.json)) converted.json.extensions = [/*'scratch_extension'*/];
                             for (const extension of blockInfo.extensions!) {
                                 if (!converted.json.extensions.includes(extension)) {
                                     converted.json.extensions.push(extension);
