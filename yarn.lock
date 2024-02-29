@@ -1119,10 +1119,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@turbowarp/types@^0.0.11":
-  version "0.0.11"
-  resolved "https://registry.yarnpkg.com/@turbowarp/types/-/types-0.0.11.tgz#7285b3d1b30e5d5e1e554cfbdd7a50a146ccd9f2"
-  integrity sha512-CwjS1/KkO+pkKbsPkbji03Ac+j6pVFrdOF0Lo3kWHTNuniHWuQOQx5cK+B+/wNMZ7dCaNjtMS4HDe80RxBrsaQ==
+"@turbowarp/types@^0.0.12":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@turbowarp/types/-/types-0.0.12.tgz#7ed12fde4f8340ffc0cde794386a08fdedde343c"
+  integrity sha512-VhYdLDyk3ZgCnGb0xN0x0sj4SXsiYknnA/b1UzJlK1EVzK8gO4c+BQg0famYUVIgfS93eBbgRTXP0EyEz0zu/Q==
 
 "@types/body-parser@*":
   version "1.19.5"

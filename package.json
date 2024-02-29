@@ -17,7 +17,7 @@
     "@babel/core": "^7.24.0",
     "@babel/preset-env": "^7.24.0",
     "@babel/preset-typescript": "^7.22.15",
-    "@turbowarp/types": "^0.0.11",
+    "@turbowarp/types": "^0.0.12",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^6.21.0",
     "archiver": "^6.0.2",
