@@ -1,7 +1,6 @@
 const svgToMiniDataURI = require('mini-svg-data-uri');
 const webpack = require('webpack');
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { UserscriptPlugin } = require('webpack-userscript');
 const { includeURLs } = require('./generate-helper');
 const packageJSON = require('./package.json');
