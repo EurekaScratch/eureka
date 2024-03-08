@@ -60,6 +60,7 @@ const base = {
                 license: packageJSON.license,
                 grant: ['none'],
                 updateURL: 'https://eureka.codingclip.cc/release/eureka-loader.user.js',
+                downloadURL: 'https://eureka.codingclip.cc/release/eureka-loader.user.js',
                 'run-at': 'document-start',
                 include: includeURLs
             },
