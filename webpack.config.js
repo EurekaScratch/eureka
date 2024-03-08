@@ -59,6 +59,7 @@ const base = {
                 version: packageJSON.version,
                 license: packageJSON.license,
                 grant: ['none'],
+                updateURL: 'https://eureka.codingclip.cc/release/eureka-loader.user.js',
                 'run-at': 'document-start',
                 include: includeURLs
             },
