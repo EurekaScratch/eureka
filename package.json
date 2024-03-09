@@ -1,7 +1,7 @@
 {
   "name": "eureka-loader",
   "displayName": "Eureka",
-  "version": "7.1",
+  "version": "8",
   "description": "Universal scratch extension loader.",
   "repository": "https://github.com/EurekaScratch/eureka",
   "author": "SimonShiki",
