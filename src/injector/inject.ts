@@ -25,9 +25,23 @@ interface EurekaCompatibleVM extends VM {
     };
     setLocale?: (locale: string, ...args: unknown[]) => unknown;
     getLocale?: () => string;
+    _loadExtensions?: (extensionIDs: Set<string>, extensionURLs: Map<string, string>, ...args: unknown[]) => Promise<unknown>;
 }
 
 const MAX_LISTENING_MS = 30 * 1000;
+
+/**
+ * Utility function to determine if a value is a Promise.
+ * @param {*} value Value to check for a Promise.
+ * @return {boolean} True if the value appears to be a Promise.
+ */
+function isPromise (value: unknown) {
+    return (
+        value !== null &&
+        typeof value === 'object' &&
+        typeof (value as Promise<unknown>).then === 'function'
+    );
+}
 
 /**
  * Get sanitized non-core extension ID for a given sb3 opcode.
@@ -234,8 +248,8 @@ export function inject (vm: EurekaCompatibleVM) {
             envs[extId] = ext.env;
             sideloadIds.push(extId);
         }
-        obj.extensionURLs = Object.assign({}, obj.extensionURLs, urls);
-        obj.extensionEnvs = Object.assign({}, obj.extensionEnvs, envs);
+        obj.sideloadExtensionURLs = urls;
+        obj.sideloadExtensionEnvs = envs;
 
         if (window.eureka.settings.convertProcCall) {
             if ('targets' in obj) {
@@ -288,12 +302,31 @@ export function inject (vm: EurekaCompatibleVM) {
 
     const originalDrserializeFunc = vm.deserializeProject;
     vm.deserializeProject = function (projectJSON: Record<string, unknown>, ...args) {
-        if (typeof projectJSON.extensionURLs === 'object') {
-            const extensionURLs = projectJSON.extensionURLs as Record<string, unknown>;
-            const extensionEnvs: Record<string, unknown> =
-                typeof projectJSON.extensionEnvs === 'object'
-                    ? (projectJSON.extensionEnvs as Record<string, unknown>)
+        if (typeof projectJSON.extensionURLs === 'object' || projectJSON.sideloadExtensionURLs === 'object') {
+            const extensionURLs: Record<string, unknown> =
+                typeof projectJSON.sideloadExtensionURLs === 'object'
+                    ? (projectJSON.sideloadExtensionURLs as Record<string, unknown>)
                     : {};
+            let extensionEnvs: Record<string, unknown> =
+                typeof projectJSON.sideloadExtensionEnvs === 'object'
+                    ? (projectJSON.sideloadExtensionEnvs as Record<string, unknown>)
+                    : {};
+
+            // Migrate from old eureka
+            if (projectJSON.extensionEnvs) {
+                log('Old eureka-ify project detected, migrating...');
+                extensionEnvs = projectJSON.sideloadExtensionEnvs = projectJSON.extensionEnvs as Record<string, unknown>;
+                delete projectJSON.extensionEnvs;
+
+                for (const extensionId in (projectJSON.sideloadExtensionEnvs as Record<string, unknown>)) {
+                    if (extensionId in (projectJSON.extensionURLs as Record<string, unknown>)) {
+                        extensionURLs[extensionId] = (projectJSON.extensionURLs as Record<string, unknown>)[extensionId];
+                        // @ts-expect-error lazy to fix types
+                        delete projectJSON.extensionURLs[extensionId];
+                    }
+                }
+            }
+
             for (const id in extensionURLs) {
                 window.eureka.registeredExtension[id] = {
                     url: String(extensionURLs[id]),
@@ -338,6 +371,24 @@ export function inject (vm: EurekaCompatibleVM) {
         }
         return originalDrserializeFunc.call(this, projectJSON, ...args);
     };
+
+    // Turbowarp-specific patch, skip security manager check
+    const originalTwLoadExtFunc = vm._loadExtensions;
+    if (typeof originalTwLoadExtFunc === 'function') {
+        vm._loadExtensions = function (extensionIDs: Set<string>, extensionURLs: Map<string, string>, ...args: unknown[]) {
+            const sideloadExtensionPromises: Promise<void>[] = [];
+            for (const extensionId of extensionIDs) {
+                if (extensionId in window.eureka.registeredExtension) {
+                    const loadResult = this.extensionManager.loadExtensionURL(extensionId);
+                    if (isPromise(loadResult)) {
+                        sideloadExtensionPromises.push(loadResult as unknown as Promise<void>);
+                    }
+                    extensionIDs.delete(extensionId);
+                }
+            }
+            return Promise.all([originalTwLoadExtFunc.call(this, extensionIDs, extensionURLs, ...args), ...sideloadExtensionPromises]);
+        };
+    }
 
     const originSetLocaleFunc = vm.setLocale;
     vm.setLocale = function (locale: string, ...args: unknown[]) {
