@@ -302,7 +302,7 @@ export function inject (vm: EurekaCompatibleVM) {
 
     const originalDrserializeFunc = vm.deserializeProject;
     vm.deserializeProject = function (projectJSON: Record<string, unknown>, ...args) {
-        if (typeof projectJSON.extensionURLs === 'object' || projectJSON.sideloadExtensionURLs === 'object') {
+        if (typeof projectJSON.extensionURLs === 'object' || typeof projectJSON.sideloadExtensionURLs === 'object') {
             const extensionURLs: Record<string, unknown> =
                 typeof projectJSON.sideloadExtensionURLs === 'object'
                     ? (projectJSON.sideloadExtensionURLs as Record<string, unknown>)
