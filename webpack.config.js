@@ -6,7 +6,7 @@ const { includeURLs } = require('./generate-helper');
 const packageJSON = require('./package.json');
 const process = require('node:process');
 
-const base = {
+const standalone = {
     mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
     entry: './src/index.ts',
     output: {
@@ -74,4 +74,28 @@ const base = {
     ]
 };
 
-module.exports = base;
+const charlotte = {
+    mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
+    target: 'web',
+    entry: './src/injector/inject.ts',
+    experiments: {
+        outputModule: true
+    },
+    output: {
+        library: {
+            type: 'module'
+        },
+        path: path.resolve(__dirname, 'dist'),
+        publicPath: './',
+        filename: 'eureka-charlotte.js'
+    },
+    resolve: standalone.resolve,
+    module: standalone.module,
+    plugins: [
+        new webpack.DefinePlugin({
+            __EUREKA_VERSION__: JSON.stringify(packageJSON.version)
+        })
+    ]
+}
+
+module.exports = [standalone, charlotte];
