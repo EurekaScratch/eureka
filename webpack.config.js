@@ -77,7 +77,7 @@ const standalone = {
 const charlotte = {
     mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
     target: 'web',
-    entry: './src/injector/inject.ts',
+    entry: './src/charlotte.ts',
     experiments: {
         outputModule: true
     },
