@@ -63,7 +63,7 @@ function getExtensionIdForOpcode (opcode: string) {
  * @param vm Virtual machine instance. For some reasons we cannot use VM here.
  * @returns Blockly instance.
  */
-async function getBlocklyInstance (vm: EurekaCompatibleVM): Promise<any> {
+async function getBlocklyInstance (vm: EurekaCompatibleVM): Promise<typeof Blockly | null> {
     function getBlocklyInstanceInternal (): any | null {
         // Hijack Function.prototype.apply to get React element instance.
         function hijack (fn: (...args: unknown[]) => unknown) {
@@ -128,7 +128,7 @@ async function getBlocklyInstance (vm: EurekaCompatibleVM): Promise<any> {
  * @param open window.open function (compatible with ccw).
  * @return Callback promise. After that you could use window.eureka.vm to get the virtual machine.
  */
-export function trap (open: typeof window.open): Promise<void> {
+export function trap (open: typeof window.open): Promise<[EurekaCompatibleVM | null, typeof Blockly | null]> {
     window.eureka = {
         // @ts-expect-error defined in webpack define plugin
         version: __EUREKA_VERSION__,
@@ -139,11 +139,12 @@ export function trap (open: typeof window.open): Promise<void> {
 
     log('Listening bind function...');
     const oldBind = Function.prototype.bind;
-    return new Promise<void>((resolve) => {
+    // @ts-expect-error lazy to fix
+    return new Promise<EurekaCompatibleVM>((resolve, reject) => {
         const timeoutId = setTimeout(() => {
             log('Cannot find vm instance, stop listening.');
             Function.prototype.bind = oldBind;
-            resolve();
+            reject();
         }, MAX_LISTENING_MS);
 
         Function.prototype.bind = function (...args) {
@@ -155,14 +156,17 @@ export function trap (open: typeof window.open): Promise<void> {
                 Object.prototype.hasOwnProperty.call(args[0], 'runtime')
             ) {
                 log('VM detected!');
-                window.eureka.vm = args[0];
                 Function.prototype.bind = oldBind;
                 clearTimeout(timeoutId);
-                resolve();
+                resolve(args[0]);
                 return oldBind.apply(this, args);
             }
             return oldBind.apply(this, args);
         };
+    }).then(async (vm) => {
+        return [vm, await getBlocklyInstance(vm)];
+    }).catch(() => {
+        return [null, null];
     });
 }
 
@@ -170,7 +174,7 @@ export function trap (open: typeof window.open): Promise<void> {
  * Inject into the original virtual machine.
  * @param vm {EurekaCompatibleVM} Original virtual machine instance.
  */
-export function inject (vm: EurekaCompatibleVM) {
+export function inject (vm: EurekaCompatibleVM, blockly: any) {
     const loader = (window.eureka.loader = new EurekaLoader(vm));
     const originalLoadFunc = vm.extensionManager.loadExtensionURL;
     const getLocale = vm.getLocale;
@@ -450,53 +454,44 @@ export function inject (vm: EurekaCompatibleVM) {
         };
     }
 
-    // Blockly stuffs
-    let initalized = false;
-    getBlocklyInstance(vm).then((blockly) => {
-        if (!initalized) {
-            window.eureka.blockly = blockly;
-            initalized = true;
-            const originalAddCreateButton_ = blockly.Procedures.addCreateButton_;
-            blockly.Procedures.addCreateButton_ = function (
-                workspace: EurekaCompatibleWorkspace,
-                xmlList: HTMLElement[],
-                ...args: unknown[]
-            ) {
-                originalAddCreateButton_.call(this, workspace, xmlList, ...args);
-                injectToolbox(xmlList, workspace, format);
-            };
-            const workspace = blockly.getMainWorkspace();
-            workspace.getToolbox().refreshSelection();
-            workspace.toolboxRefreshEnabled_ = true;
-        }
-    });
-    setTimeout(() => {
-        if (!initalized) {
-            warn('Cannot find real blockly instance, try alternative method...');
-            const originalProcedureCallback =
+    if (typeof blockly === 'object') {
+        window.eureka.blockly = blockly;
+        const originalAddCreateButton_ = blockly.Procedures.addCreateButton_;
+        blockly.Procedures.addCreateButton_ = function (
+            workspace: EurekaCompatibleWorkspace,
+            xmlList: HTMLElement[],
+            ...args: unknown[]
+        ) {
+            originalAddCreateButton_.call(this, workspace, xmlList, ...args);
+            injectToolbox(xmlList, workspace, format);
+        };
+        const workspace = blockly.getMainWorkspace();
+        workspace.getToolbox().refreshSelection();
+        workspace.toolboxRefreshEnabled_ = true;
+    } else {
+        warn('Cannot find real blockly instance, try alternative method...');
+        const originalProcedureCallback =
                 window.Blockly?.getMainWorkspace()?.toolboxCategoryCallbacks_?.PROCEDURE;
-            if (!originalProcedureCallback) {
-                error('alternative method failed, stop injecting');
-                return;
-            }
-            initalized = true;
-            window.Blockly.getMainWorkspace().toolboxCategoryCallbacks_.PROCEDURE = function (
-                workspace: EurekaCompatibleWorkspace,
-                ...args: unknown[]
-            ) {
-                const xmlList = originalProcedureCallback.call(
-                    this,
-                    workspace,
-                    ...args
-                ) as HTMLElement[];
-                injectToolbox(xmlList, workspace, format);
-                return xmlList;
-            };
-            const workspace = window.Blockly.getMainWorkspace();
-            workspace.getToolbox().refreshSelection();
-            workspace.toolboxRefreshEnabled_ = true;
+        if (!originalProcedureCallback) {
+            error('alternative method failed, stop injecting');
+            return;
         }
-    }, 3000);
+        window.Blockly.getMainWorkspace().toolboxCategoryCallbacks_.PROCEDURE = function (
+            workspace: EurekaCompatibleWorkspace,
+            ...args: unknown[]
+        ) {
+            const xmlList = originalProcedureCallback.call(
+                this,
+                workspace,
+                ...args
+            ) as HTMLElement[];
+            injectToolbox(xmlList, workspace, format);
+            return xmlList;
+        };
+        const workspace = window.Blockly.getMainWorkspace();
+        workspace.getToolbox().refreshSelection();
+        workspace.toolboxRefreshEnabled_ = true;
+    }
 }
 function injectToolbox (
     xmlList: HTMLElement[],
