@@ -169,14 +169,7 @@ export function trap (open: typeof window.open): Promise<[EurekaCompatibleVM | n
         return [null, null];
     });
 }
-
-/**
- * Inject into the original virtual machine.
- * @param vm {EurekaCompatibleVM} Original virtual machine instance.
- */
-export function inject (vm: EurekaCompatibleVM, blockly: any) {
-    const loader = (window.eureka.loader = new EurekaLoader(vm));
-    const originalLoadFunc = vm.extensionManager.loadExtensionURL;
+function setupFormat (vm: EurekaCompatibleVM) {
     const getLocale = vm.getLocale;
     const format = formatMessage.namespace();
     format.setup({
@@ -185,6 +178,18 @@ export function inject (vm: EurekaCompatibleVM, blockly: any) {
         generateId: (defaultMessage: string) => `${defaultMessage}`,
         translations: l10n
     });
+    window.eureka.format = format;
+    return format;
+}
+
+/**
+ * Inject into the original virtual machine.
+ * @param vm {EurekaCompatibleVM} Original virtual machine instance.
+ */
+export function injectVM (vm: EurekaCompatibleVM) {
+    const loader = (window.eureka.loader = new EurekaLoader(vm));
+    const originalLoadFunc = vm.extensionManager.loadExtensionURL;
+    const format = setupFormat(vm);
     vm.extensionManager.loadExtensionURL = async function (extensionURL: string, ...args: []) {
         if (extensionURL in window.eureka.registeredExtension) {
             const { url, env } = window.eureka.registeredExtension[extensionURL];
@@ -453,7 +458,13 @@ export function inject (vm: EurekaCompatibleVM, blockly: any) {
             return originalGetOrderFunc.call(this, extensions, ...args);
         };
     }
+}
 
+export function injectBlockly (blockly: any) {
+    const format = window.eureka.format;
+    if (!format) {
+        return error('You should inject VM first');
+    }
     if (typeof blockly === 'object') {
         window.eureka.blockly = blockly;
         const originalAddCreateButton_ = blockly.Procedures.addCreateButton_;
@@ -472,7 +483,7 @@ export function inject (vm: EurekaCompatibleVM, blockly: any) {
         warn('Cannot find real blockly instance, try alternative method...');
         const originalProcedureCallback =
                 window.Blockly?.getMainWorkspace()?.toolboxCategoryCallbacks_?.PROCEDURE;
-        if (!originalProcedureCallback) {
+        if (typeof originalProcedureCallback !== 'function') {
             error('alternative method failed, stop injecting');
             return;
         }
@@ -493,6 +504,7 @@ export function inject (vm: EurekaCompatibleVM, blockly: any) {
         workspace.toolboxRefreshEnabled_ = true;
     }
 }
+
 function injectToolbox (
     xmlList: HTMLElement[],
     workspace: EurekaCompatibleWorkspace,
