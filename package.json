@@ -14,7 +14,7 @@
     "typecheck": "tsc --watch --noEmit"
   },
   "devDependencies": {
-    "@babel/core": "^7.24.1",
+    "@babel/core": "^7.24.3",
     "@babel/preset-env": "^7.24.0",
     "@babel/preset-typescript": "^7.24.1",
     "@turbowarp/types": "^0.0.11",
