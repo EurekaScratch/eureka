@@ -25,7 +25,11 @@ interface EurekaCompatibleVM extends VM {
     };
     setLocale?: (locale: string, ...args: unknown[]) => unknown;
     getLocale?: () => string;
-    _loadExtensions?: (extensionIDs: Set<string>, extensionURLs: Map<string, string>, ...args: unknown[]) => Promise<unknown>;
+    _loadExtensions?: (
+        extensionIDs: Set<string>,
+        extensionURLs: Map<string, string>,
+        ...args: unknown[]
+    ) => Promise<unknown>;
 }
 
 const MAX_LISTENING_MS = 30 * 1000;
@@ -63,7 +67,7 @@ function getExtensionIdForOpcode (opcode: string) {
  * @param vm Virtual machine instance. For some reasons we cannot use VM here.
  * @returns Blockly instance.
  */
-async function getBlocklyInstance (vm: EurekaCompatibleVM): Promise<typeof Blockly | null> {
+export async function getBlocklyInstance (vm: EurekaCompatibleVM): Promise<typeof Blockly | null> {
     function getBlocklyInstanceInternal (): any | null {
         // Hijack Function.prototype.apply to get React element instance.
         function hijack (fn: (...args: unknown[]) => unknown) {
@@ -124,50 +128,54 @@ async function getBlocklyInstance (vm: EurekaCompatibleVM): Promise<typeof Block
 }
 
 /**
- * Trap to get Virtual Machine instance.
- * @param open window.open function (compatible with ccw).
- * @return Callback promise. After that you could use window.eureka.vm to get the virtual machine.
+ * Initalize eureka global object.
  */
-export function trap (open: typeof window.open): Promise<[EurekaCompatibleVM | null, typeof Blockly | null]> {
+export function initalizeEureka () {
     window.eureka = {
         // @ts-expect-error defined in webpack define plugin
         version: __EUREKA_VERSION__,
         registeredExtension: {},
         settings: settings,
-        openFrontend: openFrontend.bind(null, open)
+        openFrontend: openFrontend.bind(null, window.open)
     };
+}
 
+/**
+ * Trap to get Virtual Machine instance.
+ * @return Callback promise. After that you could use window.eureka.vm to get the virtual machine.
+ */
+export async function getVMInstance (): Promise<EurekaCompatibleVM | null> {
     log('Listening bind function...');
     const oldBind = Function.prototype.bind;
-    // @ts-expect-error lazy to fix
-    return new Promise<EurekaCompatibleVM>((resolve, reject) => {
-        const timeoutId = setTimeout(() => {
-            log('Cannot find vm instance, stop listening.');
-            Function.prototype.bind = oldBind;
-            reject();
-        }, MAX_LISTENING_MS);
-
-        Function.prototype.bind = function (...args) {
-            if (Function.prototype.bind === oldBind) {
-                return oldBind.apply(this, args);
-            } else if (
-                args[0] &&
-                Object.prototype.hasOwnProperty.call(args[0], 'editingTarget') &&
-                Object.prototype.hasOwnProperty.call(args[0], 'runtime')
-            ) {
-                log('VM detected!');
+    try {
+        const vm = await new Promise<EurekaCompatibleVM>((resolve, reject) => {
+            const timeoutId = setTimeout(() => {
+                log('Cannot find vm instance, stop listening.');
                 Function.prototype.bind = oldBind;
-                clearTimeout(timeoutId);
-                resolve(args[0]);
+                reject();
+            }, MAX_LISTENING_MS);
+
+            Function.prototype.bind = function (...args) {
+                if (Function.prototype.bind === oldBind) {
+                    return oldBind.apply(this, args);
+                } else if (
+                    args[0] &&
+                    Object.prototype.hasOwnProperty.call(args[0], 'editingTarget') &&
+                    Object.prototype.hasOwnProperty.call(args[0], 'runtime')
+                ) {
+                    log('VM detected!');
+                    Function.prototype.bind = oldBind;
+                    clearTimeout(timeoutId);
+                    resolve(args[0]);
+                    return oldBind.apply(this, args);
+                }
                 return oldBind.apply(this, args);
-            }
-            return oldBind.apply(this, args);
-        };
-    }).then(async (vm) => {
-        return [vm, await getBlocklyInstance(vm)];
-    }).catch(() => {
-        return [null, null];
-    });
+            };
+        });
+        return vm;
+    } catch {
+        return null;
+    }
 }
 function setupFormat (vm: EurekaCompatibleVM) {
     const getLocale = vm.getLocale;
@@ -311,7 +319,10 @@ export function injectVM (vm: EurekaCompatibleVM) {
 
     const originalDrserializeFunc = vm.deserializeProject;
     vm.deserializeProject = function (projectJSON: Record<string, unknown>, ...args) {
-        if (typeof projectJSON.extensionURLs === 'object' || typeof projectJSON.sideloadExtensionURLs === 'object') {
+        if (
+            typeof projectJSON.extensionURLs === 'object' ||
+            typeof projectJSON.sideloadExtensionURLs === 'object'
+        ) {
             const extensionURLs: Record<string, unknown> =
                 typeof projectJSON.sideloadExtensionURLs === 'object'
                     ? (projectJSON.sideloadExtensionURLs as Record<string, unknown>)
@@ -324,12 +335,18 @@ export function injectVM (vm: EurekaCompatibleVM) {
             // Migrate from old eureka
             if (projectJSON.extensionEnvs) {
                 log('Old eureka-ify project detected, migrating...');
-                extensionEnvs = projectJSON.sideloadExtensionEnvs = projectJSON.extensionEnvs as Record<string, unknown>;
+                extensionEnvs = projectJSON.sideloadExtensionEnvs =
+                    projectJSON.extensionEnvs as Record<string, unknown>;
                 delete projectJSON.extensionEnvs;
 
-                for (const extensionId in (projectJSON.sideloadExtensionEnvs as Record<string, unknown>)) {
+                for (const extensionId in projectJSON.sideloadExtensionEnvs as Record<
+                    string,
+                    unknown
+                >) {
                     if (extensionId in (projectJSON.extensionURLs as Record<string, unknown>)) {
-                        extensionURLs[extensionId] = (projectJSON.extensionURLs as Record<string, unknown>)[extensionId];
+                        extensionURLs[extensionId] = (
+                            projectJSON.extensionURLs as Record<string, unknown>
+                        )[extensionId];
                         // @ts-expect-error lazy to fix types
                         delete projectJSON.extensionURLs[extensionId];
                     }
@@ -384,7 +401,11 @@ export function injectVM (vm: EurekaCompatibleVM) {
     // Turbowarp-specific patch, skip security manager check
     const originalTwLoadExtFunc = vm._loadExtensions;
     if (typeof originalTwLoadExtFunc === 'function') {
-        vm._loadExtensions = function (extensionIDs: Set<string>, extensionURLs: Map<string, string>, ...args: unknown[]) {
+        vm._loadExtensions = function (
+            extensionIDs: Set<string>,
+            extensionURLs: Map<string, string>,
+            ...args: unknown[]
+        ) {
             const sideloadExtensionPromises: Promise<void>[] = [];
             for (const extensionId of extensionIDs) {
                 if (extensionId in window.eureka.registeredExtension) {
@@ -395,7 +416,10 @@ export function injectVM (vm: EurekaCompatibleVM) {
                     extensionIDs.delete(extensionId);
                 }
             }
-            return Promise.all([originalTwLoadExtFunc.call(this, extensionIDs, extensionURLs, ...args), ...sideloadExtensionPromises]);
+            return Promise.all([
+                originalTwLoadExtFunc.call(this, extensionIDs, extensionURLs, ...args),
+                ...sideloadExtensionPromises
+            ]);
         };
     }
 
@@ -482,7 +506,7 @@ export function injectBlockly (blockly: any) {
     } else {
         warn('Cannot find real blockly instance, try alternative method...');
         const originalProcedureCallback =
-                window.Blockly?.getMainWorkspace()?.toolboxCategoryCallbacks_?.PROCEDURE;
+            window.Blockly?.getMainWorkspace()?.toolboxCategoryCallbacks_?.PROCEDURE;
         if (typeof originalProcedureCallback !== 'function') {
             error('alternative method failed, stop injecting');
             return;
