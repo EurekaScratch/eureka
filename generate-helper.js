@@ -11,6 +11,7 @@ const includeURLs = [
     'https://turbowarp.org/*',
     'https://codingclip.com/*',
     'https://editor.turbowarp.cn/*',
+    'https://turbowarp.cn/*',
     'https://0832.ink/rc/*',
     'https://code.xueersi.com/scratch3/*',
     'https://play.creaticode.com/projects/*',
