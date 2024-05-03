@@ -34,8 +34,6 @@ Eureka 是一个用户脚本，可以在任何基于 Scratch 的编辑器中加�
 - [x] ElectraMod *
 - [x] XPLab *
 
-*\*: 仅在 CI 构建中可用*
-
 # 🔥 使用方法
 1. 安装一个用户脚本管理器扩展, 例如 Tampermonkey 或 Greasymonkey。
 2. 打开[发布页](https://github.com/EurekaScratch/eureka-loader/releases), 点击一个版本来安装。
