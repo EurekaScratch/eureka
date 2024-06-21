@@ -25,7 +25,7 @@
     "codingclip-worker-loader": "^3.0.9",
     "eslint": "^8.57.0",
     "mini-svg-data-uri": "^1.4.4",
-    "typescript": "^5.4.5",
+    "typescript": "^5.5.2",
     "webpack": "^5.92.1",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^4.15.1",
