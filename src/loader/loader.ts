@@ -53,6 +53,8 @@ class UnsandboxedLoader {
                         const register = ctx.extensions.register;
                         // now UnsandboxedLoader only resolves after Scratch.extensions.register called
                         ctx.extensions.register = function (ext) {
+                            URL.revokeObjectURL(src);
+                            document.head.removeChild(elem);
                             resolve();
                             return register.call(this, ext);
                         }
