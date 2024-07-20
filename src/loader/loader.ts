@@ -50,6 +50,12 @@ class UnsandboxedLoader {
                     });
                     const code = await resp.text();
                     return new Promise<void>((resolve) => {
+                        const register = ctx.extensions.register;
+                        // now UnsandboxedLoader only resolves after Scratch.extensions.register called
+                        ctx.extensions.register = function (ext) {
+                            resolve();
+                            return register.call(this, ext);
+                        }
                         const elem = document.createElement('script') as EurekaCompatibleScript;
                         const src = URL.createObjectURL(
                             new Blob(
@@ -72,11 +78,6 @@ ${code}
                         elem.src = src;
                         elem.id = 'eurekaExtension';
                         document.head.appendChild(elem);
-                        elem.addEventListener('load', () => {
-                            URL.revokeObjectURL(src);
-                            document.head.removeChild(elem);
-                            resolve();
-                        });
                         elem.addEventListener('error', (err) => {
                             URL.revokeObjectURL(src);
                             document.head.removeChild(elem);
@@ -170,6 +171,8 @@ class EurekaLoader {
                         const extensionInfo = extensionObj.getInfo();
                         this._registerExtensionInfo(extensionObj, extensionInfo, ext);
                     };
+                    // @ts-expect-error lazy to extend VM interface
+                    this.vm.emit('CREATE_UNSANDBOXED_EXTENSION_API', ctx);
                     await unsandboxedLoader.load(ext, ctx);
                     return;
                 }

@@ -4,35 +4,15 @@ import { log, warn, error } from '../util/log';
 import { settings } from '../util/settings';
 import { EurekaLoader } from '../loader/loader';
 import openFrontend from '../frontend';
-import type VM from 'scratch-vm';
+import { EurekaCompatibleVM, getBlocklyInstance } from '../util/hijack';
 import type Blockly from 'scratch-blocks';
 import * as l10n from '../l10n/l10n.json';
 import formatMessage from 'format-message';
+import type { Context } from '../loader/make-ctx';
 
 interface EurekaCompatibleWorkspace extends Blockly.Workspace {
     registerButtonCallback(key: string, callback: () => void): void;
 }
-
-interface EurekaCompatibleVM extends VM {
-    ccExtensionManager?: {
-        info: Record<
-            string,
-            {
-                api: number;
-            }
-        >;
-        getExtensionLoadOrder(extensions: string[]): unknown;
-    };
-    setLocale?: (locale: string, ...args: unknown[]) => unknown;
-    getLocale?: () => string;
-    _loadExtensions?: (
-        extensionIDs: Set<string>,
-        extensionURLs: Map<string, string>,
-        ...args: unknown[]
-    ) => Promise<unknown>;
-}
-
-const MAX_LISTENING_MS = 30 * 1000;
 
 /**
  * Utility function to determine if a value is a Promise.
@@ -63,71 +43,6 @@ function getExtensionIdForOpcode (opcode: string) {
 }
 
 /**
- * Get Blockly instance.
- * @param vm Virtual machine instance. For some reasons we cannot use VM here.
- * @returns Blockly instance.
- */
-export async function getBlocklyInstance (vm: EurekaCompatibleVM): Promise<typeof Blockly | null> {
-    function getBlocklyInstanceInternal (): any | null {
-        // Hijack Function.prototype.apply to get React element instance.
-        function hijack (fn: (...args: unknown[]) => unknown) {
-            const _orig = Function.prototype.apply;
-            Function.prototype.apply = function (thisArg: any) {
-                return thisArg;
-            };
-            const result = fn();
-            Function.prototype.apply = _orig;
-            return result;
-        }
-
-        // @ts-expect-error lazy to extend VM interface
-        const events = vm._events?.EXTENSION_ADDED;
-        if (events) {
-            if (events instanceof Function) {
-                // It is a function, just hijack it.
-                const result = hijack(events);
-                if (result && typeof result === 'object' && 'ScratchBlocks' in result) {
-                    return result.ScratchBlocks;
-                }
-            } else {
-                // It is an array, hijack every listeners.
-                for (const value of events) {
-                    const result = hijack(value);
-                    if (result && typeof result === 'object' && 'ScratchBlocks' in result) {
-                        return result.ScratchBlocks;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-    let res = getBlocklyInstanceInternal();
-    return (
-        res ??
-        new Promise((resolve) => {
-            let state: any = undefined;
-            // @ts-expect-error lazy to extend VM interface
-            Reflect.defineProperty(vm._events, 'EXTENSION_ADDED', {
-                get: () => state,
-                set (v) {
-                    state = v;
-                    res = getBlocklyInstanceInternal();
-                    if (res) {
-                        // @ts-expect-error lazy to extend VM interface
-                        Reflect.defineProperty(vm._events, 'EXTENSION_ADDED', {
-                            value: state,
-                            writable: true
-                        });
-                        resolve(res);
-                    }
-                },
-                configurable: true
-            });
-        })
-    );
-}
-
-/**
  * Initalize eureka global object.
  */
 export function initalizeEureka () {
@@ -140,43 +55,6 @@ export function initalizeEureka () {
     };
 }
 
-/**
- * Trap to get Virtual Machine instance.
- * @return Callback promise. After that you could use window.eureka.vm to get the virtual machine.
- */
-export async function getVMInstance (): Promise<EurekaCompatibleVM | null> {
-    log('Listening bind function...');
-    const oldBind = Function.prototype.bind;
-    try {
-        const vm = await new Promise<EurekaCompatibleVM>((resolve, reject) => {
-            const timeoutId = setTimeout(() => {
-                log('Cannot find vm instance, stop listening.');
-                Function.prototype.bind = oldBind;
-                reject();
-            }, MAX_LISTENING_MS);
-
-            Function.prototype.bind = function (...args) {
-                if (Function.prototype.bind === oldBind) {
-                    return oldBind.apply(this, args);
-                } else if (
-                    args[0] &&
-                    Object.prototype.hasOwnProperty.call(args[0], 'editingTarget') &&
-                    Object.prototype.hasOwnProperty.call(args[0], 'runtime')
-                ) {
-                    log('VM detected!');
-                    Function.prototype.bind = oldBind;
-                    clearTimeout(timeoutId);
-                    resolve(args[0]);
-                    return oldBind.apply(this, args);
-                }
-                return oldBind.apply(this, args);
-            };
-        });
-        return vm;
-    } catch {
-        return null;
-    }
-}
 function setupFormat (vm: EurekaCompatibleVM) {
     const getLocale = vm.getLocale;
     const format = formatMessage.namespace();
@@ -482,9 +360,21 @@ export function injectVM (vm: EurekaCompatibleVM) {
             return originalGetOrderFunc.call(this, extensions, ...args);
         };
     }
+
+    // @ts-expect-error lazy to extend VM interface
+    vm.on('CREATE_UNSANDBOXED_EXTENSION_API', (ctx: Context) => {
+        // allow Eureka to provide fallback Scratch.gui implementation
+        ctx.gui = Object.assign({
+            getBlockly: getBlocklyInstance.bind(null, vm),
+            getBlocklyEagerly: () => {
+                throw new Error('Not implemented');
+            }
+        }, ctx.gui);
+    });
 }
 
 export function injectBlockly (blockly: any) {
+    getBlocklyInstance.cache = blockly;
     const format = window.eureka.format;
     if (!format) {
         return error('You should inject VM first');
