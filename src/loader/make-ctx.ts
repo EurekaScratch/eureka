@@ -6,6 +6,7 @@ import {
     StandardScratchExtensionClass as ExtensionClass
 } from '../typings';
 import { Cast } from '../util/cast';
+import type Blockly from 'scratch-blocks';
 import formatMessage, { Message } from 'format-message';
 import type VM from 'scratch-vm';
 import type Renderer from 'scratch-render';
@@ -28,6 +29,10 @@ export interface Context {
     renderer?: Renderer;
     fetch: typeof fetch;
     canFetch (url: string): boolean;
+    gui?: {
+        getBlockly: () => Promise<typeof Blockly>,
+        getBlocklyEagerly: () => never
+    }
 }
 
 function parseURL (url: string) {

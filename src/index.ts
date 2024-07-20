@@ -1,4 +1,5 @@
-import { getVMInstance, getBlocklyInstance, injectVM, injectBlockly, initalizeEureka } from './injector/inject';
+import { getVMInstance, getBlocklyInstance } from './util/hijack';
+import { injectVM, injectBlockly, initalizeEureka } from './injector/inject';
 import { log } from './util/log';
 // @ts-expect-error defined in webpack define plugin
 log(`eureka-loader ${__EUREKA_VERSION__}`);
