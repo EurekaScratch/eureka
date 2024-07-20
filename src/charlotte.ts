@@ -1,7 +1,6 @@
-export { version } from '../package.json';
+import packageJSON from '../package.json';
 export { injectVM, injectBlockly } from './injector/inject';
 export { settings } from './util/settings';
 import openFrontend from './frontend';
-export {
-    openFrontend
-};
+export { openFrontend };
+export const version = packageJSON.version;

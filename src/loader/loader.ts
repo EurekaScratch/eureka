@@ -51,13 +51,13 @@ class UnsandboxedLoader {
                     const code = await resp.text();
                     return new Promise<void>((resolve) => {
                         const register = ctx.extensions.register;
-                        // now UnsandboxedLoader only resolves after Scratch.extensions.register called
+                        // Now UnsandboxedLoader only resolves after Scratch.extensions.register called
                         ctx.extensions.register = function (ext) {
                             URL.revokeObjectURL(src);
                             document.head.removeChild(elem);
                             resolve();
                             return register.call(this, ext);
-                        }
+                        };
                         const elem = document.createElement('script') as EurekaCompatibleScript;
                         const src = URL.createObjectURL(
                             new Blob(
@@ -176,11 +176,12 @@ class EurekaLoader {
                     // @ts-expect-error lazy to extend VM interface
                     this.vm.emit('CREATE_UNSANDBOXED_EXTENSION_API', ctx);
                     await unsandboxedLoader.load(ext, ctx);
-                    return;
+                    break;
                 }
                 default:
                     throw new Error('unexpected env');
             }
+            return;
         }
 
         // @ts-expect-error Load as builtin extension.

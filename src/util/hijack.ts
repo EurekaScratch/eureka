@@ -2,7 +2,7 @@
 
 import { log } from '../util/log';
 import type Blockly from 'scratch-blocks';
-import type VM from 'scratch-vm';
+import type { EurekaCompatibleVM } from '../typings/compatible-vm';
 
 const MAX_LISTENING_MS = 30 * 1000;
 
@@ -112,23 +112,4 @@ export async function getVMInstance (): Promise<EurekaCompatibleVM | null> {
     } catch {
         return null;
     }
-}
-
-export interface EurekaCompatibleVM extends VM {
-    ccExtensionManager?: {
-        info: Record<
-            string,
-            {
-                api: number;
-            }
-        >;
-        getExtensionLoadOrder(extensions: string[]): unknown;
-    };
-    setLocale?: (locale: string, ...args: unknown[]) => unknown;
-    getLocale?: () => string;
-    _loadExtensions?: (
-        extensionIDs: Set<string>,
-        extensionURLs: Map<string, string>,
-        ...args: unknown[]
-    ) => Promise<unknown>;
 }
