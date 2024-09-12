@@ -10,6 +10,7 @@ import type Blockly from 'scratch-blocks';
 import formatMessage, { Message } from 'format-message';
 import type VM from 'scratch-vm';
 import type Renderer from 'scratch-render';
+import { getBlocklyInstance } from '../util/hijack';
 
 export interface Context {
     ArgumentType: typeof ArgumentType;
@@ -30,8 +31,8 @@ export interface Context {
     fetch: typeof fetch;
     canFetch (url: string): boolean;
     gui?: {
-        getBlockly: () => Promise<typeof Blockly>,
-        getBlocklyEagerly: () => never
+        getBlockly: () => Promise<typeof Blockly>;
+        getBlocklyEagerly: () => typeof Blockly | null;
     }
 }
 
@@ -135,6 +136,10 @@ export function makeCtx (vm?: VM) {
     if (vm) {
         ctx.vm = vm;
         ctx.renderer = vm.runtime.renderer;
+        ctx.gui = {
+            getBlockly: () => getBlocklyInstance(vm),
+            getBlocklyEagerly: () => getBlocklyInstance.cache
+        };
     }
     return ctx;
 }
