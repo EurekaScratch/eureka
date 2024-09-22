@@ -363,14 +363,14 @@ export function injectVM (vm: EurekaCompatibleVM) {
     };
 
     const checkEureka = (eurekaFlag: string): boolean | null => {
-        switch (eurekaFlag.toLowerCase()) {
-            case '🧐 chibi?':
+        switch (eurekaFlag) {
+            case '🧐 Chibi?':
                 warn("'🧐 Chibi?' is deprecated, use '🧐 Eureka?' instead.");
                 return true;
-            case '🧐 chibi installed?':
+            case '🧐 Chibi Installed?':
                 warn("'🧐 Chibi Installed?' is deprecated, use '🧐 Eureka?' instead.");
                 return true;
-            case '🧐 eureka?':
+            case '🧐 Eureka?':
                 return true;
         }
         return null;
