@@ -489,14 +489,6 @@ class EurekaLoader {
                     break;
                 }
 
-                // Use for avoid conflict between different extensions use one button func.
-                const prefix = extensionInfo?.id;
-                if (!prefix) {
-                    warn(`Cannot assign prefix for button: ${blockInfo.func}`);
-                    break;
-                }
-                const callbackName = `${prefix}_${blockInfo.func}`;
-
                 const funcName = blockInfo.func;
                 const buttonCallback = (() => {
                     // Maybe there's a worker
@@ -518,8 +510,8 @@ class EurekaLoader {
                         extensionObject[funcName]();
                 })();
                 // @ts-expect-error internal hack
-                blockInfo.callback = buttonCallback;
-                blockInfo.func = callbackName;
+                blockInfo.callFunc = buttonCallback;
+                blockInfo.func = funcName;
                 break;
             }
             case BlockType.LABEL:
@@ -632,15 +624,24 @@ class EurekaLoader {
         // @ts-expect-error private method
         this.vm.runtime._convertButtonForScratchBlocks = function (
             buttonInfo: ExtensionBlockMetadata,
+            categoryInfo: ExtensionMetadata,
             ...args: unknown[]
         ) {
             const supportedCallbackKeys = ['MAKE_A_LIST', 'MAKE_A_PROCEDURE', 'MAKE_A_VARIABLE'];
             if (window.eureka.blockly && !supportedCallbackKeys.includes(buttonInfo.func!)) {
                 const workspace = window.Blockly.getMainWorkspace();
+                // @ts-expect-error lazy to extend Runtime interface
+                const extensionMessageContext = this.makeMessageContextForTarget();
+                const buttonText = maybeFormatMessage(buttonInfo.text, extensionMessageContext)!;
+
                 // @ts-expect-error lazy to extend ExtensionBlockMetadata interface
-                workspace.registerButtonCallback(buttonInfo.func, buttonInfo.callback);
+                workspace.registerButtonCallback(`${categoryInfo.id}_${buttonInfo.func}`, buttonInfo.callFunc);
+                return {
+                    info: buttonInfo,
+                    xml: `<button text="${xmlEscape(buttonText)}" callbackKey="${xmlEscape(`${categoryInfo.id}_${buttonInfo.func}`)}"></button>`
+                };
             }
-            return origConvButtonFunc.call(this, buttonInfo, ...args);
+            return origConvButtonFunc.call(this, buttonInfo, categoryInfo, ...args);
         };
     }
 
