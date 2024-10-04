@@ -8,7 +8,7 @@ import { MenuItemFunction } from '../typings';
  * @param {string} [locale] - the locale to pass to `formatMessage` if it gets called.
  * @return {string|*} - the formatted message OR the original `maybeMessage` input.
  */
-export const maybeFormatMessage = function <T extends Record<string, unknown>> (maybeMessage?: T | string | MenuItemFunction, args?: object, locale?: Locales) {
+export const maybeFormatMessage = function <T extends Record<string, unknown> | string | MenuItemFunction> (maybeMessage?: T, args?: object, locale?: Locales) {
     if (maybeMessage && typeof maybeMessage === 'object' && maybeMessage.id && maybeMessage.default) {
         return formatMessage(maybeMessage as unknown as MessageObject, args, locale);
     }
