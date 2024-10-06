@@ -628,7 +628,8 @@ class EurekaLoader {
             ...args: unknown[]
         ) {
             const supportedCallbackKeys = ['MAKE_A_LIST', 'MAKE_A_PROCEDURE', 'MAKE_A_VARIABLE'];
-            if (window.eureka.blockly && !supportedCallbackKeys.includes(buttonInfo.func!)) {
+            // @ts-expect-error lazy to extend ExtensionBlockMetadata interface
+            if (window.eureka.blockly && !supportedCallbackKeys.includes(buttonInfo.func!) && buttonInfo.callFunc) {
                 const workspace = window.Blockly.getMainWorkspace();
                 // @ts-expect-error lazy to extend Runtime interface
                 const extensionMessageContext = this.makeMessageContextForTarget();
