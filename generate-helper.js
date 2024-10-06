@@ -17,6 +17,8 @@ const includeURLs = [
     'https://www.adacraft.org/*',
     'https://studio.penguinmod.com/*',
     'https://code.xueersi.com/*',
+    'https://electramod.vercel.app/*',
+    'https://xplab.vercel.app/*',
     'http://localhost:8601/*'
 ];
 

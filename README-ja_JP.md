@@ -35,6 +35,10 @@ Eureka は Tampermonkey/GreasyMonkey に対応するユーザースクリプト�
 - [x] Creaticode
 - [x] Adacraft
 - [x] PenguinMod
+- [x] ElectraMod *
+- [x] XPLab *
+
+*\*: CI ビルドだけ使用できます*
 
 # 🔥 使い方
 

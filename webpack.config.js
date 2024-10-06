@@ -1,13 +1,12 @@
 const svgToMiniDataURI = require('mini-svg-data-uri');
 const webpack = require('webpack');
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { UserscriptPlugin } = require('webpack-userscript');
 const { includeURLs } = require('./generate-helper');
 const packageJSON = require('./package.json');
 const process = require('node:process');
 
-const base = {
+const standalone = {
     mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
     entry: './src/index.ts',
     output: {
@@ -60,6 +59,8 @@ const base = {
                 version: packageJSON.version,
                 license: packageJSON.license,
                 grant: ['none'],
+                updateURL: 'https://eureka.codingclip.cc/release/eureka-loader.user.js',
+                downloadURL: 'https://eureka.codingclip.cc/release/eureka-loader.user.js',
                 'run-at': 'document-start',
                 include: includeURLs
             },
@@ -73,4 +74,28 @@ const base = {
     ]
 };
 
-module.exports = base;
+const charlotte = {
+    mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
+    target: 'web',
+    entry: './src/charlotte.ts',
+    experiments: {
+        outputModule: true
+    },
+    output: {
+        library: {
+            type: 'module'
+        },
+        path: path.resolve(__dirname, 'dist'),
+        publicPath: './',
+        filename: 'eureka-charlotte.js'
+    },
+    resolve: standalone.resolve,
+    module: standalone.module,
+    plugins: [
+        new webpack.DefinePlugin({
+            __EUREKA_VERSION__: JSON.stringify(packageJSON.version)
+        })
+    ]
+}
+
+module.exports = [standalone, charlotte];

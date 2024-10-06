@@ -4,30 +4,36 @@ import { log, warn, error } from '../util/log';
 import { settings } from '../util/settings';
 import { EurekaLoader } from '../loader/loader';
 import openFrontend from '../frontend';
+import { getBlocklyInstance } from '../util/hijack';
 import type VM from 'scratch-vm';
+import type { EurekaCompatibleVM, UnsupportedAPI } from '../typings/compatible-vm';
 import type Blockly from 'scratch-blocks';
 import * as l10n from '../l10n/l10n.json';
 import formatMessage from 'format-message';
+import type { Context } from '../loader/make-ctx';
+import { utoa } from '../util/base64';
 
 interface EurekaCompatibleWorkspace extends Blockly.Workspace {
     registerButtonCallback(key: string, callback: () => void): void;
 }
 
-interface EurekaCompatibleVM extends VM {
-    ccExtensionManager?: {
-        info: Record<
-            string,
-            {
-                api: number;
-            }
-        >;
-        getExtensionLoadOrder(extensions: string[]): unknown;
-    };
-    setLocale?: (locale: string, ...args: unknown[]) => unknown;
-    getLocale?: () => string;
+/**
+ * Utility function to determine if a value is a Promise.
+ * @param {*} value Value to check for a Promise.
+ * @return {boolean} True if the value appears to be a Promise.
+ */
+function isPromise (value: unknown) {
+    return (
+        value !== null &&
+        typeof value === 'object' &&
+        typeof (value as Promise<unknown>).then === 'function'
+    );
 }
 
-const MAX_LISTENING_MS = 30 * 1000;
+function suppressURL (value: string) {
+    const suppressed = value.substring(0, 128);
+    return value === suppressed ? value : suppressed + '...';
+}
 
 /**
  * Get sanitized non-core extension ID for a given sb3 opcode.
@@ -45,120 +51,19 @@ function getExtensionIdForOpcode (opcode: string) {
 }
 
 /**
- * Get Blockly instance.
- * @param vm Virtual machine instance. For some reasons we cannot use VM here.
- * @returns Blockly instance.
+ * Initalize eureka global object.
  */
-async function getBlocklyInstance (vm: EurekaCompatibleVM): Promise<any> {
-    function getBlocklyInstanceInternal (): any | null {
-        // Hijack Function.prototype.apply to get React element instance.
-        function hijack (fn: (...args: unknown[]) => unknown) {
-            const _orig = Function.prototype.apply;
-            Function.prototype.apply = function (thisArg: any) {
-                return thisArg;
-            };
-            const result = fn();
-            Function.prototype.apply = _orig;
-            return result;
-        }
-
-        // @ts-expect-error lazy to extend VM interface
-        const events = vm._events?.EXTENSION_ADDED;
-        if (events) {
-            if (events instanceof Function) {
-                // It is a function, just hijack it.
-                const result = hijack(events);
-                if (result && typeof result === 'object' && 'ScratchBlocks' in result) {
-                    return result.ScratchBlocks;
-                }
-            } else {
-                // It is an array, hijack every listeners.
-                for (const value of events) {
-                    const result = hijack(value);
-                    if (result && typeof result === 'object' && 'ScratchBlocks' in result) {
-                        return result.ScratchBlocks;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-    let res = getBlocklyInstanceInternal();
-    return (
-        res ??
-        new Promise((resolve) => {
-            let state: any = undefined;
-            // @ts-expect-error lazy to extend VM interface
-            Reflect.defineProperty(vm._events, 'EXTENSION_ADDED', {
-                get: () => state,
-                set (v) {
-                    state = v;
-                    res = getBlocklyInstanceInternal();
-                    if (res) {
-                        // @ts-expect-error lazy to extend VM interface
-                        Reflect.defineProperty(vm._events, 'EXTENSION_ADDED', {
-                            value: state,
-                            writable: true
-                        });
-                        resolve(res);
-                    }
-                },
-                configurable: true
-            });
-        })
-    );
-}
-
-/**
- * Trap to get Virtual Machine instance.
- * @param open window.open function (compatible with ccw).
- * @return Callback promise. After that you could use window.eureka.vm to get the virtual machine.
- */
-export function trap (open: typeof window.open): Promise<void> {
+export function initalizeEureka () {
     window.eureka = {
         // @ts-expect-error defined in webpack define plugin
         version: __EUREKA_VERSION__,
         registeredExtension: {},
         settings: settings,
-        openFrontend: openFrontend.bind(null, open)
+        openFrontend: openFrontend.bind(null, window.open)
     };
-
-    log('Listening bind function...');
-    const oldBind = Function.prototype.bind;
-    return new Promise<void>((resolve) => {
-        const timeoutId = setTimeout(() => {
-            log('Cannot find vm instance, stop listening.');
-            Function.prototype.bind = oldBind;
-            resolve();
-        }, MAX_LISTENING_MS);
-
-        Function.prototype.bind = function (...args) {
-            if (Function.prototype.bind === oldBind) {
-                return oldBind.apply(this, args);
-            } else if (
-                args[0] &&
-                Object.prototype.hasOwnProperty.call(args[0], 'editingTarget') &&
-                Object.prototype.hasOwnProperty.call(args[0], 'runtime')
-            ) {
-                log('VM detected!');
-                window.eureka.vm = args[0];
-                Function.prototype.bind = oldBind;
-                clearTimeout(timeoutId);
-                resolve();
-                return oldBind.apply(this, args);
-            }
-            return oldBind.apply(this, args);
-        };
-    });
 }
 
-/**
- * Inject into the original virtual machine.
- * @param vm {EurekaCompatibleVM} Original virtual machine instance.
- */
-export function inject (vm: EurekaCompatibleVM) {
-    const loader = (window.eureka.loader = new EurekaLoader(vm));
-    const originalLoadFunc = vm.extensionManager.loadExtensionURL;
+function setupFormat (vm: EurekaCompatibleVM) {
     const getLocale = vm.getLocale;
     const format = formatMessage.namespace();
     format.setup({
@@ -167,45 +72,71 @@ export function inject (vm: EurekaCompatibleVM) {
         generateId: (defaultMessage: string) => `${defaultMessage}`,
         translations: l10n
     });
+    window.eureka.format = format;
+    return format;
+}
+
+function getUnsupportedAPI (vm: EurekaCompatibleVM): UnsupportedAPI | null {
+    if (typeof vm.exports?.i_will_not_ask_for_help_when_these_break === 'function') {
+        // Do not emit any warning messages
+        const warn = console.warn;
+        console.warn = function () {}; // No-op
+        const api = vm.exports.i_will_not_ask_for_help_when_these_break();
+        console.warn = warn;
+        return api;
+    }
+    return null;
+}
+
+/**
+ * Inject into the original virtual machine.
+ * @param vm {EurekaCompatibleVM} Original virtual machine instance.
+ */
+export function injectVM (vm: EurekaCompatibleVM) {
+    const loader = (window.eureka.loader = new EurekaLoader(vm));
+    const originalLoadFunc = vm.extensionManager.loadExtensionURL;
+    const format = setupFormat(vm);
     vm.extensionManager.loadExtensionURL = async function (extensionURL: string, ...args: []) {
         if (extensionURL in window.eureka.registeredExtension) {
             const { url, env } = window.eureka.registeredExtension[extensionURL];
-            try {
-                let whetherSideload: boolean = false;
-                if (window.eureka.settings.noConfirmDialog) {
-                    whetherSideload = true;
-                } else {
-                    whetherSideload = env
-                        ? confirm(
-                            format('eureka.tryLoadInEnv', {
-                                extensionURL,
-                                url,
-                                env
-                            })
-                        )
-                        : window.eureka.settings.sideloadOnly
-                            ? false
-                            : confirm(
-                                format('eureka.tryLoad', {
-                                    extensionURL,
-                                    url
+            if (!window.eureka.loader?.loadedScratchExtension?.has(extensionURL)) {
+                try {
+                    let whetherSideload: boolean = false;
+                    if (window.eureka.settings.noConfirmDialog) {
+                        whetherSideload = true;
+                    } else {
+                        whetherSideload = env
+                            ? confirm(
+                                format('eureka.tryLoadInEnv', {
+                                    name: extensionURL,
+                                    url: suppressURL(url),
+                                    env
                                 })
-                            );
+                            )
+                            : window.eureka.settings.sideloadOnly
+                                ? false
+                                : confirm(
+                                    format('eureka.tryLoad', {
+                                        name: extensionURL,
+                                        url: suppressURL(url)
+                                    })
+                                );
+                    }
+                    if (whetherSideload) {
+                        await loader.load(
+                            url,
+                            (env
+                                ? env
+                                : confirm(format('eureka.loadInSandbox'))
+                                    ? 'sandboxed'
+                                    : 'unsandboxed') as 'unsandboxed' | 'sandboxed'
+                        );
+                    } else {
+                        return originalLoadFunc.call(this, extensionURL, ...args);
+                    }
+                } catch (e: unknown) {
+                    error(format('eureka.errorIgnored'), e);
                 }
-                if (whetherSideload) {
-                    await loader.load(
-                        url,
-                        (env
-                            ? env
-                            : confirm(format('eureka.loadInSandbox'))
-                                ? 'sandboxed'
-                                : 'unsandboxed') as 'unsandboxed' | 'sandboxed'
-                    );
-                } else {
-                    return originalLoadFunc.call(this, extensionURL, ...args);
-                }
-            } catch (e: unknown) {
-                error(format('eureka.errorIgnored'), e);
             }
         } else {
             return originalLoadFunc.call(this, extensionURL, ...args);
@@ -228,14 +159,12 @@ export function inject (vm: EurekaCompatibleVM) {
         const envs: Record<string, string> = {};
         const sideloadIds: string[] = [];
         for (const [extId, ext] of window.eureka.loader.loadedScratchExtension.entries()) {
-            // Ignore object urls since it only works at present.
-            if (ext.url.startsWith('blob:')) continue;
             urls[extId] = ext.url;
             envs[extId] = ext.env;
             sideloadIds.push(extId);
         }
-        obj.extensionURLs = Object.assign({}, obj.extensionURLs, urls);
-        obj.extensionEnvs = Object.assign({}, obj.extensionEnvs, envs);
+        obj.sideloadExtensionURLs = urls;
+        obj.sideloadExtensionEnvs = envs;
 
         if (window.eureka.settings.convertProcCall) {
             if ('targets' in obj) {
@@ -246,9 +175,11 @@ export function inject (vm: EurekaCompatibleVM) {
                         const extensionId = getExtensionIdForOpcode(block.opcode);
                         if (!extensionId) continue;
                         if (sideloadIds.includes(extensionId)) {
+                            const mutation = block.mutation ? JSON.stringify(block.mutation) : null;
                             if (!('mutation' in block)) block.mutation = {};
                             block.mutation.proccode = `[📎 Sideload] ${block.opcode}`;
                             block.mutation.children = [];
+                            if (mutation) block.mutation.mutation = mutation;
                             block.mutation.tagName = 'mutation';
 
                             block.opcode = 'procedures_call';
@@ -288,13 +219,52 @@ export function inject (vm: EurekaCompatibleVM) {
 
     const originalDrserializeFunc = vm.deserializeProject;
     vm.deserializeProject = function (projectJSON: Record<string, unknown>, ...args) {
-        if (typeof projectJSON.extensionURLs === 'object') {
-            const extensionURLs = projectJSON.extensionURLs as Record<string, unknown>;
-            const extensionEnvs: Record<string, unknown> =
-                typeof projectJSON.extensionEnvs === 'object'
-                    ? (projectJSON.extensionEnvs as Record<string, unknown>)
+        if (
+            typeof projectJSON.extensionURLs === 'object' ||
+            typeof projectJSON.sideloadExtensionURLs === 'object'
+        ) {
+            const extensionURLs: Record<string, unknown> =
+                typeof projectJSON.sideloadExtensionURLs === 'object'
+                    ? (projectJSON.sideloadExtensionURLs as Record<string, unknown>)
                     : {};
+            let extensionEnvs: Record<string, unknown> =
+                typeof projectJSON.sideloadExtensionEnvs === 'object'
+                    ? (projectJSON.sideloadExtensionEnvs as Record<string, unknown>)
+                    : {};
+
+            // Migrate from old eureka
+            if (projectJSON.extensionEnvs) {
+                log('Old eureka-ify project detected, migrating...');
+                extensionEnvs = projectJSON.sideloadExtensionEnvs =
+                    projectJSON.extensionEnvs as Record<string, unknown>;
+                delete projectJSON.extensionEnvs;
+
+                for (const extensionId in projectJSON.sideloadExtensionEnvs as Record<
+                    string,
+                    unknown
+                >) {
+                    if (extensionId in (projectJSON.extensionURLs as Record<string, unknown>)) {
+                        extensionURLs[extensionId] = (
+                            projectJSON.extensionURLs as Record<string, unknown>
+                        )[extensionId];
+                        // @ts-expect-error lazy to fix types
+                        delete projectJSON.extensionURLs[extensionId];
+                    }
+                }
+            }
+
             for (const id in extensionURLs) {
+                if (window.eureka.loader?.loadedScratchExtension?.has(id)) {
+                    const env = window.eureka.loader?.loadedScratchExtension?.get(id)?.env;
+                    if (String(extensionEnvs[id] ?? 'sandboxed') !== env) {
+                        alert(format('eureka.sandboxIncompatibleWarning', {
+                            name: id,
+                            env: String(extensionEnvs[id] ?? 'sandboxed'),
+                            currentEnv: window.eureka.loader?.loadedScratchExtension?.get(id)?.env
+                        }));
+                    }
+                }
+                // Update url and env anyway.
                 window.eureka.registeredExtension[id] = {
                     url: String(extensionURLs[id]),
                     env: String(extensionEnvs[id] ?? 'sandboxed')
@@ -304,7 +274,7 @@ export function inject (vm: EurekaCompatibleVM) {
                 for (const target of projectJSON.targets) {
                     for (const blockId in target.blocks) {
                         const block = target.blocks[blockId];
-                        if (block.opcode === 'procedures_call' && 'mutation' in block) {
+                        if (block.opcode === 'procedures_call' && block.mutation) {
                             if (!block.mutation.proccode.trim().startsWith('[📎 Sideload] ')) {
                                 continue;
                             }
@@ -317,13 +287,26 @@ export function inject (vm: EurekaCompatibleVM) {
                                 continue;
                             }
                             if (!(extensionId in window.eureka.registeredExtension)) {
+                                if (!window.eureka.loader?.loadedScratchExtension?.has(extensionId)) {
+                                    warn(
+                                        `find a sideload block with unregistered extension: ${extensionId}, ignored.`
+                                    );
+                                    continue;
+                                }
                                 warn(
-                                    `find a sideload block with unregistered extension: ${extensionId}, ignored.`
+                                    `find a sideload block with unregistered but loaded extension: ${extensionId}.`
                                 );
-                                continue;
                             }
                             block.opcode = originalOpcode;
-                            delete block.mutation;
+                            try {
+                                const mutation = typeof block.mutation.mutation === 'string' ? JSON.parse(block.mutation.mutation) : null;
+                                if (mutation) {
+                                    block.mutation = mutation;
+                                } else delete block.mutation;
+                            } catch (e) {
+                                error(format('eureka.errorIgnored'), e);
+                                delete block.mutation;
+                            }
                         }
                     }
                 }
@@ -339,6 +322,31 @@ export function inject (vm: EurekaCompatibleVM) {
         return originalDrserializeFunc.call(this, projectJSON, ...args);
     };
 
+    // Turbowarp-specific patch, skip security manager check
+    const originalTwLoadExtFunc = vm._loadExtensions;
+    if (typeof originalTwLoadExtFunc === 'function') {
+        vm._loadExtensions = function (
+            extensionIDs: Set<string>,
+            extensionURLs: Map<string, string>,
+            ...args: unknown[]
+        ) {
+            const sideloadExtensionPromises: Promise<void>[] = [];
+            for (const extensionId of extensionIDs) {
+                if (extensionId in window.eureka.registeredExtension) {
+                    const loadResult = this.extensionManager.loadExtensionURL(extensionId);
+                    if (isPromise(loadResult)) {
+                        sideloadExtensionPromises.push(loadResult as unknown as Promise<void>);
+                    }
+                    extensionIDs.delete(extensionId);
+                }
+            }
+            return Promise.all([
+                originalTwLoadExtFunc.call(this, extensionIDs, extensionURLs, ...args),
+                ...sideloadExtensionPromises
+            ]);
+        };
+    }
+
     const originSetLocaleFunc = vm.setLocale;
     vm.setLocale = function (locale: string, ...args: unknown[]) {
         format.setup({
@@ -353,13 +361,8 @@ export function inject (vm: EurekaCompatibleVM) {
         vm.emit('LOCALE_CHANGED', locale);
         return result;
     };
-    // TODO: compiler support
-    const originalArgReporterBooleanFunc = vm.runtime._primitives.argument_reporter_boolean;
-    vm.runtime._primitives.argument_reporter_boolean = function (
-        args: Record<string, unknown>,
-        ...otherArgs: unknown[]
-    ) {
-        const eurekaFlag = args.VALUE;
+
+    const checkEureka = (eurekaFlag: string): boolean | null => {
         switch (eurekaFlag) {
             case '🧐 Chibi?':
                 warn("'🧐 Chibi?' is deprecated, use '🧐 Eureka?' instead.");
@@ -369,10 +372,47 @@ export function inject (vm: EurekaCompatibleVM) {
                 return true;
             case '🧐 Eureka?':
                 return true;
-            default:
-                return originalArgReporterBooleanFunc.call(this, args, ...otherArgs);
         }
+        return null;
     };
+    const originalArgReporterBooleanFunc = vm.runtime._primitives.argument_reporter_boolean;
+    vm.runtime._primitives.argument_reporter_boolean = function (
+        args: Record<string, unknown>,
+        util: VM.BlockUtility,
+        ...otherArgs: unknown[]
+    ) {
+        const eurekaFlag = String(args.VALUE);
+        const value = util.getParam(eurekaFlag);
+        if (value === null) {
+            return (
+                checkEureka(String(eurekaFlag)) ??
+                originalArgReporterBooleanFunc.call(this, args, util, ...otherArgs)
+            );
+        }
+        // Since the param exists, assume the following checks will be skipped for performance purposes.
+        return value;
+    };
+    const ScriptTreeGenerator = vm.exports?.ScriptTreeGenerator ?? getUnsupportedAPI(vm)?.ScriptTreeGenerator;
+    if (ScriptTreeGenerator) {
+        const originalDescendInputFunc = ScriptTreeGenerator.prototype.descendInput;
+        ScriptTreeGenerator.prototype.descendInput = function (block) {
+            switch (block.opcode) {
+                case 'argument_reporter_boolean': {
+                    const name = block.fields.VALUE.value;
+                    const index = this.script.arguments.lastIndexOf(name);
+                    if (index === -1) {
+                        if (checkEureka(name) !== null) {
+                            return {
+                                kind: 'constant',
+                                value: true
+                            };
+                        }
+                    }
+                }
+            }
+            return originalDescendInputFunc.call(this, block);
+        };
+    }
 
     // Hack for ClipCC 3.2- versions
     if (typeof vm.ccExtensionManager === 'object') {
@@ -399,54 +439,67 @@ export function inject (vm: EurekaCompatibleVM) {
         };
     }
 
-    // Blockly stuffs
-    let initalized = false;
-    getBlocklyInstance(vm).then((blockly) => {
-        if (!initalized) {
-            window.eureka.blockly = blockly;
-            initalized = true;
-            const originalAddCreateButton_ = blockly.Procedures.addCreateButton_;
-            blockly.Procedures.addCreateButton_ = function (
-                workspace: EurekaCompatibleWorkspace,
-                xmlList: HTMLElement[],
-                ...args: unknown[]
-            ) {
-                originalAddCreateButton_.call(this, workspace, xmlList, ...args);
-                injectToolbox(xmlList, workspace, format);
-            };
-            const workspace = blockly.getMainWorkspace();
-            workspace.getToolbox().refreshSelection();
-            workspace.toolboxRefreshEnabled_ = true;
-        }
+    // @ts-expect-error lazy to extend VM interface
+    vm.on('CREATE_UNSANDBOXED_EXTENSION_API', (ctx: Context) => {
+        // Allow Eureka to provide fallback Scratch.gui implementation
+        ctx.gui = Object.assign(
+            {
+                getBlockly: getBlocklyInstance.bind(null, vm),
+                getBlocklyEagerly: () => {
+                    throw new Error('Not implemented');
+                }
+            },
+            ctx.gui
+        );
     });
-    setTimeout(() => {
-        if (!initalized) {
-            warn('Cannot find real blockly instance, try alternative method...');
-            const originalProcedureCallback =
-                window.Blockly?.getMainWorkspace()?.toolboxCategoryCallbacks_?.PROCEDURE;
-            if (!originalProcedureCallback) {
-                error('alternative method failed, stop injecting');
-                return;
-            }
-            initalized = true;
-            window.Blockly.getMainWorkspace().toolboxCategoryCallbacks_.PROCEDURE = function (
-                workspace: EurekaCompatibleWorkspace,
-                ...args: unknown[]
-            ) {
-                const xmlList = originalProcedureCallback.call(
-                    this,
-                    workspace,
-                    ...args
-                ) as HTMLElement[];
-                injectToolbox(xmlList, workspace, format);
-                return xmlList;
-            };
-            const workspace = window.Blockly.getMainWorkspace();
-            workspace.getToolbox().refreshSelection();
-            workspace.toolboxRefreshEnabled_ = true;
-        }
-    }, 3000);
 }
+
+export function injectBlockly (blockly: any) {
+    getBlocklyInstance.cache = blockly;
+    const format = window.eureka.format;
+    if (!format) {
+        return error('You should inject VM first');
+    }
+    if (typeof blockly === 'object') {
+        window.eureka.blockly = blockly;
+        const originalAddCreateButton_ = blockly.Procedures.addCreateButton_;
+        blockly.Procedures.addCreateButton_ = function (
+            workspace: EurekaCompatibleWorkspace,
+            xmlList: HTMLElement[],
+            ...args: unknown[]
+        ) {
+            originalAddCreateButton_.call(this, workspace, xmlList, ...args);
+            injectToolbox(xmlList, workspace, format);
+        };
+        const workspace = blockly.getMainWorkspace();
+        workspace.getToolbox().refreshSelection();
+        workspace.toolboxRefreshEnabled_ = true;
+    } else {
+        warn('Cannot find real blockly instance, try alternative method...');
+        const originalProcedureCallback =
+            window.Blockly?.getMainWorkspace()?.toolboxCategoryCallbacks_?.PROCEDURE;
+        if (typeof originalProcedureCallback !== 'function') {
+            error('alternative method failed, stop injecting');
+            return;
+        }
+        window.Blockly.getMainWorkspace().toolboxCategoryCallbacks_.PROCEDURE = function (
+            workspace: EurekaCompatibleWorkspace,
+            ...args: unknown[]
+        ) {
+            const xmlList = originalProcedureCallback.call(
+                this,
+                workspace,
+                ...args
+            ) as HTMLElement[];
+            injectToolbox(xmlList, workspace, format);
+            return xmlList;
+        };
+        const workspace = window.Blockly.getMainWorkspace();
+        workspace.getToolbox().refreshSelection();
+        workspace.toolboxRefreshEnabled_ = true;
+    }
+}
+
 function injectToolbox (
     xmlList: HTMLElement[],
     workspace: EurekaCompatibleWorkspace,
@@ -481,33 +534,27 @@ function injectToolbox (
     });
     xmlList.push(sideloadButton);
 
-    // Add temporarily load from file button
+    // Add load from file button
     const sideloadTempButton = document.createElement('button');
-    sideloadTempButton.setAttribute('text', format('eureka.sideloadTemporarily'));
-    sideloadTempButton.setAttribute('callbackKey', 'EUREKA_SIDELOAD_FROM_FILE_TEMPORAILY');
-    workspace.registerButtonCallback('EUREKA_SIDELOAD_FROM_FILE_TEMPORAILY', () => {
-        if (confirm(format('eureka.exprimentalFileWarning'))) {
-            const input = document.createElement('input');
-            input.setAttribute('type', 'file');
-            input.setAttribute('accept', '.js');
-            input.setAttribute('multiple', 'true');
-            input.addEventListener('change', async (event: Event) => {
-                const files = (event.target as HTMLInputElement).files;
-                if (!files) return;
-                for (const file of files) {
-                    const url = URL.createObjectURL(file);
-                    const mode = confirm(format('eureka.loadInSandbox'))
-                        ? 'sandboxed'
-                        : 'unsandboxed';
-                    try {
-                        await window.eureka.loader.load(url, mode);
-                    } finally {
-                        URL.revokeObjectURL(url);
-                    }
-                }
-            });
-            input.click();
-        }
+    sideloadTempButton.setAttribute('text', format('eureka.sideloadFromFile'));
+    sideloadTempButton.setAttribute('callbackKey', 'EUREKA_SIDELOAD_FROM_FILE');
+    workspace.registerButtonCallback('EUREKA_SIDELOAD_FROM_FILE', () => {
+        const input = document.createElement('input');
+        input.setAttribute('type', 'file');
+        input.setAttribute('accept', '.js');
+        input.setAttribute('multiple', 'true');
+        input.addEventListener('change', async (event: Event) => {
+            const files = (event.target as HTMLInputElement).files;
+            if (!files) return;
+            for (const file of files) {
+                const url = `data:text/javascript;base64,${utoa(await file.text())}`;
+                const mode = confirm(format('eureka.loadInSandbox'))
+                    ? 'sandboxed'
+                    : 'unsandboxed';
+                await window.eureka.loader.load(url, mode);
+            }
+        });
+        input.click();
     });
     xmlList.push(sideloadTempButton);
 

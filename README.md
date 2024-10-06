@@ -33,6 +33,10 @@ Eureka is a userscript which can load 3rd-party extensions in any Scratch-based 
 - [x] Creaticode
 - [x] Adacraft
 - [x] PenguinMod
+- [x] ElectraMod *
+- [x] XPLab *
+
+*\*: only available in ci builds*
 
 # 🔥 Usage
 1. Install UserScript Manager like Tampermonkey or Greasymonkey.
