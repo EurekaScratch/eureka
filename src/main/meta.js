@@ -3,6 +3,7 @@
 // @namespace   EurekaScratch
 // @description Universal Scratch Extension Loader.
 // @match       http://localhost:8601/*
+// @match       http://localhost:8602/*
 // @match       https://scratch.mit.edu/*
 // @match       https://gonfunko.github.io/scratch-gui/*
 // @match       https://aerfaying.com/*
