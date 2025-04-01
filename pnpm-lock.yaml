@@ -49,8 +49,8 @@ importers:
         specifier: ^66.0.0
         version: 66.0.0(postcss@8.4.47)
       '@violentmonkey/types':
-        specifier: ^0.2.0
-        version: 0.2.0
+        specifier: ^0.2.1
+        version: 0.2.1
       babel-preset-solid:
         specifier: ^1.9.5
         version: 1.9.5(@babel/core@7.26.0)
@@ -1794,8 +1794,8 @@ packages:
     peerDependencies:
       vite: ^2.9.0 || ^3.0.0-0 || ^4.0.0 || ^5.0.0-0 || ^6.0.0-0
 
-  '@violentmonkey/types@0.2.0':
-    resolution: {integrity: sha512-JRPtwhyodYKNkENciULg6v+ZtsoBR2ybYsA1KDvjw4JBzLNmvHixhd8TTl2s8eS1hU7MA1FU8kd1Ren9SCjxew==}
+  '@violentmonkey/types@0.2.1':
+    resolution: {integrity: sha512-bugmnnPvHR/vM5qONp48X4+iJCdOkzDQ3RDhugU7EY0J3IRdeayyvXCPbJvSxezFEryMD7pAr4oLVfmoeV8nQg==}
 
   '@vue/compiler-core@3.5.12':
     resolution: {integrity: sha512-ISyBTRMmMYagUxhcpyEH0hpXRd/KqDU4ymofPgl2XAkY9ZhQ+h0ovEZJIiPop13UmR/54oA2cgMDjgroRelaEw==}
@@ -4372,6 +4372,9 @@ packages:
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
 
+  user-agent-data-types@0.4.2:
+    resolution: {integrity: sha512-jXep3kO/dGNmDOkbDa8ccp4QArgxR4I76m3QVcJ1aOF0B9toc+YtSXtX5gLdDTZXyWlpQYQrABr6L1L2GZOghw==}
+
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
@@ -6601,7 +6604,9 @@ snapshots:
     transitivePeerDependencies:
       - vue
 
-  '@violentmonkey/types@0.2.0': {}
+  '@violentmonkey/types@0.2.1':
+    dependencies:
+      user-agent-data-types: 0.4.2
 
   '@vue/compiler-core@3.5.12':
     dependencies:
@@ -9542,6 +9547,8 @@ snapshots:
   uri-js@4.4.1:
     dependencies:
       punycode: 2.3.1
+
+  user-agent-data-types@0.4.2: {}
 
   util-deprecate@1.0.2: {}
 
