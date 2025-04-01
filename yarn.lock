@@ -2451,10 +2451,12 @@
     tinyglobby "^0.2.10"
     unplugin-utils "^0.2.4"
 
-"@violentmonkey/types@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@violentmonkey/types/-/types-0.2.0.tgz#b66754f1ec74339fbc04d39ee4a1de259740b1b8"
-  integrity sha512-JRPtwhyodYKNkENciULg6v+ZtsoBR2ybYsA1KDvjw4JBzLNmvHixhd8TTl2s8eS1hU7MA1FU8kd1Ren9SCjxew==
+"@violentmonkey/types@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@violentmonkey/types/-/types-0.2.1.tgz#b0f6fa35b60c9e686a265ab3622b14feae757268"
+  integrity sha512-bugmnnPvHR/vM5qONp48X4+iJCdOkzDQ3RDhugU7EY0J3IRdeayyvXCPbJvSxezFEryMD7pAr4oLVfmoeV8nQg==
+  dependencies:
+    user-agent-data-types "^0.4.2"
 
 JSONStream@^1.3.5:
   version "1.3.5"
@@ -7154,6 +7156,11 @@ uri-js@^4.2.2:
   integrity sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==
   dependencies:
     punycode "^2.1.0"
+
+user-agent-data-types@^0.4.2:
+  version "0.4.2"
+  resolved "https://registry.yarnpkg.com/user-agent-data-types/-/user-agent-data-types-0.4.2.tgz#3bbd3662022c3fb9d0c2f7449b6cdd412a3f9e0d"
+  integrity sha512-jXep3kO/dGNmDOkbDa8ccp4QArgxR4I76m3QVcJ1aOF0B9toc+YtSXtX5gLdDTZXyWlpQYQrABr6L1L2GZOghw==
 
 util-deprecate@^1.0.2:
   version "1.0.2"
