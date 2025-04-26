@@ -58,7 +58,11 @@ interface DucktypedVM {
     exports?: {
         i_will_not_ask_for_help_when_these_break: () => DucktypedUnsupportedAPI;
         // PenguinMod proposed change
-        ScriptTreeGenerator?: DucktypedUnsupportedAPI['ScriptTreeGenerator'];
+        IRGenerator?: {
+          exports?: {
+            ScriptTreeGenerator?: DucktypedUnsupportedAPI['ScriptTreeGenerator'];
+          }
+        }
     }
     ccExtensionManager?: {
         info: Record<string, {api: number, optional?: boolean}>;

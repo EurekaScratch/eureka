@@ -555,8 +555,9 @@ export function applyPatchesForVM (vm: DucktypedVM, ctx: EurekaContext) {
         );
     }
 
-    // Add Turbowarp compiler support
-    const ScriptTreeGenerator = vm.exports?.ScriptTreeGenerator ?? getUnsupportedAPI(vm)?.ScriptTreeGenerator;
+    // Add PenguinMod/Turbowarp compiler support
+    const ScriptTreeGenerator =
+      vm.exports?.IRGenerator?.exports?.ScriptTreeGenerator ?? getUnsupportedAPI(vm)?.ScriptTreeGenerator;
     if (ScriptTreeGenerator && settings.mixins['vm.exports.ScriptTreeGenerator.prototype.descendInput']) {
         MixinApplicator.applyTo(
             ScriptTreeGenerator.prototype,
