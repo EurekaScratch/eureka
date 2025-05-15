@@ -46,8 +46,8 @@ importers:
         specifier: ^8.32.1
         version: 8.32.1(eslint@8.57.1)(typescript@5.8.3)
       '@unocss/postcss':
-        specifier: ^66.1.1
-        version: 66.1.1(postcss@8.4.47)
+        specifier: ^66.1.2
+        version: 66.1.2(postcss@8.4.47)
       '@violentmonkey/types':
         specifier: ^0.2.1
         version: 0.2.1
@@ -1679,11 +1679,18 @@ packages:
     resolution: {integrity: sha512-Fg4sRw5dncNHxh/SM6guRzAveBI1FErw2ncb70Qe0LzCY7+IfUqrOBep/HIHP7NA1Mcj2JxHlM61ITLqrcYKpw==}
     engines: {node: '>=14'}
 
+  '@unocss/config@66.1.2':
+    resolution: {integrity: sha512-2sQXj+Qaq4RVDELVTPoXMggZ30g1WKHeCuur396I12Ab0HgAR6bTc/DIrNtqKVHFI3mmlvP1oM1ynhKWSKPsTg==}
+    engines: {node: '>=14'}
+
   '@unocss/core@0.58.9':
     resolution: {integrity: sha512-wYpPIPPsOIbIoMIDuH8ihehJk5pAZmyFKXIYO/Kro98GEOFhz6lJoLsy6/PZuitlgp2/TSlubUuWGjHWvp5osw==}
 
   '@unocss/core@66.1.1':
     resolution: {integrity: sha512-EOewEnipyB7Y6ne0YQmxdCG1hbMjYJ7oPMeHKfQuCZz60DPzkYwV6zVMa35ySMs1xljb/vFTHVFcJA8du3i8XA==}
+
+  '@unocss/core@66.1.2':
+    resolution: {integrity: sha512-mN9h1hHEuhDcdbI4z74o7UnxlBZYVsJpYcdC1YLWBKROcLYTkuyZ7hgBzpo1FBNox2Bt3JnrSinVDmc44Bxjow==}
 
   '@unocss/extractor-arbitrary-variants@0.58.9':
     resolution: {integrity: sha512-M/BvPdbEEMdhcFQh/z2Bf9gylO1Ky/ZnpIvKWS1YJPLt4KA7UWXSUf+ZNTFxX+X58Is5qAb5hNh/XBQmL3gbXg==}
@@ -1705,6 +1712,12 @@ packages:
 
   '@unocss/postcss@66.1.1':
     resolution: {integrity: sha512-+CTeYbUGDk8ESrwxRN6wkaIAJYfJekt7NvUSp1us9zws+2Ev3pH7GXztbGmTz8HCkSqLB/3MOQ6sIpviS1A7/Q==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      postcss: ^8.4.21
+
+  '@unocss/postcss@66.1.2':
+    resolution: {integrity: sha512-RCA3or1qBdRVduNW73xdeiFDCEb8cvcGKsHSN66rL66RrlzNnunE4NE55vbI+yoArTRZ7RdUnxq1KuXKjrJbYw==}
     engines: {node: '>=14'}
     peerDependencies:
       postcss: ^8.4.21
@@ -1775,6 +1788,10 @@ packages:
 
   '@unocss/rule-utils@66.1.1':
     resolution: {integrity: sha512-a7xe3FsvsI6T6u8QtXcQF22jnElB68X92aHjuSRt512gRjhhu/5kSzLJbMkv9RsclHJbmjnz6OUkk/mlTTxcFg==}
+    engines: {node: '>=14'}
+
+  '@unocss/rule-utils@66.1.2':
+    resolution: {integrity: sha512-nn0ehvDh7yyWq2mcBDLVpmMAivjRATUroZ8ETinyN1rmfsGesm71R0d1gV3K+Z6YC7a3+dMLc+/qzI7VK3AG/Q==}
     engines: {node: '>=14'}
 
   '@unocss/scope@0.58.9':
@@ -6466,9 +6483,16 @@ snapshots:
       '@unocss/core': 66.1.1
       unconfig: 7.3.2
 
+  '@unocss/config@66.1.2':
+    dependencies:
+      '@unocss/core': 66.1.2
+      unconfig: 7.3.2
+
   '@unocss/core@0.58.9': {}
 
   '@unocss/core@66.1.1': {}
+
+  '@unocss/core@66.1.2': {}
 
   '@unocss/extractor-arbitrary-variants@0.58.9':
     dependencies:
@@ -6511,6 +6535,15 @@ snapshots:
       '@unocss/config': 66.1.1
       '@unocss/core': 66.1.1
       '@unocss/rule-utils': 66.1.1
+      css-tree: 3.1.0
+      postcss: 8.4.47
+      tinyglobby: 0.2.13
+
+  '@unocss/postcss@66.1.2(postcss@8.4.47)':
+    dependencies:
+      '@unocss/config': 66.1.2
+      '@unocss/core': 66.1.2
+      '@unocss/rule-utils': 66.1.2
       css-tree: 3.1.0
       postcss: 8.4.47
       tinyglobby: 0.2.13
@@ -6626,7 +6659,12 @@ snapshots:
 
   '@unocss/rule-utils@66.1.1':
     dependencies:
-      '@unocss/core': 66.1.1
+      '@unocss/core': 66.1.2
+      magic-string: 0.30.17
+
+  '@unocss/rule-utils@66.1.2':
+    dependencies:
+      '@unocss/core': 66.1.2
       magic-string: 0.30.17
 
   '@unocss/scope@0.58.9': {}
