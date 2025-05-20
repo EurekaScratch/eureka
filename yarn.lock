@@ -2527,10 +2527,10 @@
     tinyglobby "^0.2.13"
     unplugin-utils "^0.2.4"
 
-"@violentmonkey/types@^0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@violentmonkey/types/-/types-0.2.1.tgz#b0f6fa35b60c9e686a265ab3622b14feae757268"
-  integrity sha512-bugmnnPvHR/vM5qONp48X4+iJCdOkzDQ3RDhugU7EY0J3IRdeayyvXCPbJvSxezFEryMD7pAr4oLVfmoeV8nQg==
+"@violentmonkey/types@^0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@violentmonkey/types/-/types-0.2.2.tgz#98a2b36e3538a1d2abb14f4ef103843ed6cb6f93"
+  integrity sha512-GevxuHWYq9I2bDjqUV13Yw2Fmnv4GK0YpEENwsxgn5/s39kOvJtdtqXJhemczq1Wb9xDtEWf1AM+HQe2HcWNsA==
   dependencies:
     user-agent-data-types "^0.4.2"
 
