@@ -49,8 +49,8 @@ importers:
         specifier: ^66.1.1
         version: 66.1.1(postcss@8.4.47)
       '@violentmonkey/types':
-        specifier: ^0.2.1
-        version: 0.2.1
+        specifier: ^0.2.2
+        version: 0.2.2
       babel-preset-solid:
         specifier: ^1.9.6
         version: 1.9.6(@babel/core@7.26.0)
@@ -1831,8 +1831,8 @@ packages:
     peerDependencies:
       vite: ^2.9.0 || ^3.0.0-0 || ^4.0.0 || ^5.0.0-0 || ^6.0.0-0
 
-  '@violentmonkey/types@0.2.1':
-    resolution: {integrity: sha512-bugmnnPvHR/vM5qONp48X4+iJCdOkzDQ3RDhugU7EY0J3IRdeayyvXCPbJvSxezFEryMD7pAr4oLVfmoeV8nQg==}
+  '@violentmonkey/types@0.2.2':
+    resolution: {integrity: sha512-GevxuHWYq9I2bDjqUV13Yw2Fmnv4GK0YpEENwsxgn5/s39kOvJtdtqXJhemczq1Wb9xDtEWf1AM+HQe2HcWNsA==}
 
   '@vue/compiler-core@3.5.12':
     resolution: {integrity: sha512-ISyBTRMmMYagUxhcpyEH0hpXRd/KqDU4ymofPgl2XAkY9ZhQ+h0ovEZJIiPop13UmR/54oA2cgMDjgroRelaEw==}
@@ -6733,7 +6733,7 @@ snapshots:
     transitivePeerDependencies:
       - vue
 
-  '@violentmonkey/types@0.2.1':
+  '@violentmonkey/types@0.2.2':
     dependencies:
       user-agent-data-types: 0.4.2
 
