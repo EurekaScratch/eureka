@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       '@babel/runtime':
-        specifier: ^7.27.3
+        specifier: ^7.27.4
         version: 7.27.4
       format-message:
         specifier: ^6.2.4
