@@ -15,7 +15,7 @@ Eureka is a userscript which can load 3rd-party extensions in any Scratch-based 
 # ✨ Features
 
 - [x] Sideload 3rd-party extensions in nearly-all Scratch-based editors
-- [x] Safely for everyone - even those who don't installed Eureka
+- [x] Without break existing things - everyone still can open your projects!
 - [x] Extended Extension API
 - [x] Friendly built-in dashboard
 
