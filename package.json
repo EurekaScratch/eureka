@@ -46,7 +46,7 @@
     "rollup-plugin-serve": "^3.0.0",
     "rollup-plugin-userscript": "^0.3.7",
     "typescript": "^5.8.3",
-    "unocss": "^66.2.1",
+    "unocss": "^66.2.3",
     "@playwright/test": "^1.53.0",
     "@types/jest": "^30.0.0",
     "jest": "^30.0.0",
