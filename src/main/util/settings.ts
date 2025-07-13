@@ -44,7 +44,7 @@ const defaultSettings: Settings = {
     behavior: {
         redirectURL: false,
         redirectDeclared: true,
-        exposeCtx: true,
+        exposeCtx: false,
         headless: false,
         polyfillGlobalInstances: false
     },
