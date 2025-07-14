@@ -17,6 +17,19 @@ const TEST_SITES = [
 
 const TIMEOUT = 60000;
 
+const defaultEurekaSettings = JSON.stringify({
+  behavior: {
+    exposeCtx: true
+  }
+});
+
+async function initEureka(page: Page) {
+  await page.evaluate(() => {
+    globalThis.localStorage.setItem('&eureka', defaultEurekaSettings);
+  });
+  await page.evaluate(USERSCRIPT_CONTENT);
+}
+
 async function waitForEurekaInit(page: Page) {
   await page.waitForFunction(() => {
     return !!globalThis.eureka;
@@ -42,7 +55,7 @@ describe('Injection & Capture', () => {
   test.concurrent.each(TEST_SITES)('should inject Eureka & captured VM on %s', async (url) => {
     const page = await testContext.getPage(); 
     await page.goto(url, { waitUntil: 'commit' });
-    await page.evaluate(USERSCRIPT_CONTENT);
+    initEureka(page);
     await waitForEurekaInit(page);
 
     const eurekaExists = await page.evaluate(() => {
@@ -63,7 +76,7 @@ describe('Injection & Capture', () => {
   test.concurrent.each(TEST_SITES)('should captured ScratchBlocks on %s', async (url) => {
     const page = await testContext.getPage();
     await page.goto(url, { waitUntil: 'commit' });
-    await page.evaluate(USERSCRIPT_CONTENT);
+    initEureka(page);
     await waitForEurekaInit(page);
     await waitForBlocksInit(page);
 
