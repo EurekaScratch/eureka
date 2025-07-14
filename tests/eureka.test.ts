@@ -24,13 +24,14 @@ async function initEureka(page: Page) {
         exposeCtx: true
       }
     });
-    globalThis.localStorage.setItem('&eureka', defaultEurekaSettings);
+    globalThis.localStorage.setItem('$eureka', defaultEurekaSettings);
   });
   await page.evaluate(USERSCRIPT_CONTENT);
 }
 
 async function waitForEurekaInit(page: Page) {
   await page.waitForFunction(() => {
+    console.log(globalThis.localStorage.getItem('$eureka'));
     return !!globalThis.eureka;
   }, undefined, { timeout: TIMEOUT });
 }
