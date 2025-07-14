@@ -17,14 +17,13 @@ const TEST_SITES = [
 
 const TIMEOUT = 60000;
 
-const defaultEurekaSettings = JSON.stringify({
-  behavior: {
-    exposeCtx: true
-  }
-});
-
 async function initEureka(page: Page) {
   await page.evaluate(() => {
+    const defaultEurekaSettings = JSON.stringify({
+      behavior: {
+        exposeCtx: true
+      }
+    });
     globalThis.localStorage.setItem('&eureka', defaultEurekaSettings);
   });
   await page.evaluate(USERSCRIPT_CONTENT);
