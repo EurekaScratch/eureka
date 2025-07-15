@@ -31,7 +31,6 @@ async function initEureka(page: Page) {
 
 async function waitForEurekaInit(page: Page) {
   await page.waitForFunction(() => {
-    console.log(globalThis.localStorage.getItem('$eureka'));
     return !!globalThis.eureka;
   }, undefined, { timeout: TIMEOUT });
 }
