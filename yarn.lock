@@ -2436,15 +2436,28 @@
     "@unocss/core" "66.3.3"
     unconfig "^7.3.2"
 
+"@unocss/config@66.4.1":
+  version "66.4.1"
+  resolved "https://registry.yarnpkg.com/@unocss/config/-/config-66.4.1.tgz#f85ef8b508b2841225a26b506a9897dad4bd548c"
+  integrity sha512-ABiYEN9febHAfvpxzjrqdCrkomcDpcjCL1OPrWXLHOecfi2qZkj5sTASAfGUvqrV2WtZTPDQii6Nz1OisitRQQ==
+  dependencies:
+    "@unocss/core" "66.4.1"
+    unconfig "^7.3.2"
+
 "@unocss/core@0.58.9", "@unocss/core@^0.58.9":
   version "0.58.9"
   resolved "https://registry.yarnpkg.com/@unocss/core/-/core-0.58.9.tgz#a613e9d88160c5b260b1406082a9f73d789b9ea9"
   integrity sha512-wYpPIPPsOIbIoMIDuH8ihehJk5pAZmyFKXIYO/Kro98GEOFhz6lJoLsy6/PZuitlgp2/TSlubUuWGjHWvp5osw==
 
-"@unocss/core@66.3.3", "@unocss/core@^66.3.3":
+"@unocss/core@66.3.3":
   version "66.3.3"
   resolved "https://registry.yarnpkg.com/@unocss/core/-/core-66.3.3.tgz#a92b4352bfb2f26a82bcd1fc4387b111586d86ae"
   integrity sha512-6WFLd92TJelVQARtCGaF+EgEoHKIVe43gkGXVoWILu0HUDRWdhv+cpcyX0RTJV22Y976AxeneU7/zmhAh+CXNg==
+
+"@unocss/core@66.4.1", "@unocss/core@^66.3.3", "@unocss/core@^66.4.1":
+  version "66.4.1"
+  resolved "https://registry.yarnpkg.com/@unocss/core/-/core-66.4.1.tgz#e66c987da1a95d9edcc7bf3ba28511b984e8120c"
+  integrity sha512-2QMthvEmH0215zqIIL5WCodQ9lYShYDzziF4N1MMdcoRvCumGq9MMBFPxC54gNDrO3+/Olhp++YYmXkdZ89qrA==
 
 "@unocss/extractor-arbitrary-variants@0.58.9":
   version "0.58.9"
@@ -2495,7 +2508,7 @@
     magic-string "^0.30.8"
     postcss "^8.4.38"
 
-"@unocss/postcss@66.3.3", "@unocss/postcss@^66.3.2":
+"@unocss/postcss@66.3.3":
   version "66.3.3"
   resolved "https://registry.yarnpkg.com/@unocss/postcss/-/postcss-66.3.3.tgz#54e489b20cb195c9ffc36051ca2cebf966b201fd"
   integrity sha512-VKq+BtfPIZbLeAeZFprtKZJAyFBOqA8qpQm+vmWBiBia70JzkwfF2SMNIHiGt022yRo9ZmjnI9uRTxSzqXUsUQ==
@@ -2503,6 +2516,18 @@
     "@unocss/config" "66.3.3"
     "@unocss/core" "66.3.3"
     "@unocss/rule-utils" "66.3.3"
+    css-tree "^3.1.0"
+    postcss "^8.5.6"
+    tinyglobby "^0.2.14"
+
+"@unocss/postcss@^66.4.1":
+  version "66.4.1"
+  resolved "https://registry.yarnpkg.com/@unocss/postcss/-/postcss-66.4.1.tgz#24c191751b39e042eb22da7249d0e1a76e9a01c1"
+  integrity sha512-UcpMqOJ+ADn9uGetWgmIV+Ctu6Y/W828bJKGRPn6u+c+kporLWfkV5nwSqo1C3o1ADkChwpzs0Ikpz3emxM7yQ==
+  dependencies:
+    "@unocss/config" "66.4.1"
+    "@unocss/core" "66.4.1"
+    "@unocss/rule-utils" "66.4.1"
     css-tree "^3.1.0"
     postcss "^8.5.6"
     tinyglobby "^0.2.14"
@@ -2681,6 +2706,14 @@
   integrity sha512-QKgVGV5nRRnK44/reUKFLAc5UGyl98vz3hrfk8JI8pVza58vmQWTdAB2rIpNJ5a5j+EkWfDOUlGQaOrIeYGLdg==
   dependencies:
     "@unocss/core" "^66.3.3"
+    magic-string "^0.30.17"
+
+"@unocss/rule-utils@66.4.1":
+  version "66.4.1"
+  resolved "https://registry.yarnpkg.com/@unocss/rule-utils/-/rule-utils-66.4.1.tgz#9aa6f753f053ccaf2d8c853d59c01392a613ccae"
+  integrity sha512-iYbx4ab3aTMrcJSyBoGvwsbUM5BmRQef4rzGOjL312r/0RDZM+i2ikPxcFXpp/9P+Gp22gSXDMlzwY+VfJ2Llw==
+  dependencies:
+    "@unocss/core" "^66.4.1"
     magic-string "^0.30.17"
 
 "@unocss/scope@0.58.9":
