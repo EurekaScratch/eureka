@@ -46,8 +46,8 @@ importers:
         specifier: ^8.38.0
         version: 8.38.0(eslint@8.57.1)(typescript@5.8.3)
       '@unocss/postcss':
-        specifier: ^66.3.2
-        version: 66.3.2(postcss@8.4.47)
+        specifier: ^66.4.1
+        version: 66.4.1(postcss@8.4.47)
       '@violentmonkey/types':
         specifier: ^0.2.2
         version: 0.2.2
@@ -1821,22 +1821,22 @@ packages:
     resolution: {integrity: sha512-90wRXIyGNI8UenWxvHUcH4l4rgq813MsTzYWsf6ZKyLLvkFjV2b2EfGXI27GPvZ7fVE1OAqx+wJNTw8CyQxwag==}
     engines: {node: '>=14'}
 
-  '@unocss/config@66.3.2':
-    resolution: {integrity: sha512-G/kkFPhYjzCWa19jLhOhJ/yLL3JDt/kWJCmc5Z532/oNT1kzh9YJjAbprflVsAUEsIXyqm6WAmd26JD+KQKTWQ==}
-    engines: {node: '>=14'}
-
   '@unocss/config@66.3.3':
     resolution: {integrity: sha512-D/UxnAmkabapqWU4tF85dWWhNfCUyNutWmd4AD2VsQRZOykufJedLV74r3Z3XhoPJn4IGr3BKZm5/rflf5viDg==}
+    engines: {node: '>=14'}
+
+  '@unocss/config@66.4.1':
+    resolution: {integrity: sha512-ABiYEN9febHAfvpxzjrqdCrkomcDpcjCL1OPrWXLHOecfi2qZkj5sTASAfGUvqrV2WtZTPDQii6Nz1OisitRQQ==}
     engines: {node: '>=14'}
 
   '@unocss/core@0.58.9':
     resolution: {integrity: sha512-wYpPIPPsOIbIoMIDuH8ihehJk5pAZmyFKXIYO/Kro98GEOFhz6lJoLsy6/PZuitlgp2/TSlubUuWGjHWvp5osw==}
 
-  '@unocss/core@66.3.2':
-    resolution: {integrity: sha512-C8UbTenNb/pHo68Ob+G1DTKJkQOeWT8IXTzDV7Vq6hPa9R7eE1l2l20pDKGs6gXYEBYPpY9EV4f5E0vUKDf8sw==}
-
   '@unocss/core@66.3.3':
     resolution: {integrity: sha512-6WFLd92TJelVQARtCGaF+EgEoHKIVe43gkGXVoWILu0HUDRWdhv+cpcyX0RTJV22Y976AxeneU7/zmhAh+CXNg==}
+
+  '@unocss/core@66.4.1':
+    resolution: {integrity: sha512-2QMthvEmH0215zqIIL5WCodQ9lYShYDzziF4N1MMdcoRvCumGq9MMBFPxC54gNDrO3+/Olhp++YYmXkdZ89qrA==}
 
   '@unocss/extractor-arbitrary-variants@0.58.9':
     resolution: {integrity: sha512-M/BvPdbEEMdhcFQh/z2Bf9gylO1Ky/ZnpIvKWS1YJPLt4KA7UWXSUf+ZNTFxX+X58Is5qAb5hNh/XBQmL3gbXg==}
@@ -1856,14 +1856,14 @@ packages:
     peerDependencies:
       postcss: ^8.4.21
 
-  '@unocss/postcss@66.3.2':
-    resolution: {integrity: sha512-gbSlHhSezn4q2inEc5lPvz4upsAiewHyWS3k1o5ZH2Y7w/0jJxfIPYsjs8q5eFB3rkicdWWoGwd8HzuSXOrB/w==}
+  '@unocss/postcss@66.3.3':
+    resolution: {integrity: sha512-VKq+BtfPIZbLeAeZFprtKZJAyFBOqA8qpQm+vmWBiBia70JzkwfF2SMNIHiGt022yRo9ZmjnI9uRTxSzqXUsUQ==}
     engines: {node: '>=14'}
     peerDependencies:
       postcss: ^8.4.21
 
-  '@unocss/postcss@66.3.3':
-    resolution: {integrity: sha512-VKq+BtfPIZbLeAeZFprtKZJAyFBOqA8qpQm+vmWBiBia70JzkwfF2SMNIHiGt022yRo9ZmjnI9uRTxSzqXUsUQ==}
+  '@unocss/postcss@66.4.1':
+    resolution: {integrity: sha512-UcpMqOJ+ADn9uGetWgmIV+Ctu6Y/W828bJKGRPn6u+c+kporLWfkV5nwSqo1C3o1ADkChwpzs0Ikpz3emxM7yQ==}
     engines: {node: '>=14'}
     peerDependencies:
       postcss: ^8.4.21
@@ -1932,12 +1932,12 @@ packages:
     resolution: {integrity: sha512-45bDa+elmlFLthhJmKr2ltKMAB0yoXnDMQ6Zp5j3OiRB7dDMBkwYRPvHLvIe+34Ey7tDt/kvvDPtWMpPl2quUQ==}
     engines: {node: '>=14'}
 
-  '@unocss/rule-utils@66.3.2':
-    resolution: {integrity: sha512-zdKhZdRsU0iB+6ba1xX5YOJVI2UqwrvffAalONRSal2VUYpZxCFCvJhyt5bbneIOBQ6pQMVgi7UVEqQ6Y7A5kQ==}
-    engines: {node: '>=14'}
-
   '@unocss/rule-utils@66.3.3':
     resolution: {integrity: sha512-QKgVGV5nRRnK44/reUKFLAc5UGyl98vz3hrfk8JI8pVza58vmQWTdAB2rIpNJ5a5j+EkWfDOUlGQaOrIeYGLdg==}
+    engines: {node: '>=14'}
+
+  '@unocss/rule-utils@66.4.1':
+    resolution: {integrity: sha512-iYbx4ab3aTMrcJSyBoGvwsbUM5BmRQef4rzGOjL312r/0RDZM+i2ikPxcFXpp/9P+Gp22gSXDMlzwY+VfJ2Llw==}
     engines: {node: '>=14'}
 
   '@unocss/scope@0.58.9':
@@ -3463,6 +3463,10 @@ packages:
 
   jiti@2.4.2:
     resolution: {integrity: sha512-rg9zJN+G4n2nfJl5MW3BMygZX56zKPNVEYYqq7adpmMh4Jn2QNEwhvQlFy6jPVdcod7txZtKHWnyZiA3a0zP7A==}
+    hasBin: true
+
+  jiti@2.5.1:
+    resolution: {integrity: sha512-twQoecYPiVA5K/h6SxtORw/Bs3ar+mLUtoPSc7iMXzQzK8d7eJ/R09wmTwAjiamETn1cXYPGfNnu7DMoHgu12w==}
     hasBin: true
 
   js-tokens@4.0.0:
@@ -7005,21 +7009,21 @@ snapshots:
       '@unocss/core': 0.58.9
       unconfig: 0.3.13
 
-  '@unocss/config@66.3.2':
-    dependencies:
-      '@unocss/core': 66.3.2
-      unconfig: 7.3.2
-
   '@unocss/config@66.3.3':
     dependencies:
       '@unocss/core': 66.3.3
       unconfig: 7.3.2
 
+  '@unocss/config@66.4.1':
+    dependencies:
+      '@unocss/core': 66.4.1
+      unconfig: 7.3.2
+
   '@unocss/core@0.58.9': {}
 
-  '@unocss/core@66.3.2': {}
-
   '@unocss/core@66.3.3': {}
+
+  '@unocss/core@66.4.1': {}
 
   '@unocss/extractor-arbitrary-variants@0.58.9':
     dependencies:
@@ -7057,20 +7061,20 @@ snapshots:
       magic-string: 0.30.17
       postcss: 8.4.47
 
-  '@unocss/postcss@66.3.2(postcss@8.4.47)':
-    dependencies:
-      '@unocss/config': 66.3.2
-      '@unocss/core': 66.3.2
-      '@unocss/rule-utils': 66.3.2
-      css-tree: 3.1.0
-      postcss: 8.4.47
-      tinyglobby: 0.2.14
-
   '@unocss/postcss@66.3.3(postcss@8.4.47)':
     dependencies:
       '@unocss/config': 66.3.3
       '@unocss/core': 66.3.3
       '@unocss/rule-utils': 66.3.3
+      css-tree: 3.1.0
+      postcss: 8.4.47
+      tinyglobby: 0.2.14
+
+  '@unocss/postcss@66.4.1(postcss@8.4.47)':
+    dependencies:
+      '@unocss/config': 66.4.1
+      '@unocss/core': 66.4.1
+      '@unocss/rule-utils': 66.4.1
       css-tree: 3.1.0
       postcss: 8.4.47
       tinyglobby: 0.2.14
@@ -7184,14 +7188,14 @@ snapshots:
       '@unocss/core': 0.58.9
       magic-string: 0.30.17
 
-  '@unocss/rule-utils@66.3.2':
-    dependencies:
-      '@unocss/core': 66.3.2
-      magic-string: 0.30.17
-
   '@unocss/rule-utils@66.3.3':
     dependencies:
-      '@unocss/core': 66.3.3
+      '@unocss/core': 66.4.1
+      magic-string: 0.30.17
+
+  '@unocss/rule-utils@66.4.1':
+    dependencies:
+      '@unocss/core': 66.4.1
       magic-string: 0.30.17
 
   '@unocss/scope@0.58.9': {}
@@ -8289,9 +8293,9 @@ snapshots:
     dependencies:
       bser: 2.1.1
 
-  fdir@6.4.6(picomatch@4.0.2):
+  fdir@6.4.6(picomatch@4.0.3):
     optionalDependencies:
-      picomatch: 4.0.2
+      picomatch: 4.0.3
 
   file-entry-cache@6.0.1:
     dependencies:
@@ -9041,7 +9045,7 @@ snapshots:
       chalk: 4.1.2
       ci-info: 4.3.0
       graceful-fs: 4.2.11
-      picomatch: 4.0.2
+      picomatch: 4.0.3
 
   jest-util@30.0.5:
     dependencies:
@@ -9096,6 +9100,8 @@ snapshots:
   jiti@1.21.7: {}
 
   jiti@2.4.2: {}
+
+  jiti@2.5.1: {}
 
   js-tokens@4.0.0: {}
 
@@ -10196,8 +10202,8 @@ snapshots:
 
   tinyglobby@0.2.14:
     dependencies:
-      fdir: 6.4.6(picomatch@4.0.2)
-      picomatch: 4.0.2
+      fdir: 6.4.6(picomatch@4.0.3)
+      picomatch: 4.0.3
 
   tmpl@1.0.5: {}
 
@@ -10307,7 +10313,7 @@ snapshots:
     dependencies:
       '@quansync/fs': 0.1.3
       defu: 6.1.4
-      jiti: 2.4.2
+      jiti: 2.5.1
       quansync: 0.2.10
 
   undici-types@7.8.0: {}
@@ -10385,7 +10391,7 @@ snapshots:
   unplugin-utils@0.2.4:
     dependencies:
       pathe: 2.0.3
-      picomatch: 4.0.2
+      picomatch: 4.0.3
 
   unrs-resolver@1.11.1:
     dependencies:
