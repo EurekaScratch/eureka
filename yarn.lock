@@ -7012,10 +7012,10 @@ rollup-plugin-serve@^3.0.0:
     mime "^4"
     opener "1"
 
-rollup-plugin-userscript@^0.3.7:
-  version "0.3.7"
-  resolved "https://registry.yarnpkg.com/rollup-plugin-userscript/-/rollup-plugin-userscript-0.3.7.tgz#723ee872e47c6fbafc5c1ada3b88252e56c2ddb4"
-  integrity sha512-l2kdo2WlT4mOW+uV4SQOg8lQDmaJ7Nz5OormKdsJCgJTEoENVChATWnNYoFz4ckWODWY2z25bmtP3/yUVICxfg==
+rollup-plugin-userscript@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-userscript/-/rollup-plugin-userscript-1.0.0.tgz#f9bb8348bb4ee3465be528656d8b866770fc49e5"
+  integrity sha512-cz/tmKHbjW84TzV9Ubqrz2TCG+aeHM3A2ZFfoBPjUQgc4BSXBq21JErR9EorAKyJd1julQIE9krAEptifl11Hg==
   dependencies:
     "@babel/runtime" "^7.23.7"
     "@rollup/pluginutils" "^5.1.0"
