@@ -1858,6 +1858,11 @@
   resolved "https://registry.yarnpkg.com/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.5.0.tgz#3188bcb273a414b0d215fd22a58540b989b9409a"
   integrity sha512-gv3ZRaISU3fjPAgNsriBRqGWQL6quFx04YMPW/zD8XMLsU32mhCCbfbO6KZFLjvYpCZ8zyDEgqsgf+PwPaM7GQ==
 
+"@jridgewell/sourcemap-codec@^1.5.5":
+  version "1.5.5"
+  resolved "https://registry.yarnpkg.com/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.5.5.tgz#6912b00d2c631c0d15ce1a7ab57cd657f2a8f8ba"
+  integrity sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==
+
 "@jridgewell/trace-mapping@^0.3.12", "@jridgewell/trace-mapping@^0.3.23", "@jridgewell/trace-mapping@^0.3.24", "@jridgewell/trace-mapping@^0.3.25":
   version "0.3.25"
   resolved "https://registry.yarnpkg.com/@jridgewell/trace-mapping/-/trace-mapping-0.3.25.tgz#15f190e98895f3fc23276ee14bc76b675c2e50f0"
@@ -1937,6 +1942,13 @@
   integrity sha512-ezIadUb1aFhwJLd++WVqVpi9rnlX8vnd4ju7saPhwLHJN1mJgOv0puePTGV+FbtSnWtwoHDT8lAm4kagDZmpCg==
   dependencies:
     quansync "^0.2.10"
+
+"@quansync/fs@^0.1.5":
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/@quansync/fs/-/fs-0.1.5.tgz#8d89bc7add93f9b77e053ff8293d5ca82199fb1f"
+  integrity sha512-lNS9hL2aS2NZgNW7BBj+6EBl4rOf8l+tQ0eRY6JWCI8jI2kc53gSoqbjojU0OnAWhzoXiOjFyGsHcDGePB3lhA==
+  dependencies:
+    quansync "^0.2.11"
 
 "@rollup/plugin-alias@^5.1.0":
   version "5.1.1"
@@ -2523,15 +2535,28 @@
     "@unocss/core" "66.4.2"
     unconfig "^7.3.2"
 
+"@unocss/config@66.5.0":
+  version "66.5.0"
+  resolved "https://registry.yarnpkg.com/@unocss/config/-/config-66.5.0.tgz#17c483b8e2ac1bd3d3f0977175adf2bd9e240ff8"
+  integrity sha512-vNPqcfCPIVCuV3AU13d6qO/wSRrvdXeV8myQQUlUBVkvHezFBQ/atVOP77Ov5qUBARyx3zwUCkgQxYOCs60EGw==
+  dependencies:
+    "@unocss/core" "66.5.0"
+    unconfig "^7.3.3"
+
 "@unocss/core@0.58.9", "@unocss/core@^0.58.9":
   version "0.58.9"
   resolved "https://registry.yarnpkg.com/@unocss/core/-/core-0.58.9.tgz#a613e9d88160c5b260b1406082a9f73d789b9ea9"
   integrity sha512-wYpPIPPsOIbIoMIDuH8ihehJk5pAZmyFKXIYO/Kro98GEOFhz6lJoLsy6/PZuitlgp2/TSlubUuWGjHWvp5osw==
 
-"@unocss/core@66.4.2", "@unocss/core@^66.4.2":
+"@unocss/core@66.4.2":
   version "66.4.2"
   resolved "https://registry.yarnpkg.com/@unocss/core/-/core-66.4.2.tgz#4c4dac438a3b0e59025933ee36bf7728c6447fbb"
   integrity sha512-cYgMQrLhB9nRekv5c+yPDDa+5dzlMkA2UMQRil0s5D9Lb5n7NsCMcr6+nfxkcSYVLy92SbwDV45c6T7vIxFTOA==
+
+"@unocss/core@66.5.0", "@unocss/core@^66.4.2", "@unocss/core@^66.5.0":
+  version "66.5.0"
+  resolved "https://registry.yarnpkg.com/@unocss/core/-/core-66.5.0.tgz#cedbc0b87803a000743abc48a3c57efc0a1e2e6e"
+  integrity sha512-4JStg50nrwd4aJulbPYglqHyuVUHMEX2EltpdxrrxknvSjy4LriKCVUCEmIljsbTFDXm8xcPnPGs6VN/ZmlKlA==
 
 "@unocss/extractor-arbitrary-variants@0.58.9":
   version "0.58.9"
@@ -2582,7 +2607,7 @@
     magic-string "^0.30.8"
     postcss "^8.4.38"
 
-"@unocss/postcss@66.4.2", "@unocss/postcss@^66.4.1":
+"@unocss/postcss@66.4.2":
   version "66.4.2"
   resolved "https://registry.yarnpkg.com/@unocss/postcss/-/postcss-66.4.2.tgz#b31b4e8d3304407c5d8afce74ec3637339d03654"
   integrity sha512-tu4lnh6K27pIAuaQHlFlhXin8korwC0r1kQl00YMmF3THiX7orXkTP6xWGcQwnkbx4uQz1dw+tBimYxeaAMrhA==
@@ -2590,6 +2615,18 @@
     "@unocss/config" "66.4.2"
     "@unocss/core" "66.4.2"
     "@unocss/rule-utils" "66.4.2"
+    css-tree "^3.1.0"
+    postcss "^8.5.6"
+    tinyglobby "^0.2.14"
+
+"@unocss/postcss@^66.5.0":
+  version "66.5.0"
+  resolved "https://registry.yarnpkg.com/@unocss/postcss/-/postcss-66.5.0.tgz#78a8386c50ce8b2c3861dd9f7ee3c05a95d04d53"
+  integrity sha512-jwe06YHGGepllsjDIqLtOgh4jViq0XfP/wU81Efg9lQLlMzWkDIMQw8/LQn2UA3WkjWWiQFXvQKb8SWpXENYnA==
+  dependencies:
+    "@unocss/config" "66.5.0"
+    "@unocss/core" "66.5.0"
+    "@unocss/rule-utils" "66.5.0"
     css-tree "^3.1.0"
     postcss "^8.5.6"
     tinyglobby "^0.2.14"
@@ -2769,6 +2806,14 @@
   dependencies:
     "@unocss/core" "^66.4.2"
     magic-string "^0.30.17"
+
+"@unocss/rule-utils@66.5.0":
+  version "66.5.0"
+  resolved "https://registry.yarnpkg.com/@unocss/rule-utils/-/rule-utils-66.5.0.tgz#a82327676e52eb6b05a267e79691cd95bb484f68"
+  integrity sha512-+yqGZP8fR/G/gOkjXSXjmgTXFr4zGCQR+rA3Ana4xVoLIttcmPk4qO1IWcUVRQTDDqFmUjW/XwWmChta+rdQsA==
+  dependencies:
+    "@unocss/core" "^66.5.0"
+    magic-string "^0.30.18"
 
 "@unocss/scope@0.58.9":
   version "0.58.9"
@@ -5613,6 +5658,11 @@ jiti@^2.4.1, jiti@^2.4.2:
   resolved "https://registry.yarnpkg.com/jiti/-/jiti-2.4.2.tgz#d19b7732ebb6116b06e2038da74a55366faef560"
   integrity sha512-rg9zJN+G4n2nfJl5MW3BMygZX56zKPNVEYYqq7adpmMh4Jn2QNEwhvQlFy6jPVdcod7txZtKHWnyZiA3a0zP7A==
 
+jiti@^2.5.1:
+  version "2.5.1"
+  resolved "https://registry.yarnpkg.com/jiti/-/jiti-2.5.1.tgz#bd099c1c2be1c59bbea4e5adcd127363446759d0"
+  integrity sha512-twQoecYPiVA5K/h6SxtORw/Bs3ar+mLUtoPSc7iMXzQzK8d7eJ/R09wmTwAjiamETn1cXYPGfNnu7DMoHgu12w==
+
 js-tokens@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-4.0.0.tgz#19203fb59991df98e3a287050d4647cdeaf32499"
@@ -5853,12 +5903,12 @@ lru-cache@^5.1.1:
   dependencies:
     yallist "^3.0.2"
 
-magic-string@^0.30.17, magic-string@^0.30.3, magic-string@^0.30.7, magic-string@^0.30.8:
-  version "0.30.17"
-  resolved "https://registry.yarnpkg.com/magic-string/-/magic-string-0.30.17.tgz#450a449673d2460e5bbcfba9a61916a1714c7453"
-  integrity sha512-sNPKHvyjVf7gyjwS4xGTaW/mCnF8wnjtifKBEhxfZ7E/S8tQ0rssrwGNn6q8JH/ohItJfSQp9mBtQYuTlH5QnA==
+magic-string@^0.30.17, magic-string@^0.30.18, magic-string@^0.30.3, magic-string@^0.30.7, magic-string@^0.30.8:
+  version "0.30.18"
+  resolved "https://registry.yarnpkg.com/magic-string/-/magic-string-0.30.18.tgz#905bfbbc6aa5692703a93db26a9edcaa0007d2bb"
+  integrity sha512-yi8swmWbO17qHhwIBNeeZxTceJMeBvWJaId6dyvTSOwTipqeHhMhOrz6513r1sOKnpvQ7zkhlG8tPrpilwTxHQ==
   dependencies:
-    "@jridgewell/sourcemap-codec" "^1.5.0"
+    "@jridgewell/sourcemap-codec" "^1.5.5"
 
 make-dir@^4.0.0:
   version "4.0.0"
@@ -6807,6 +6857,11 @@ quansync@^0.2.10, quansync@^0.2.8:
   version "0.2.10"
   resolved "https://registry.yarnpkg.com/quansync/-/quansync-0.2.10.tgz#32053cf166fa36511aae95fc49796116f2dc20e1"
   integrity sha512-t41VRkMYbkHyCYmOvx/6URnN80H7k4X0lLdBMGsz+maAwrJQYB1djpV6vHrQIBE0WBSGqhtEHrK9U3DWWH8v7A==
+
+quansync@^0.2.11:
+  version "0.2.11"
+  resolved "https://registry.yarnpkg.com/quansync/-/quansync-0.2.11.tgz#f9c3adda2e1272e4f8cf3f1457b04cbdb4ee692a"
+  integrity sha512-AifT7QEbW9Nri4tAwR5M/uzpBuqfZf+zwaEM/QkzEjj7NBuFD2rBuy0K3dE+8wltbezDV7JMA0WfnCPYRSYbXA==
 
 queue-microtask@^1.2.2:
   version "1.2.3"
@@ -7765,6 +7820,16 @@ unconfig@^7.3.2:
     defu "^6.1.4"
     jiti "^2.4.2"
     quansync "^0.2.8"
+
+unconfig@^7.3.3:
+  version "7.3.3"
+  resolved "https://registry.yarnpkg.com/unconfig/-/unconfig-7.3.3.tgz#bdb2dbbb5d271e601bc7e0922512ce397c5a9e8d"
+  integrity sha512-QCkQoOnJF8L107gxfHL0uavn7WD9b3dpBcFX6HtfQYmjw2YzWxGuFQ0N0J6tE9oguCBJn9KOvfqYDCMPHIZrBA==
+  dependencies:
+    "@quansync/fs" "^0.1.5"
+    defu "^6.1.4"
+    jiti "^2.5.1"
+    quansync "^0.2.11"
 
 undici-types@~6.20.0:
   version "6.20.0"
