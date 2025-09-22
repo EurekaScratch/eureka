@@ -233,6 +233,8 @@ function getUnsupportedAPI (vm: DucktypedVM) {
  */
 export function applyPatchesForVM (vm: DucktypedVM, ctx: EurekaContext) {
     const isTurboWarp = typeof vm.runtime.compilerOptions === 'object' && typeof vm.exports === 'object';
+    // isUSB: Is the mod Unsandboxed. (this is named USB to prevent confusion with the unsandboxed extensions api)
+    const isUSB = isTurboWarp && typeof vm.runtime.compilerData === 'object';
     const isClipCC = typeof vm.ccExtensionManager === 'object';
 
     if (settings.mixins['vm.extensionManager.loadExtensionURL']) {
@@ -563,37 +565,44 @@ export function applyPatchesForVM (vm: DucktypedVM, ctx: EurekaContext) {
         );
     }
 
-    // Add PenguinMod/Turbowarp compiler support
-    const ScriptTreeGenerator =
-      vm.exports?.IRGenerator?.exports?.ScriptTreeGenerator ?? getUnsupportedAPI(vm)?.ScriptTreeGenerator;
-    if (ScriptTreeGenerator && settings.mixins['vm.exports.ScriptTreeGenerator.prototype.descendInput']) {
-        MixinApplicator.applyTo(
-            ScriptTreeGenerator.prototype,
-            {
-                descendInput (originalMethod, block) {
-                    switch (block.opcode) {
-                    case 'argument_reporter_boolean': {
-                        const name = block.fields.VALUE.value;
-                        const index = this.script.arguments.lastIndexOf(name);
-                        if (index === -1) {
-                            if (checkEureka(name) !== null) {
-                              // 2025.9: Turbowarp introduces new compiler
-                              if (typeof this.createConstantInput === 'function') {
-                                  const InputType = getUnsupportedAPI(vm).InputType;
-                                return this.createConstantInput(true).toType(InputType.BOOLEAN);
-                              }
-                                return {
-                                    kind: 'constant',
-                                    value: true
-                                };
+    if (settings.mixins['vm.exports.ScriptTreeGenerator.prototype.descendInput']) {
+        // Add TurboWarp/PenguinMod/Unsandboxed (mod) compiler support
+        const ScriptTreeGenerator =
+            vm.exports?.IRGenerator?.exports?.ScriptTreeGenerator ?? getUnsupportedAPI(vm)?.ScriptTreeGenerator ??
+            vm.runtime?.compilerData?.exports?.ScriptTreeGenerator;
+        if (ScriptTreeGenerator) {
+            MixinApplicator.applyTo(
+                ScriptTreeGenerator.prototype,
+                {
+                    // ...args is added below because Unsandboxed (mod) can pass an unknown amount of arguments.
+                    descendInput (originalMethod, block, ...args) {
+                        switch (block.opcode) {
+                        case 'argument_reporter_boolean': {
+                            const name = block.fields.VALUE.value;
+                            const index = this.script.arguments.lastIndexOf(name);
+                            if (index === -1) {
+                                if (checkEureka(name) !== null) {
+                                    // 2025.9: Turbowarp introduces new compiler
+                                    if (typeof this.createConstantInput === 'function') {
+                                        // Unsandboxed (mod) has different exports
+                                        const InputType = isUSB ?
+                                            vm.runtime?.compilerData?.exports?.InputType :
+                                            getUnsupportedAPI(vm)?.InputType;
+                                        return this.createConstantInput(true).toType(InputType.BOOLEAN);
+                                    }
+                                    return {
+                                        kind: 'constant',
+                                        value: true
+                                    };
+                                }
                             }
+                          }
                         }
+                        return originalMethod?.(block, ...args);
                     }
-                    }
-                    return originalMethod?.(block);
                 }
-            }
-        );
+            );
+        }
     }
 
     // ClipCC specific patches, to make sideloaded extension a ClipCC extension
