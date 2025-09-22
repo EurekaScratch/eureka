@@ -56,4 +56,4 @@ Eureka is the glue that makes it all work by independently implementing a Scratc
 
 # ⚓ License
 
-MIT, see [LICENSE](./LICENSE).
+AGPL-3.0, see [LICENSE](./LICENSE).
