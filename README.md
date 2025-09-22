@@ -41,6 +41,8 @@ Eureka is a userscript which can load 3rd-party extensions in any Scratch-based 
 | PenguinMod                      | ✅                      | ✅                       | ❌                                      | ✅                      | ❓                |
 | ElectraMod                      | ✅                      | ✅                       | ❌                                      | ✅                      | ❓                |
 | XPLab                           | ✅                      | ✅                       | ❌                                      | ✅                      | ❓                |
+| MistWarp                        | ✅                      | ✅                       | ✅                                      | ✅                      | ❓                |
+| Unsandboxed                     | ✅                      | ✅                       | ✅                                      | ✅                      | ❓                |
 
 (1): The initialize of the sideloaded blocks in workspace are broken
 
