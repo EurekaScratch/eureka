@@ -16,6 +16,7 @@ interface DucktypedUnsupportedAPI {
             descendInput: (this: any, block: any) => object;
         }
     }
+    InputType?: Record<string, number>;
 }
 
 interface DucktypedToolbox {
@@ -57,6 +58,7 @@ interface DucktypedVM {
     initialized?: boolean;
     exports?: {
         i_will_not_ask_for_help_when_these_break: () => DucktypedUnsupportedAPI;
+        these_broke_before_and_will_break_again: () => DucktypedUnsupportedAPI;
         // PenguinMod proposed change
         IRGenerator?: {
           exports?: {

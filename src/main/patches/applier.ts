@@ -207,7 +207,15 @@ export function applyPatchesForBlocks (blocks?: DucktypedScratchBlocks) {
  * @returns The unsupported API, if it exists. (otherwise null)
  */
 function getUnsupportedAPI (vm: DucktypedVM) {
-    if (typeof vm.exports?.i_will_not_ask_for_help_when_these_break === 'function') {
+    // 2025.9: Turbowarp introduces new compiler
+    if (typeof vm.exports.these_broke_before_and_will_break_again === 'function') {
+      // Do not emit any warning messages
+        const warn = console.warn;
+        console.warn = function () { }; // No-op
+        const api = vm.exports.these_broke_before_and_will_break_again();
+        console.warn = warn;
+        return api;
+    } else if (typeof vm.exports?.i_will_not_ask_for_help_when_these_break === 'function') {
         // Do not emit any warning messages
         const warn = console.warn;
         console.warn = function () { }; // No-op
@@ -569,6 +577,11 @@ export function applyPatchesForVM (vm: DucktypedVM, ctx: EurekaContext) {
                         const index = this.script.arguments.lastIndexOf(name);
                         if (index === -1) {
                             if (checkEureka(name) !== null) {
+                              // 2025.9: Turbowarp introduces new compiler
+                              if (typeof this.createConstantInput === 'function') {
+                                  const InputType = getUnsupportedAPI(vm).InputType;
+                                return this.createConstantInput(true).toType(InputType.BOOLEAN);
+                              }
                                 return {
                                     kind: 'constant',
                                     value: true
