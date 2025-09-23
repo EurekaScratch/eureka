@@ -16,6 +16,8 @@
 // @match       https://www.scratch-cn.cn/*
 // @match       https://www.40code.com/*
 // @match       https://turbowarp.org/*
+// @match       https://staging.turbowarp.org/*
+// @match       https://experiments.turbowarp.org/*/*
 // @match       https://codingclip.com/*
 // @match       https://editor.turbowarp.cn/*
 // @match       https://0832.ink/rc/*
@@ -26,6 +28,8 @@
 // @match       https://code.xueersi.com/*
 // @match       https://electramod.vercel.app/*
 // @match       https://xplab.vercel.app/*
+// @match       https://warp.mistium.com/*
+// @match       https://alpha.unsandboxed.org/*
 // @run-at      document-start
 // @grant       none
 // @version     process.env.VERSION
