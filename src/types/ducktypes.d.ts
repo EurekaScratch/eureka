@@ -108,7 +108,13 @@ interface DucktypedVM {
         getEditingTarget (): any;
         getTargetForStage (): any;
         renderer: any;
-    }
+        compilerData?: {
+          exports?: {
+            ScriptTreeGenerator?: DucktypedUnsupportedAPI['ScriptTreeGenerator'];
+            InputType?: DucktypedUnsupportedAPI['InputType'];
+          }
+        }
+    };
     toJSON(optTargetId?: string): string;
     deserializeProject(projectJSON: DucktypedProjectJSON, zip: unknown, extensionCallback?: unknown): Promise<void>;
     _loadExtensions?(extensionIDs: Set<string>, extensionURLs: Map<string, string>): Promise<void[]>;
