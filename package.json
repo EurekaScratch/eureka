@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@babel/plugin-transform-react-jsx": "^7.27.1",
-    "@commitlint/cli": "^20.0.0",
+    "@commitlint/cli": "^20.1.0",
     "@gera2ld/plaid": "~2.7.0",
     "@gera2ld/plaid-rollup": "~2.7.0",
     "@rollup/plugin-image": "^3.0.3",
