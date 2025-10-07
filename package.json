@@ -38,7 +38,7 @@
     "cross-env": "^10.1.0",
     "del-cli": "^7.0.0",
     "@typescript-eslint/eslint-plugin": "^8.45.0",
-    "@typescript-eslint/parser": "^8.45.0",
+    "@typescript-eslint/parser": "^8.46.0",
     "eslint": "8.57.1",
     "eslint-plugin-solid": "^0.14.5",
     "husky": "^9.1.7",
