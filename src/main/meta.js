@@ -18,8 +18,8 @@
 // @match       https://turbowarp.org/*
 // @match       https://staging.turbowarp.org/*
 // @match       https://experiments.turbowarp.org/*/*
+// @match       https://mirror.turbowarp.xyz/*
 // @match       https://codingclip.com/*
-// @match       https://editor.turbowarp.cn/*
 // @match       https://0832.ink/rc/*
 // @match       https://code.xueersi.com/*
 // @match       https://play.creaticode.com/*
