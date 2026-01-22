@@ -20,6 +20,7 @@
 // @match       https://experiments.turbowarp.org/*/*
 // @match       https://mirror.turbowarp.xyz/*
 // @match       https://codingclip.com/*
+// @match       https://clipcc.simonshiki.top/*
 // @match       https://0832.ink/rc/*
 // @match       https://code.xueersi.com/*
 // @match       https://play.creaticode.com/*

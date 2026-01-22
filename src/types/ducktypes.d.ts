@@ -147,5 +147,7 @@ interface DucktypedScratchBlocks {
     }
     getMainWorkspace (): DucktypedBlocksWorkspace;
     WorkspaceSvg: Ctor<DucktypedBlocksWorkspace>;
+    constants?: Record<string, unknown>;
+    FieldButton?: Ctor<unknown>;
     __esModule?: boolean;
 }

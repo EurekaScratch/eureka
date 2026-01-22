@@ -109,6 +109,9 @@ export function applyPatchesForBlocks (blocks?: DucktypedScratchBlocks) {
                     id: 'eureka.modernBlocklyDetected',
                     default: 'Modern blockly detected'
                 }));
+                // is ClipCC version unforked Blockly, use JSON to construct procedure toolbox.
+                const isClipCCBlockly =
+                  typeof blocks?.constants === 'object' && typeof blocks?.FieldButton === 'function';
 
                 // Replace initial category callback
                 if (settings.mixins['blocks.getMainWorkspace().toolboxCategoryCallbacks.PROCEDURE']) {
@@ -116,10 +119,10 @@ export function applyPatchesForBlocks (blocks?: DucktypedScratchBlocks) {
                     const originalCallback = toolboxCallbacks.get('PROCEDURE');
                     toolboxCallbacks.set('PROCEDURE', function (workspace) {
                         // eslint-disable-next-line no-invalid-this
-                        const xmlList = originalCallback.call(this, workspace);
-                        injectToolbox(xmlList, workspace);
+                        const list = originalCallback.call(this, workspace);
+                        injectToolbox(list, workspace, isClipCCBlockly);
 
-                        return xmlList;
+                        return list;
                     });
                 }
 
@@ -133,10 +136,10 @@ export function applyPatchesForBlocks (blocks?: DucktypedScratchBlocks) {
                                     const originalCallback = callback;
                                     callback = function (workspace) {
                                         // eslint-disable-next-line no-invalid-this
-                                        const xmlList = originalCallback.call(this, workspace);
-                                        injectToolbox(xmlList, workspace);
+                                        const list = originalCallback.call(this, workspace);
+                                        injectToolbox(list, workspace, isClipCCBlockly);
 
-                                        return xmlList;
+                                        return list;
                                     };
                                 }
 
@@ -209,7 +212,7 @@ export function applyPatchesForBlocks (blocks?: DucktypedScratchBlocks) {
 function getUnsupportedAPI (vm: DucktypedVM) {
     // 2025.9: Turbowarp introduces new compiler
     if (typeof vm.exports.these_broke_before_and_will_break_again === 'function') {
-      // Do not emit any warning messages
+        // Do not emit any warning messages
         const warn = console.warn;
         console.warn = function () { }; // No-op
         const api = vm.exports.these_broke_before_and_will_break_again();
@@ -596,7 +599,7 @@ export function applyPatchesForVM (vm: DucktypedVM, ctx: EurekaContext) {
                                     };
                                 }
                             }
-                          }
+                        }
                         }
                         return originalMethod?.(block, ...args);
                     }

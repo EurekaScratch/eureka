@@ -3,11 +3,38 @@ import {eureka} from '../ctx';
 
 /**
  * Inject Eureka toolbox into the workspace
- * @param xmlList the target toolbox's xml list
+ * @param list the target toolbox's list
  * @param workspace The workspace, usuaully `Blockly.getMainWorkspace()`
  * @returns The modified xml list
  */
-export function injectToolbox (xmlList: HTMLElement[], workspace: DucktypedBlocksWorkspace) {
+export function injectToolbox (
+    list: HTMLElement[] | Record<string, unknown>[],
+    workspace: DucktypedBlocksWorkspace, useJSON = false
+) {
+    if (useJSON) {
+        const jsonList = list as Record<string, unknown>[];
+        jsonList.push({
+            kind: 'sep',
+            gap: 36
+        });
+        jsonList.push({
+            kind: 'label',
+            text: '💡 Eureka'
+        });
+        jsonList.push({
+            kind: 'button',
+            text: format({
+                id: 'eureka.openDashboard',
+                default: 'Open Dashboard'
+            }),
+            callbackKey: 'EUREKA_FRONTEND'
+        });
+        workspace.registerButtonCallback('EUREKA_FRONTEND', () => {
+            eureka.openDashboard();
+        });
+        return jsonList;
+    }
+    const xmlList = list as HTMLElement[];
     // Add separator and label
     const sep = document.createElement('sep');
     sep.setAttribute('gap', '36');
