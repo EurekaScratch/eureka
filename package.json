@@ -44,7 +44,7 @@
     "eslint": "8.57.1",
     "eslint-plugin-solid": "^0.14.5",
     "husky": "^9.1.7",
-    "jest": "^30.2.0",
+    "jest": "^30.4.2",
     "read-package-up": "^12.0.0",
     "rollup-plugin-serve": "^3.0.0",
     "rollup-plugin-userscript": "^1.1.0",
