@@ -49,8 +49,8 @@ importers:
         specifier: 66.5.0
         version: 66.5.0(postcss@8.5.6)
       '@violentmonkey/types':
-        specifier: ^0.3.1
-        version: 0.3.1
+        specifier: ^0.3.3
+        version: 0.3.3
       babel-preset-solid:
         specifier: ^1.9.9
         version: 1.9.10(@babel/core@7.29.7)(solid-js@1.9.10)
@@ -1967,8 +1967,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@violentmonkey/types@0.3.1':
-    resolution: {integrity: sha512-40pq15SRSgTU5JAL0f6NabSH5Q6OIgm2IUF1j0eSm1QMkJgsH/bNU72qW2QNAPa9MSRnoyfKoiY0bcDdnztIMw==}
+  '@violentmonkey/types@0.3.3':
+    resolution: {integrity: sha512-ISaLOU7tBR8WiSgHAzrYj5GHU99YP+ZAB0YNwaN7vvK9TZLm4LjxOLHnqy9O7dd0LAEVAa60r8jLd6VSZfsjLA==}
 
   JSONStream@1.3.5:
     resolution: {integrity: sha512-E+iruNOY8VV9s4JEbe1aNEm6MiszPRr/UfcHMz0TQh1BXSxHK+ASV1R6W4HpjBhSeS+54PIsAMCBmwD06LLsqQ==}
@@ -4751,8 +4751,8 @@ packages:
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
 
-  user-agent-data-types@0.4.2:
-    resolution: {integrity: sha512-jXep3kO/dGNmDOkbDa8ccp4QArgxR4I76m3QVcJ1aOF0B9toc+YtSXtX5gLdDTZXyWlpQYQrABr6L1L2GZOghw==}
+  user-agent-data-types@0.4.3:
+    resolution: {integrity: sha512-Dn3fjwVgeM363mx1sEgOpOp9NNqHBj6Gn68dFbV1WoTr3s05CijKdxfH6A3Q5uzXnYNB6vdAfs/1HWFpObc7EQ==}
 
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
@@ -7203,9 +7203,9 @@ snapshots:
   '@unrs/resolver-binding-win32-x64-msvc@1.12.2':
     optional: true
 
-  '@violentmonkey/types@0.3.1':
+  '@violentmonkey/types@0.3.3':
     dependencies:
-      user-agent-data-types: 0.4.2
+      user-agent-data-types: 0.4.3
 
   JSONStream@1.3.5:
     dependencies:
@@ -10385,7 +10385,7 @@ snapshots:
     dependencies:
       punycode: 2.3.1
 
-  user-agent-data-types@0.4.2: {}
+  user-agent-data-types@0.4.3: {}
 
   util-deprecate@1.0.2: {}
 
