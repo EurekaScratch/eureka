@@ -11,7 +11,7 @@ const TEST_SITES = [
   'https://gonfunko.github.io/scratch-gui/',
   'https://world.xiaomawang.com/scratch3-playground?platform=3',
   'https://code.xueersi.com/scratch/index.html?pid=2&version=3.0&preview=preview&env=community',
-  'https://codingclip.com/editor/stable/',
+  'https://codingclip.com/editor/',
   'https://cocrea.world/gandi'
 ];
 
