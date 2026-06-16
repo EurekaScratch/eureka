@@ -30,7 +30,7 @@
     "@commitlint/cli": "^21.0.2",
     "@gera2ld/plaid": "~2.7.0",
     "@gera2ld/plaid-rollup": "~2.7.0",
-    "@playwright/test": "^1.60.0",
+    "@playwright/test": "^1.61.0",
     "@rollup/plugin-image": "^3.0.3",
     "@types/jest": "^30.0.0",
     "@typescript-eslint/eslint-plugin": "^8.61.0",
