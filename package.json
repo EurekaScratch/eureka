@@ -23,7 +23,7 @@
   "dependencies": {
     "@babel/runtime": "^8.0.0",
     "format-message": "^6.2.4",
-    "solid-js": "^1.9.13"
+    "solid-js": "^1.9.14"
   },
   "devDependencies": {
     "@babel/plugin-transform-react-jsx": "^7.29.7",
